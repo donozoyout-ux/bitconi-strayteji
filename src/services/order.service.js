@@ -1,4 +1,5 @@
 const exchange = require('../config/binance');
+const env = require('../config/env');
 const logger = require('../utils/logger');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
@@ -54,7 +55,7 @@ async function placeOrder(action, symbol, quantity, budget) {
     }
     if (normalizedAction === 'SELL') {
       const price = await fetchLastPrice(ccxtSymbol);
-      qty = cost / price;
+      qty = cost / (price * (1 - env.commissionRate));
     }
   } else if (quantity !== undefined && quantity !== null && quantity !== '') {
     qty = validatePositive(quantity, 'quantity');
@@ -108,6 +109,8 @@ async function placeOrder(action, symbol, quantity, budget) {
     symbol: ccxtSymbol,
     quantity: qty,
     cost: cost,
+    feeRate: env.commissionRate,
+    fee: order.fee || null,
     orderId: order.id,
     status: order.status,
     filled: order.filled,
@@ -122,6 +125,7 @@ async function placeOrder(action, symbol, quantity, budget) {
     filled: result.filled,
     averagePrice: result.averagePrice,
     cost: result.cost,
+    fee: result.fee,
   });
 
   return result;

@@ -162,7 +162,9 @@
         Alarm olustururken <b>Webhook URL</b> olarak sunucu adresinizin <code>/webhook</code> yolunu kullanin.<br />
         Ornek: <code>https://SENIN-APP.onrender.com/webhook</code><br /><br />
         Message (Pine Script otomatik uretir):<br />
-        <code>{"action": "BUY", "symbol": "BTCUSDT", "budget": "30"}</code>
+        <code>{"action": "BUY", "symbol": "BTCUSDT", "budget": "30"}</code><br /><br />
+        <b>Komisyon:</b> Islem komisyonu (%0.1) butce hesabina dahildir. Satista net USDT hedefi yakalanir,
+        alista komisyon BTC'den kesilir. Sonuc JSON'unda <code>fee</code> ve <code>feeRate</code> gorunur.
       </div>
     </div>
 
