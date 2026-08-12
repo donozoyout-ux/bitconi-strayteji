@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dip Hunter Crypto Bot - Kontrol Paneli</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --card: #151a24;
+      --card2: #1c2230;
+      --border: #2a3242;
+      --text: #e6e9f0;
+      --muted: #8b93a7;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --orange: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    h1 { font-size: 22px; font-weight: 700; }
+    h1 span { color: var(--orange); }
+    .badge {
+      background: var(--green); color: #04140a; font-weight: 700;
+      padding: 6px 12px; border-radius: 999px; font-size: 12px;
+    }
+    .badge.off { background: var(--red); color: #fff; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 14px;
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .stat .label { font-size: 12px; color: var(--muted); }
+    .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+    .stat .value.green { color: var(--green); }
+    .stat .value.orange { color: var(--orange); }
+    .stat .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    form .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .field { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
+    .field label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input, select {
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 10px 12px;
+      font-size: 14px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--blue); }
+    .btn {
+      border: none; border-radius: 10px; padding: 12px 18px;
+      font-size: 14px; font-weight: 700; cursor: pointer; color: #fff;
+      background: var(--blue); transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn.buy { background: var(--green); }
+    .btn.sell { background: var(--red); }
+    .btn.ghost {
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+    }
+    .row.actions { justify-content: flex-end; }
+    .result {
+      background: #0d1117; border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; font-family: Consolas, monospace;
+      font-size: 13px; white-space: pre-wrap; word-break: break-word;
+      max-height: 240px; overflow: auto;
+    }
+    .result.success { border-color: var(--green); }
+    .result.error { border-color: var(--red); }
+    .hint {
+      background: var(--card2); border-left: 3px solid var(--orange);
+      padding: 12px 14px; border-radius: 8px; font-size: 13px; color: var(--muted);
+      line-height: 1.6;
+    }
+    code {
+      background: var(--card2); padding: 2px 6px; border-radius: 5px;
+      font-size: 12px; color: var(--orange);
+    }
+    .muted { color: var(--muted); }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+    .spin {
+      display: inline-block; width: 14px; height: 14px; margin-right: 8px;
+      border: 2px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Dip Hunter <span>Crypto Bot</span></h1>
+      <div id="connBadge" class="badge off">Baglaniyor...</div>
+    </header>
+
+    <div class="card">
+      <h2>Hesap Durumu</h2>
+      <div class="grid" id="balanceGrid">
+        <div class="stat"><div class="label">Yukleniyor...</div></div>
+      </div>
+      <div class="muted" id="serverMeta" style="margin-top:12px; font-size:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Test Emri Gonder</h2>
+      <p class="muted" style="margin-bottom:14px; font-size:13px;">
+        Bu panelden TradingView alarmi gibi /webhook ucu istek atar ve Binance Testnet'te gercek emir acar.
+      </p>
+      <form id="orderForm">
+        <div class="row">
+          <div class="field">
+            <label for="action">Islem Tipi</label>
+            <select id="action">
+              <option value="BUY">BUY (Alis)</option>
+              <option value="SELL">SELL (Satis)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="symbol">Sembol</label>
+            <input id="symbol" type="text" value="BTCUSDT" />
+          </div>
+          <div class="field">
+            <label for="quantity">Miktar</label>
+            <input id="quantity" type="number" step="0.0001" min="0.0001" value="0.001" />
+          </div>
+        </div>
+        <div class="row actions">
+          <button type="button" class="btn ghost" id="refreshBtn">Durumu Yenile</button>
+          <button type="submit" class="btn buy" id="sendBtn">Test Emrini Gonder</button>
+        </div>
+      </form>
+      <div id="resultBox" class="result" style="display:none; margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>TradingView Webhook</h2>
+      <div class="hint">
+        Alarm olustururken <b>Webhook URL</b> olarak sunucu adresinizin <code>/webhook</code> yolunu kullanin.<br />
+        Ornek: <code>https://SENIN-APP.onrender.com/webhook</code><br /><br />
+        Message (Pine Script otomatik uretir):<br />
+        <code>{"action": "BUY", "symbol": "BTCUSDT", "quantity": "0.001"}</code>
+      </div>
+    </div>
+
+    <footer>
+      Binance Testnet (sandbox) modunda calisir - Tum emirler sahte para ile yapilir.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    async function loadStatus() {
+      const badge = $('connBadge');
+      const grid = $('balanceGrid');
+      badge.className = 'badge off';
+      badge.textContent = 'Baglaniyor...';
+
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
+
+        badge.className = 'badge';
+        badge.textContent = 'Testnet Bagli';
+
+        grid.innerHTML = '';
+        const assets = data.balance;
+        const rows = [
+          ['USDT', assets.USDT, 'green'],
+          ['BTC', assets.BTC, 'orange'],
+          ['ETH', assets.ETH, ''],
+          ['BNB', assets.BNB, ''],
+        ];
+        rows.forEach(([symbol, entry, cls]) => {
+          const div = document.createElement('div');
+          div.className = 'stat';
+          const used = entry && entry.used ? ' (Rezerve: ' + Number(entry.used).toFixed(4) + ')' : '';
+          div.innerHTML =
+            '<div class="label">' + symbol + '</div>' +
+            '<div class="value ' + cls + '">' + Number(entry.total).toFixed(4) + '</div>' +
+            '<div class="sub">Serbest: ' + Number(entry.free).toFixed(4) + used + '</div>';
+          grid.appendChild(div);
+        });
+
+        const uptime = Math.floor(data.uptime);
+        const h = String(Math.floor(uptime / 3600)).padStart(2, '0');
+        const m = String(Math.floor((uptime % 3600) / 60)).padStart(2, '0');
+        const s = String(uptime % 60).padStart(2, '0');
+        $('serverMeta').textContent =
+          'Sunucu calisma suresi: ' + h + ':' + m + ':' + s + '  |  Son guncelleme: ' +
+          new Date(data.timestamp).toLocaleTimeString('tr-TR');
+      } catch (err) {
+        badge.className = 'badge off';
+        badge.textContent = 'Baglanti Yok';
+        grid.innerHTML =
+          '<div class="stat"><div class="label">Hata</div><div class="value" style="color:var(--red);font-size:14px;">' +
+          err.message + '</div></div>';
+      }
+    }
+
+    function showResult(data, isError) {
+      const box = $('resultBox');
+      box.style.display = 'block';
+      box.className = 'result ' + (isError ? 'error' : 'success');
+      box.textContent = JSON.stringify(data, null, 2);
+    }
+
+    $('orderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('sendBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>Emir Gonderiliyor...';
+
+      const body = {
+        action: $('action').value,
+        symbol: $('symbol').value.trim().toUpperCase(),
+        quantity: $('quantity').value,
+      };
+
+      try {
+        const res = await fetch('/webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        showResult(data, !res.ok);
+        loadStatus();
+      } catch (err) {
+        showResult({ success: false, error: err.message }, true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Emrini Gonder';
+      }
+    });
+
+    $('refreshBtn').addEventListener('click', loadStatus);
+    loadStatus();
+    setInterval(loadStatus, 30000);
+  </script>
+</body>
+</html>
