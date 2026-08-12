@@ -1,0 +1,20 @@
+# Bagimliliklar
+node_modules/
+
+# Gizli ortam degiskenleri - asla repoya gonderilmemeli!
+.env
+.env.local
+.env.*.local
+
+# Loglar
+logs/
+*.log
+
+# Surec (PID) dosyasi
+server.pid
+
+# Isletim sistemi / editör dosyalari
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
