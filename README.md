@@ -23,7 +23,6 @@ BİTCOİN ALİM/
     ├── app.js                    # Express app + middleware
     ├── config/env.js             # Ortam degiskenleri
     ├── config/binance.js         # ccxt.binance + sandboxMode(true)
-    ├── middleware/passphrase.guard.js  # Webhook dogrulama (401)
     ├── routes/webhook.routes.js  # POST /webhook
     ├── controllers/webhook.controller.js
     ├── services/order.service.js # BUY/SELL market emirleri
@@ -34,7 +33,7 @@ BİTCOİN ALİM/
 
 - `POST /webhook` — gelen JSON ornegi:
   ```json
-  { "passphrase": "SECRET_KEY_BURAYA", "action": "BUY", "symbol": "BTCUSDT", "quantity": "0.001" }
+  { "action": "BUY", "symbol": "BTCUSDT", "quantity": "0.001" }
   ```
 - `GET /health` — Render health check ve canli kontrol.
 
@@ -51,13 +50,13 @@ npm start                   # uretim
 Dogrulama:
 ```bash
 curl http://localhost:3000/health
-curl -X POST http://localhost:3000/webhook -H "Content-Type: application/json" -d "{\"passphrase\":\"change_me_to_a_strong_secret\",\"action\":\"BUY\",\"symbol\":\"BTCUSDT\",\"quantity\":\"0.001\"}"
+curl -X POST http://localhost:3000/webhook -H "Content-Type: application/json" -d "{\"action\":\"BUY\",\"symbol\":\"BTCUSDT\",\"quantity\":\"0.001\"}"
 ```
 
 ## TradingView Kurulumu
 
 1. `strategies/dip-hunter-btc.pine` dosyasini Pine Editor'e yapistirin ve "Chart'a Ekle" deyin. Strateji 4H ve 1D grafiklerde calisir (grafik periyodunu secin).
-2. Girdilerden `Take Profit (%)` (varsayilan 5.0), `Stop Loss (%)` (varsayilan 2.5), `Webhook Passphrase`, `Islem Sembolu`, `Emir Miktari` degerlerini ayarlayin (passphrase `.env`'deki `WEBHOOK_PASSPHRASE` ile **birebir ayni** olmali).
+2. Girdilerden `Take Profit (%)` (varsayilan 5.0), `Stop Loss (%)` (varsayilan 2.5), `Islem Sembolu`, `Emir Miktari` degerlerini ayarlayin.
 3. Backtest: Bu bir `strategy()` scripti oldugundan TradingView alt panelindeki **"Strateji Test Cihazi"** (Strategy Tester) sekmesinde kâr/zarar, kazanma orani ve islem listesi otomatik gorunur.
 4. Sag tiklama -> "Alarm Olustur":
    - **Alarm:** "BUY Sinyali"
@@ -90,7 +89,6 @@ git push -u origin main
    | `PORT` | `3000` |
    | `BINANCE_TESTNET_API_KEY` | Testnet API anahtariniz |
    | `BINANCE_TESTNET_SECRET_KEY` | Testnet gizli anahtariniz |
-   | `WEBHOOK_PASSPHRASE` | Guclu bir anahtar (Pine Script ile ayni) |
 4. **Deploy** butonu. Yesil "Live" durumunu bekleyin.
 5. `https://SENIN-APP.onrender.com/health` acilirsa deploy basarili.
 

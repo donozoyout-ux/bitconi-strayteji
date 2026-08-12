@@ -19,9 +19,8 @@ strategy("Dip Hunter BTC (BB + Stoch RSI) - 4H/1D", overlay=true,
 //  BACKTEST: Bu bir strategy() scripti oldugundan "Strateji Test Cihazi"
 //            paneli otomatik olarak aktif olur.
 //
-//  NOT: Webhook JSON'unda passphrase bulunur (sunucudaki WEBHOOK_PASSPHRASE
-//       ile birebir ayni olmali). Sunucu olmadan dogrudan kullanilacaksa
-//       passphrase satiri silinebilir.
+//  NOT: Sunucu dogrulama istemez. TradingView'den gelen JSON'daki action,
+//       symbol ve quantity ile Binance Testnet'te emir acilir.
 // ============================================================
 
 // ===================== GIRDI AYARLARI =====================
@@ -40,7 +39,6 @@ longTPPercent = input.float(5.0,  "Take Profit (%)",  minval=0.1, step=0.1, grou
 longSLPercent = input.float(2.5,  "Stop Loss (%)",    minval=0.1, step=0.1, group="Risk Yonetimi")
 
 // ----- Webhook bilgileri (Render sunucunuzla eslesmeli) -----
-passphrase  = input.string("change_me_to_a_strong_secret", "Webhook Passphrase (WEBHOOK_PASSPHRASE ile ayni)", group="Webhook")
 alertSymbol = input.string("BTCUSDT", "Islem Sembolu (Binance Testnet)", group="Webhook")
 orderQty    = input.string("0.001", "Emir Miktari (Quantity)", group="Webhook")
 
@@ -98,7 +96,7 @@ plotshape(buySignal, title="BUY Sinyali", location=location.belowbar,
 
 // ===================== WEBHOOK ALARMI =====================
 if buySignal
-    jsonBody = '{"passphrase": "' + str.tostring(passphrase) + '", "action": "BUY", "symbol": "' + str.tostring(alertSymbol) + '", "quantity": "' + str.tostring(orderQty) + '"}'
+    jsonBody = '{"action": "BUY", "symbol": "' + str.tostring(alertSymbol) + '", "quantity": "' + str.tostring(orderQty) + '"}'
     alert(jsonBody, alert.freq_once_per_bar)
 
 // NOT: Strateji 4H ve 1D grafiklerde calisir (grafik periyodunu kendiniz sececeksiniz).
