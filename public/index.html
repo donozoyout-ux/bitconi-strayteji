@@ -140,8 +140,12 @@
             <input id="symbol" type="text" value="BTCUSDT" />
           </div>
           <div class="field">
-            <label for="quantity">Miktar</label>
-            <input id="quantity" type="number" step="0.0001" min="0.0001" value="0.001" />
+            <label for="budget">Butce (USDT)</label>
+            <input id="budget" type="number" step="1" min="1" value="30" />
+          </div>
+          <div class="field">
+            <label for="quantity">Miktar (varsa) <span class="muted">- bos birak</span></label>
+            <input id="quantity" type="number" step="0.0001" min="0.0001" placeholder="0.0001" />
           </div>
         </div>
         <div class="row actions">
@@ -158,7 +162,7 @@
         Alarm olustururken <b>Webhook URL</b> olarak sunucu adresinizin <code>/webhook</code> yolunu kullanin.<br />
         Ornek: <code>https://SENIN-APP.onrender.com/webhook</code><br /><br />
         Message (Pine Script otomatik uretir):<br />
-        <code>{"action": "BUY", "symbol": "BTCUSDT", "quantity": "0.001"}</code>
+        <code>{"action": "BUY", "symbol": "BTCUSDT", "budget": "30"}</code>
       </div>
     </div>
 
@@ -236,6 +240,7 @@
         action: $('action').value,
         symbol: $('symbol').value.trim().toUpperCase(),
         quantity: $('quantity').value,
+        budget: $('budget').value,
       };
 
       try {

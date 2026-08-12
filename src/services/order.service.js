@@ -3,12 +3,12 @@ const logger = require('../utils/logger');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
 
-function validateQuantity(quantity) {
-  const qty = parseFloat(quantity);
-  if (Number.isNaN(qty) || !qty || qty <= 0) {
+function validatePositive(value, name) {
+  const num = parseFloat(value);
+  if (Number.isNaN(num) || !num || num <= 0) {
     return null;
   }
-  return qty;
+  return num;
 }
 
 function normalizeSymbol(symbol) {
@@ -17,7 +17,15 @@ function normalizeSymbol(symbol) {
   return match ? `${match[1]}/${match[2]}` : cleaned;
 }
 
-async function placeOrder(action, symbol, quantity) {
+async function fetchLastPrice(symbol) {
+  const ticker = await exchange.fetchTicker(symbol);
+  if (!ticker || !ticker.last) {
+    throw new Error(`Fiyat alinamadi: ${symbol}`);
+  }
+  return ticker.last;
+}
+
+async function placeOrder(action, symbol, quantity, budget) {
   const normalizedAction = action ? String(action).toUpperCase() : '';
 
   if (!VALID_ACTIONS.includes(normalizedAction)) {
@@ -32,21 +40,56 @@ async function placeOrder(action, symbol, quantity) {
     throw error;
   }
 
-  const qty = validateQuantity(quantity);
-  if (!qty) {
-    const error = new Error(`Gecersiz quantity: "${quantity}". Pozitif bir sayi olmali.`);
+  const ccxtSymbol = normalizeSymbol(symbol);
+
+  let qty = null;
+  let cost = null;
+
+  if (budget !== undefined && budget !== null && budget !== '') {
+    cost = validatePositive(budget, 'budget');
+    if (!cost) {
+      const error = new Error(`Gecersiz budget: "${budget}". Pozitif bir sayi olmali.`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (normalizedAction === 'SELL') {
+      const price = await fetchLastPrice(ccxtSymbol);
+      qty = cost / price;
+    }
+  } else if (quantity !== undefined && quantity !== null && quantity !== '') {
+    qty = validatePositive(quantity, 'quantity');
+    if (!qty) {
+      const error = new Error(`Gecersiz quantity: "${quantity}". Pozitif bir sayi olmali.`);
+      error.statusCode = 400;
+      throw error;
+    }
+  } else {
+    const error = new Error('budget (USDT) veya quantity alani gerekli.');
     error.statusCode = 400;
     throw error;
   }
 
-  const ccxtSymbol = normalizeSymbol(symbol);
   const timestamp = new Date().toISOString();
-  logger.info(`Emir hazirlaniyor -> ${normalizedAction} ${ccxtSymbol} miktar: ${qty}`, { timestamp });
+  logger.info(
+    `Emir hazirlaniyor -> ${normalizedAction} ${ccxtSymbol} ${cost ? 'butce: ' + cost + ' USDT' : 'miktar: ' + qty}`,
+    { timestamp }
+  );
 
   let order;
   try {
     if (normalizedAction === 'BUY') {
-      order = await exchange.createMarketBuyOrder(ccxtSymbol, qty);
+      if (cost) {
+        try {
+          order = await exchange.createMarketBuyOrderWithCost(ccxtSymbol, cost);
+        } catch (err) {
+          logger.warn(`BuyWithCost desteklenmedi, fiyattan hesaplaniyor: ${err.message}`);
+          const price = await fetchLastPrice(ccxtSymbol);
+          qty = cost / price;
+          order = await exchange.createMarketBuyOrder(ccxtSymbol, qty);
+        }
+      } else {
+        order = await exchange.createMarketBuyOrder(ccxtSymbol, qty);
+      }
     } else {
       order = await exchange.createMarketSellOrder(ccxtSymbol, qty);
     }
@@ -64,10 +107,12 @@ async function placeOrder(action, symbol, quantity) {
     action: normalizedAction,
     symbol: ccxtSymbol,
     quantity: qty,
+    cost: cost,
     orderId: order.id,
     status: order.status,
     filled: order.filled,
     averagePrice: order.average,
+    spent: order.cost,
     raw: order,
   };
 
@@ -76,6 +121,7 @@ async function placeOrder(action, symbol, quantity) {
     status: result.status,
     filled: result.filled,
     averagePrice: result.averagePrice,
+    cost: result.cost,
   });
 
   return result;

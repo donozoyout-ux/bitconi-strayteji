@@ -33,7 +33,7 @@ BİTCOİN ALİM/
 
 - `POST /webhook` — gelen JSON ornegi:
   ```json
-  { "action": "BUY", "symbol": "BTCUSDT", "quantity": "0.001" }
+  { "action": "BUY", "symbol": "BTCUSDT", "budget": "30" }
   ```
 - `GET /health` — Render health check ve canli kontrol.
 
@@ -50,7 +50,7 @@ npm start                   # uretim
 Dogrulama:
 ```bash
 curl http://localhost:3000/health
-curl -X POST http://localhost:3000/webhook -H "Content-Type: application/json" -d "{\"action\":\"BUY\",\"symbol\":\"BTCUSDT\",\"quantity\":\"0.001\"}"
+curl -X POST http://localhost:3000/webhook -H "Content-Type: application/json" -d "{\"action\":\"BUY\",\"symbol\":\"BTCUSDT\",\"budget\":\"30\"}"
 ```
 
 ## TradingView Kurulumu

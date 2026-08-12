@@ -40,7 +40,7 @@ longSLPercent = input.float(2.5,  "Stop Loss (%)",    minval=0.1, step=0.1, grou
 
 // ----- Webhook bilgileri (Render sunucunuzla eslesmeli) -----
 alertSymbol = input.string("BTCUSDT", "Islem Sembolu (Binance Testnet)", group="Webhook")
-orderQty    = input.string("0.001", "Emir Miktari (Quantity)", group="Webhook")
+budgetUsdt  = input.string("30", "Islem Butcesi (USDT)", tooltip="Her alimda harcanacak USDT miktari. ~1000 TL ≈ 30 USDT", group="Webhook")
 
 // ===================== GOSTERGELER =====================
 // 1) Bollinger Bands - SADECE alt bant (kirmizi destek)
@@ -96,7 +96,7 @@ plotshape(buySignal, title="BUY Sinyali", location=location.belowbar,
 
 // ===================== WEBHOOK ALARMI =====================
 if buySignal
-    jsonBody = '{"action": "BUY", "symbol": "' + str.tostring(alertSymbol) + '", "quantity": "' + str.tostring(orderQty) + '"}'
+    jsonBody = '{"action": "BUY", "symbol": "' + str.tostring(alertSymbol) + '", "budget": "' + str.tostring(budgetUsdt) + '"}'
     alert(jsonBody, alert.freq_once_per_bar)
 
 // NOT: Strateji 4H ve 1D grafiklerde calisir (grafik periyodunu kendiniz sececeksiniz).
