@@ -153,29 +153,66 @@ function detectSignal(candles, opts = {}) {
   };
 }
 
-async function fetchCandles(symbol, timeframe = '1d', limit = 220) {
-  const [base, quote] = symbol.split('/');
-  const pair = base + quote;
-  const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${timeframe.toLowerCase()}&limit=${limit}`;
+function parseKlines(data) {
+  return data.map((k) => [k[0], Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+}
 
+async function fetchWithTimeout(url, ms) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
-
+  const timer = setTimeout(() => controller.abort(), ms || 10000);
   try {
     const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) {
-      throw new Error(`Kline verisi alinamadi (HTTP ${res.status})`);
-    }
-    const data = await res.json();
-    return data.map((k) => [k[0], Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
   } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error(`Kline verisi zaman asimina ugradi (${url})`);
-    }
+    if (err.name === 'AbortError') throw new Error('zaman asimi');
     throw err;
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function fetchCandles(symbol, timeframe = '1d', limit = 220) {
+  const [base, quote] = symbol.split('/');
+  const pair = base + quote;
+  const interval = timeframe.toLowerCase();
+  const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
+
+  const sources = [
+    url,
+    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+    `https://api1.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+    `https://api2.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+  ];
+
+  let lastErr = null;
+  for (const src of sources) {
+    try {
+      const data = await fetchWithTimeout(src, 10000);
+      return parseKlines(data);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  try {
+    const bybitInterval = interval === '1d' ? 'D' : interval;
+    const bybit = await fetchWithTimeout(
+      `https://api.bybit.com/v5/market/kline?category=spot&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`,
+      10000
+    );
+    if (bybit.retCode === 0 && bybit.result && bybit.result.list) {
+      return bybit.result.list
+        .slice()
+        .reverse()
+        .map((k) => [Number(k[0]), Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+    }
+    lastErr = new Error('Bybit bos yanit');
+  } catch (err) {
+    lastErr = err;
+  }
+
+  throw new Error(`Kline verisi tum kaynaklardan alinamadi (${symbol} ${interval}): ${lastErr ? lastErr.message : 'bilinmiyor'}`);
 }
 
 module.exports = { detectSignal, fetchCandles, rsiSeries, bollinger, stochRsi };
