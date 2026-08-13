@@ -89,8 +89,32 @@ git push -u origin main
    | `PORT` | `3000` |
    | `BINANCE_TESTNET_API_KEY` | Testnet API anahtariniz |
    | `BINANCE_TESTNET_SECRET_KEY` | Testnet gizli anahtariniz |
+   | `TELEGRAM_BOT_TOKEN` | (opsiyonel) Telegram bot token |
+   | `TELEGRAM_CHAT_ID` | (opsiyonel) Telegram chat id |
+   | `COMMISSION_RATE` | `0.001` (komisyon %0.1) |
+   | `TRADING_MODE` | `on` |
+   | `DRY_RUN` | `true` (sanal) / `false` (gercek testnet emri) |
+   | `ANALYSIS_TIMEFRAME` | `1d` |
+   | `CHECK_INTERVAL_MIN` | `15` |
+   | `BUDGET_USDT` | `30` |
+   | `TP_PERCENT` | `5` |
+   | `SL_PERCENT` | `2.5` |
+   | `COOLDOWN_MIN` | `1440` |
+   | `TRADING_SYMBOL` | `BTC/USDT` |
 4. **Deploy** butonu. Yesil "Live" durumunu bekleyin.
 5. `https://SENIN-APP.onrender.com/health` acilirsa deploy basarili.
+
+## Otonom Strateji Motoru (Analizli)
+
+Bot sadece webhook beklemekle kalmaz, kendisi de analiz yapar:
+
+- Her `CHECK_INTERVAL_MIN` dakikada bir Binance public API'sinden 1D mumlari ceker.
+- **Bollinger(20,2) + Stoch RSI(14,3,3)** hesaplar (Pine Script stratejisiyle birebir ayni):
+  - Alim: fiyat alt banda degiyor + Stoch RSI `%K` `%D`'yi 20 altinda yukari kesiyor.
+  - Cikis: giris fiyatina gore `+TP_PERCENT` / `-SL_PERCENT` seviyesinde otomatik satis.
+- `DRY_RUN=true` iken gercek emir ACMAZ, sadece simule eder (sanal bakiye). Dogru calistigini gorunce `DRY_RUN=false`.
+- Pozisyon durumu `data/state.json`'da tutulur. **Dikkat:** Render ucretsiz tier'da bu dosya yeniden deploy'da sifirlanir; pozisyon acikken redeploy yapmayin.
+- Panelden `GET /api/trader` (durum), `POST /api/trader/check` (simdi analiz), `POST /api/trader/reset` (sifirla) kullanilabilir.
 
 ### 3) Canli (Production) Uyarilari
 

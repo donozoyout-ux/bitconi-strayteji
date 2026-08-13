@@ -4,6 +4,7 @@ const cors = require('cors');
 const webhookRoutes = require('./routes/webhook.routes');
 const statusController = require('./controllers/status.controller');
 const telegramController = require('./controllers/telegram.controller');
+const traderController = require('./controllers/trader.controller');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -19,6 +20,9 @@ app.get('/health', (req, res) => {
 
 app.get('/api/status', statusController.getStatus);
 app.post('/api/test-telegram', telegramController.sendTest);
+app.get('/api/trader', traderController.getStatus);
+app.post('/api/trader/check', traderController.checkNow);
+app.post('/api/trader/reset', traderController.resetState);
 
 app.use('/webhook', webhookRoutes);
 

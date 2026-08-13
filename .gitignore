@@ -13,6 +13,9 @@ logs/
 # Surec (PID) dosyasi
 server.pid
 
+# Motor durumu (pozisyon, dry-run bakiyesi) - sunucuya gonderilmez
+data/
+
 # Isletim sistemi / editör dosyalari
 .DS_Store
 Thumbs.db

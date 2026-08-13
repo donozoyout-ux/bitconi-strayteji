@@ -122,6 +122,22 @@
     </div>
 
     <div class="card">
+      <h2>Otonom Strateji Motoru</h2>
+      <p class="muted" style="margin-bottom:14px; font-size:13px;">
+        Bot Binance'ten 1D mum verisini ceker, Bollinger + Stoch RSI analizini kendisi yapar,
+        kosul olusunca otonom alim yapar; +TP / -SL seviyelerinde otomatik satar.
+      </p>
+      <div id="traderInfo" style="margin-bottom:14px;">
+        <div class="stat"><div class="label">Yukleniyor...</div></div>
+      </div>
+      <div class="row actions">
+        <button type="button" class="btn ghost" id="checkBtn">Simdi Analiz Et</button>
+        <button type="button" class="btn ghost" id="resetBtn">Motor Durumunu Sifirla</button>
+      </div>
+      <div id="traderResult" class="result" style="display:none; margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
       <h2>Test Emri Gonder</h2>
       <p class="muted" style="margin-bottom:14px; font-size:13px;">
         Bu panelden TradingView alarmi gibi /webhook ucu istek atar ve Binance Testnet'te gercek emir acar.
@@ -275,9 +291,85 @@
       }
     });
 
+    function num(v, digits) {
+      return v == null || isNaN(v) ? '-' : Number(v).toFixed(digits == null ? 2 : digits);
+    }
+
+    async function loadTrader() {
+      const box = $('traderInfo');
+      try {
+        const res = await fetch('/api/trader');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Hata');
+
+        const mode =
+          !data.enabled ? '<span style="color:var(--red);">KAPALI (TRADING_MODE=off)</span>'
+          : data.dryRun ? '<span style="color:var(--orange);">DRY-RUN (sanal)</span>'
+          : '<span style="color:var(--green);">GERCEK TESTNET</span>';
+
+        const pos = data.position
+          ? '<b style="color:var(--green);">ACIK</b> - Giris: ' + num(data.position.entryPrice, 2) +
+            ' | Miktar: ' + data.position.quantity + ' | Mod: ' + data.position.mode
+          : 'FLAT (pozisyon yok)';
+
+        const last = data.lastAnalysis || {};
+        const signalTxt = last.signal
+          ? '<b style="color:var(--green);">BUY SINYALI</b>'
+          : 'Sinyal yok';
+
+        const rows = [
+          ['Mod', mode],
+          ['Zaman dilimi', data.timeframe + ' | kontrol: her ' + data.intervalMin + ' dk'],
+          ['Butce / TP / SL', num(data.budgetUsdt) + ' USDT | +' + num(data.tpPercent) + '% / -' + num(data.slPercent) + '%'],
+          ['Pozisyon', pos],
+          ['Son analiz', last.close != null
+            ? 'Kapanis: ' + num(last.close, 2) + ' | BB Alt: ' + num(last.bbLower, 2) + ' | %K: ' + num(last.k, 2) + ' | %D: ' + num(last.d, 2) + ' | ' + signalTxt
+            : 'Henuz analiz yapilmadi'],
+          ['Son kontrol', data.lastCheck ? new Date(data.lastCheck).toLocaleString('tr-TR') : '-'],
+          ['Son hata', data.lastError ? '<span style="color:var(--red);">' + data.lastError + '</span>' : '-'],
+        ];
+
+        box.innerHTML = '<div class="grid">' + rows.map(([l, v]) =>
+          '<div class="stat"><div class="label">' + l + '</div><div class="value" style="font-size:14px;line-height:1.5;">' + v + '</div></div>'
+        ).join('') + '</div>';
+      } catch (err) {
+        box.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
+      }
+    }
+
+    $('checkBtn').addEventListener('click', async () => {
+      const btn = $('checkBtn');
+      const box = $('traderResult');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>Analiz yapiliyor...';
+      box.style.display = 'block';
+      box.className = 'result';
+      box.textContent = 'Binance verisi cekilip indikatorler hesaplaniyor...';
+      try {
+        const res = await fetch('/api/trader/check', { method: 'POST' });
+        const data = await res.json();
+        box.className = 'result ' + (res.ok ? 'success' : 'error');
+        box.textContent = JSON.stringify(data.state || data, null, 2);
+        loadTrader();
+      } catch (err) {
+        box.className = 'result error';
+        box.textContent = JSON.stringify({ success: false, error: err.message }, null, 2);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Simdi Analiz Et';
+      }
+    });
+
+    $('resetBtn').addEventListener('click', async () => {
+      await fetch('/api/trader/reset', { method: 'POST' });
+      loadTrader();
+    });
+
     $('refreshBtn').addEventListener('click', loadStatus);
     loadStatus();
+    loadTrader();
     setInterval(loadStatus, 30000);
+    setInterval(loadTrader, 30000);
 
     $('telegramBtn').addEventListener('click', async () => {
       const btn = $('telegramBtn');
