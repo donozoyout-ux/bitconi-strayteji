@@ -11,6 +11,7 @@ const exchange = new ccxt.binance({
   apiKey: env.binanceTestnetApiKey,
   secret: env.binanceTestnetSecret,
   enableRateLimit: true,
+  timeout: 15000,
   options: {
     defaultType: 'spot',
   },

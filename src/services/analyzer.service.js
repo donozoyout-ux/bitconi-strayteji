@@ -157,12 +157,25 @@ async function fetchCandles(symbol, timeframe = '1d', limit = 220) {
   const [base, quote] = symbol.split('/');
   const pair = base + quote;
   const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${timeframe.toLowerCase()}&limit=${limit}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Kline verisi alinamadi (HTTP ${res.status})`);
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) {
+      throw new Error(`Kline verisi alinamadi (HTTP ${res.status})`);
+    }
+    const data = await res.json();
+    return data.map((k) => [k[0], Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`Kline verisi zaman asimina ugradi (${url})`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  const data = await res.json();
-  return data.map((k) => [k[0], Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
 }
 
 module.exports = { detectSignal, fetchCandles, rsiSeries, bollinger, stochRsi };

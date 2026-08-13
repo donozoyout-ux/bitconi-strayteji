@@ -220,6 +220,19 @@
   <script>
     const $ = (id) => document.getElementById(id);
 
+    async function fetchWithTimeout(url, options, ms) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms || 15000);
+      try {
+        return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+      } catch (err) {
+        if (err.name === 'AbortError') throw new Error('Zaman asimi (sunucu yanit vermiyor)');
+        throw err;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     async function loadStatus() {
       const badge = $('connBadge');
       const grid = $('balanceGrid');
@@ -227,7 +240,7 @@
       badge.textContent = 'Baglaniyor...';
 
       try {
-        const res = await fetch('/api/status');
+        const res = await fetchWithTimeout('/api/status', null, 20000);
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
 
@@ -290,7 +303,7 @@
       };
 
       try {
-        const res = await fetch('/webhook', {
+        const res = await fetchWithTimeout('/webhook', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -360,7 +373,7 @@
       }
       if (!ensureCharts()) return;
       try {
-        const res = await fetch('/api/chart?limit=160');
+        const res = await fetchWithTimeout('/api/chart?limit=160', null, 20000);
         const data = await res.json();
         if (!data.success) throw new Error(data.error);
 
@@ -409,7 +422,7 @@
     async function loadTrader() {
       const box = $('traderInfo');
       try {
-        const res = await fetch('/api/trader');
+        const res = await fetchWithTimeout('/api/trader', null, 20000);
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Hata');
 
@@ -457,7 +470,7 @@
       box.className = 'result';
       box.textContent = 'Binance verisi cekilip indikatorler hesaplaniyor...';
       try {
-        const res = await fetch('/api/trader/check', { method: 'POST' });
+        const res = await fetchWithTimeout('/api/trader/check', { method: 'POST' }, 20000);
         const data = await res.json();
         box.className = 'result ' + (res.ok ? 'success' : 'error');
         box.textContent = JSON.stringify(data.state || data, null, 2);
@@ -472,7 +485,7 @@
     });
 
     $('resetBtn').addEventListener('click', async () => {
-      await fetch('/api/trader/reset', { method: 'POST' });
+      await fetchWithTimeout('/api/trader/reset', { method: 'POST' }, 20000);
       loadTrader();
     });
 
@@ -493,7 +506,7 @@
       box.textContent = 'Telegram'a test mesaji gonderiliyor...';
 
       try {
-        const res = await fetch('/api/test-telegram', { method: 'POST' });
+        const res = await fetchWithTimeout('/api/test-telegram', { method: 'POST' }, 20000);
         const data = await res.json();
         box.className = 'result ' + (res.ok ? 'success' : 'error');
         box.textContent = JSON.stringify(data, null, 2);
