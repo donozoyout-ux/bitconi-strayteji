@@ -4,6 +4,7 @@ const logger = require('../utils/logger');
 const analyzer = require('./analyzer.service');
 const stateService = require('./state.service');
 const orderService = require('./order.service');
+const newsService = require('./news.service');
 
 let timer = null;
 
@@ -30,6 +31,49 @@ async function fetchLivePrice(symbol) {
   return ticker.last;
 }
 
+async function buildStrategy(symbol) {
+  const tech = await analyzer.runFullAnalysis(symbol, env.analysisTimeframe, {
+    oversoldLevel: env.oversoldLevel,
+    useRsi2: env.useRsi2,
+  });
+  const news = await newsService.getSentiment();
+
+  const scores = {
+    technical: tech.technicals.total,
+    chart: tech.chart.total,
+    news: news.score,
+  };
+  scores.overall = scores.technical * 0.45 + scores.chart * 0.3 + scores.news * 0.25;
+
+  return {
+    ts: tech.ts,
+    price: tech.price,
+    signal: tech.signal,
+    scores,
+    verdict: analyzer.verdictFor(scores.overall),
+    technicals: {
+      rsi: tech.technicals.details.rsi,
+      stochK: tech.technicals.details.stochK,
+      macdHist: tech.technicals.details.macdHist,
+      bbBasis: tech.technicals.details.bbBasis,
+      bbLower: tech.technicals.details.bbLower,
+      ema20: tech.technicals.details.ema20,
+      ema50: tech.technicals.details.ema50,
+    },
+    patterns: tech.patterns.map((p) => p.name),
+    trend: tech.structure.trend,
+    support: tech.structure.support.map((s) => s.price),
+    resistance: tech.structure.resistance.map((r) => r.price),
+    news: {
+      label: news.label,
+      fearGreed: news.fearGreed ? news.fearGreed.value : null,
+      classification: news.fearGreed ? news.fearGreed.classification : null,
+      bull: news.bull,
+      bear: news.bear,
+    },
+  };
+}
+
 async function runCycle() {
   const state = stateService.get();
   if (!env.tradingEnabled) return;
@@ -44,6 +88,10 @@ async function runCycle() {
     const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
     const analysis = analyzer.detectSignal(candles, env);
     const price = await fetchLivePrice(symbol);
+
+    const strategy = await buildStrategy(symbol);
+    stateService.update({ lastReport: strategy });
+
     const balance = await exchange.fetchBalance();
     const realBtc = balance.BTC ? balance.BTC.total : 0;
     const realUsdt = balance.USDT ? balance.USDT.total : 0;
@@ -56,7 +104,7 @@ async function runCycle() {
     if (st.position) {
       await handleExit(analysis, price, symbol);
     } else {
-      await handleEntry(analysis, symbol);
+      await handleEntry(analysis, symbol, strategy);
     }
 
     stateService.update({
@@ -83,7 +131,7 @@ async function runCycle() {
   }
 }
 
-async function handleEntry(analysis, symbol) {
+async function handleEntry(analysis, symbol, strategy) {
   if (!analysis.signal) return;
 
   const state = stateService.get();
@@ -91,6 +139,14 @@ async function handleEntry(analysis, symbol) {
   if (state.cooldownUntil && Date.now() < state.cooldownUntil) {
     const remaining = Math.ceil((state.cooldownUntil - Date.now()) / 60000);
     logger.info(`BUY sinyali var ama soguma suresi devam ediyor (${remaining} dk kaldi).`);
+    return;
+  }
+
+  if (strategy && strategy.scores && strategy.scores.overall < -0.5) {
+    logger.warn(
+      `BUY sinyali var ama strateji riski yuksek (genel skor ${strategy.scores.overall.toFixed(2)}). Emir atlanildi. Verdict: ${strategy.verdict}`
+    );
+    stateService.update({ lastAnalyzedTs: analysis.ts });
     return;
   }
 

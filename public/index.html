@@ -176,6 +176,18 @@
     </div>
 
     <div class="card">
+      <h2>Strateji Analizi (Teknik + Grafik + Haber)</h2>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+        <button type="button" class="btn ghost" id="analysisBtn">Analizi Yenile</button>
+        <span class="muted" id="analysisMeta" style="font-size:12px;"></span>
+      </div>
+      <div id="verdictBox" class="banner idle">Analiz bekleniyor...</div>
+      <div id="analysisInfo" style="margin-top:12px;">
+        <div class="stat"><div class="label">Yukleniyor...</div></div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Otonom Strateji Motoru</h2>
       <p class="muted" style="margin-bottom:14px; font-size:13px;">
         Bot Binance'ten 1D mum verisini ceker, Bollinger + Stoch RSI analizini kendisi yapar,
@@ -576,6 +588,7 @@
         box.className = 'result ' + (res.ok ? 'success' : 'error');
         box.textContent = JSON.stringify(data.state || data, null, 2);
         loadTrader();
+        loadAnalysis(true);
       } catch (err) {
         box.className = 'result error';
         box.textContent = JSON.stringify({ success: false, error: err.message }, null, 2);
@@ -590,14 +603,99 @@
       loadTrader();
     });
 
+    async function loadAnalysis(force) {
+      const banner = $('verdictBox');
+      const box = $('analysisInfo');
+      try {
+        const res = await fetchWithTimeout('/api/analysis' + (force ? '?force=1' : ''), null, 30000);
+        const d = await res.json();
+        if (!d.success) throw new Error(d.error || 'Hata');
+
+        const s = d.scores || {};
+        const pct = (v) => { const x = Math.round(v * 100); return (x > 0 ? '+' : '') + x + '%'; };
+        const scoreRow = (name, v, color) =>
+          '<div class="stat"><div class="label">' + name + '</div>' +
+          '<div class="value" style="font-size:16px;color:' + color + ';">' + pct(v) + '</div>' +
+          '<div class="sub">' + (v > 0.25 ? 'olumlu' : v < -0.25 ? 'olumsuz' : 'notr') + '</div></div>';
+
+        const t = d.technicals || {};
+        const td = t.details || {};
+        let pctB = null;
+        if (td.bbLower != null && td.bbUpper != null && td.bbUpper !== td.bbLower) {
+          pctB = ((d.price - td.bbLower) / (td.bbUpper - td.bbLower)) * 100;
+        }
+        const techTxt =
+          'RSI: ' + num(td.rsi, 1) +
+          ' | %B: ' + (pctB != null ? num(pctB, 1) : '-') +
+          ' | MACD hist: ' + num(td.macdHist, 0) +
+          ' | EMA20: ' + num(td.ema20, 0) +
+          ' | EMA50: ' + num(td.ema50, 0);
+
+        const patTxt = d.patterns && d.patterns.length
+          ? d.patterns.map((p) => p.name + ' (' + (p.direction > 0 ? 'alis yonlu' : p.direction < 0 ? 'satis yonlu' : 'notr') + ')').join(', ')
+          : 'Formasyon yok';
+
+        const sup = d.structure && d.structure.support ? d.structure.support.slice(0, 3).map((x) => num(x.price, 0)).join(', ') : '-';
+        const resLevels = d.structure && d.structure.resistance ? d.structure.resistance.slice(0, 3).map((x) => num(x.price, 0)).join(', ') : '-';
+
+        const news = d.news || {};
+        const fg = news.fearGreed;
+        const newsTxt =
+          (fg ? 'Fear & Greed: ' + fg.value + ' (' + fg.classification + ')' : 'Fear & Greed: n/a') +
+          ' | Haberler: ' + news.bull + ' olumlu / ' + news.bear + ' olumsuz' +
+          ' | Duygu: ' + (news.label || '-');
+
+        const rows = [
+          ['Teknik Gorestergeler', techTxt],
+          ['Grafik Formasyonlari', patTxt],
+          ['Trend Yapisi', d.structure ? d.structure.trend : '-'],
+          ['Destek / Direnc', sup + ' / ' + resLevels],
+          ['Haber & Duygu', newsTxt],
+        ];
+
+        let bannerCls = 'idle';
+        if (s.overall > 0.25) bannerCls = 'buy';
+        else if (s.overall < -0.25) bannerCls = 'watch';
+        banner.className = 'banner ' + bannerCls;
+        banner.textContent =
+          'STRATEJI: ' + (d.verdict || '-') +
+          '  |  Teknik ' + pct(s.technical) + ' | Grafik ' + pct(s.chart) + ' | Haber ' + pct(s.news);
+
+        $('analysisMeta').textContent =
+          'Son analiz: ' + new Date(d.ts).toLocaleString('tr-TR') +
+          ' | ' + (d.signal ? 'BUY sinyali var' : 'Sinyal yok');
+
+        box.innerHTML =
+          '<div class="grid">' +
+          scoreRow('Teknik', s.technical, '#3b82f6') +
+          scoreRow('Grafik', s.chart, '#f59e0b') +
+          scoreRow('Haber', s.news, '#22c55e') +
+          '</div>' +
+          '<div class="grid" style="margin-top:12px;">' +
+          rows.map(([l, v]) =>
+            '<div class="stat"><div class="label">' + l + '</div>' +
+            '<div class="value" style="font-size:13px;line-height:1.5;font-weight:500;">' + v + '</div></div>'
+          ).join('') +
+          '</div>';
+      } catch (err) {
+        banner.className = 'banner error';
+        banner.textContent = 'Analiz alinamadi: ' + err.message;
+        box.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
+      }
+    }
+
+    $('analysisBtn').addEventListener('click', () => loadAnalysis(true));
+
     $('refreshBtn').addEventListener('click', loadStatus);
     loadStatus();
     loadTrader();
     loadLive();
     loadChart();
+    loadAnalysis();
     setInterval(loadStatus, 30000);
     setInterval(loadTrader, 30000);
     setInterval(loadLive, 10000);
+    setInterval(loadAnalysis, 300000);
     setInterval(liveCountdown, 1000);
     setInterval(loadChart, 120000);
 
