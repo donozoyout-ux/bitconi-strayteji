@@ -503,7 +503,7 @@
       btn.textContent = 'Gonderiliyor...';
       box.style.display = 'block';
       box.className = 'result';
-      box.textContent = 'Telegram'a test mesaji gonderiliyor...';
+      box.textContent = "Telegram'a test mesaji gonderiliyor...";
 
       try {
         const res = await fetchWithTimeout('/api/test-telegram', { method: 'POST' }, 20000);
