@@ -98,6 +98,25 @@
     }
     .muted { color: var(--muted); }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
+    .live-tag { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
+      50% { opacity: .5; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
+    .ticker-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: stretch; }
+    .ticker-main { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; min-width: 200px; flex: 1; }
+    .ticker-symbol { font-size: 13px; color: var(--muted); }
+    .ticker-price { font-size: 36px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; transition: color .3s; }
+    .ticker-price.up { color: var(--green); }
+    .ticker-price.down { color: var(--red); }
+    .ticker-stats { flex: 2; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .banner { border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: .5px; margin-top: 12px; }
+    .banner.idle { background: var(--card2); border: 1px solid var(--border); color: var(--muted); }
+    .banner.watch { background: rgba(245,158,11,.12); border: 1px solid var(--orange); color: var(--orange); }
+    .banner.buy { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+    .banner.open { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
+    .banner.error { background: rgba(239,68,68,.12); border: 1px solid var(--red); color: var(--red); }
     .spin {
       display: inline-block; width: 14px; height: 14px; margin-right: 8px;
       border: 2px solid var(--border); border-top-color: var(--blue);
@@ -110,8 +129,29 @@
   <div class="wrap">
     <header>
       <h1>Dip Hunter <span>Crypto Bot</span></h1>
-      <div id="connBadge" class="badge off">Baglaniyor...</div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="live-tag"><span class="live-dot"></span>CANLI</span>
+        <div id="connBadge" class="badge off">Baglaniyor...</div>
+      </div>
     </header>
+
+    <div class="card">
+      <h2>Canli Durum</h2>
+      <div class="ticker-row">
+        <div class="ticker-main">
+          <div class="ticker-symbol">BTC/USDT - Canli Fiyat</div>
+          <div id="livePrice" class="ticker-price">--</div>
+        </div>
+        <div class="ticker-stats">
+          <div class="stat"><div class="label">Son Kapanis (gunluk)</div><div id="liveClose" class="value">-</div></div>
+          <div class="stat"><div class="label">Sinyal</div><div id="liveSignal" class="value" style="font-size:15px;">-</div></div>
+          <div class="stat"><div class="label">Sonraki Kontrol</div><div id="liveCountdown" class="value">-</div></div>
+          <div class="stat"><div class="label">Motor Modu</div><div id="liveMode" class="value">-</div></div>
+        </div>
+      </div>
+      <div id="signalBanner" class="banner idle">Sinyal bekleniyor...</div>
+      <div class="muted" id="liveStampLine" style="margin-top:10px; font-size:12px;"></div>
+    </div>
 
     <div class="card">
       <h2>BTC/USDT - Günlük Grafik (Bollinger + Stoch RSI)</h2>
@@ -197,18 +237,6 @@
         <button type="button" class="btn ghost" id="telegramBtn">Test Telegram</button>
       </div>
       <div id="telegramResult" class="result" style="display:none; margin-top:14px;"></div>
-    </div>
-
-    <div class="card">
-      <h2>TradingView Webhook</h2>
-      <div class="hint">
-        Alarm olustururken <b>Webhook URL</b> olarak sunucu adresinizin <code>/webhook</code> yolunu kullanin.<br />
-        Ornek: <code>https://SENIN-APP.onrender.com/webhook</code><br /><br />
-        Message (Pine Script otomatik uretir):<br />
-        <code>{"action": "BUY", "symbol": "BTCUSDT", "budget": "30"}</code><br /><br />
-        <b>Komisyon:</b> Islem komisyonu (%0.1) butce hesabina dahildir. Satista net USDT hedefi yakalanir,
-        alista komisyon BTC'den kesilir. Sonuc JSON'unda <code>fee</code> ve <code>feeRate</code> gorunur.
-      </div>
     </div>
 
     <footer>
@@ -461,6 +489,79 @@
       }
     }
 
+    let nextCheckAt = null;
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function liveCountdown() {
+      const el = $('liveCountdown');
+      if (!nextCheckAt) { el.textContent = '-'; return; }
+      const diff = Math.max(0, nextCheckAt - Date.now());
+      el.textContent = Math.floor(diff / 60000) + ':' + pad(Math.floor((diff % 60000) / 1000));
+    }
+
+    async function loadLive() {
+      const priceEl = $('livePrice');
+      const closeEl = $('liveClose');
+      const sigEl = $('liveSignal');
+      const banner = $('signalBanner');
+      try {
+        const res = await fetchWithTimeout('/api/trader', null, 20000);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Hata');
+
+        $('liveMode').innerHTML = !data.enabled
+          ? '<span style="color:var(--red);">KAPALI</span>'
+          : data.dryRun
+            ? '<span style="color:var(--orange);">DRY-RUN</span>'
+            : '<span style="color:var(--green);">GERCEK TESTNET</span>';
+
+        const last = data.lastAnalysis || {};
+        if (last.price != null) {
+          const prev = parseFloat(priceEl.dataset.prev || last.price);
+          const cur = last.price;
+          priceEl.textContent = num(cur, 2);
+          priceEl.classList.remove('up', 'down');
+          if (cur > prev) priceEl.classList.add('up');
+          else if (cur < prev) priceEl.classList.add('down');
+          priceEl.dataset.prev = cur;
+        }
+        if (last.close != null) closeEl.textContent = num(last.close, 2);
+
+        sigEl.innerHTML = data.position
+          ? '<span style="color:var(--green);">POZISYON ACIK</span>'
+          : last.signal
+            ? '<span style="color:var(--green);">BUY SINYALI</span>'
+            : '<span class="muted">Sinyal yok</span>';
+
+        if (data.lastCheck) {
+          nextCheckAt = new Date(data.lastCheck).getTime() + (data.intervalMin || 15) * 60000;
+          $('liveStampLine').textContent =
+            'Son kontrol: ' + new Date(data.lastCheck).toLocaleTimeString('tr-TR') +
+            ' | kontrol sikligi: her ' + (data.intervalMin || 15) + ' dk';
+        }
+
+        let bannerCls = 'idle', bannerTxt = 'Sinyal bekleniyor - fiyat Bollinger alt bandinda degil';
+        if (data.position) {
+          bannerCls = 'open';
+          bannerTxt = 'POZISYON ACIK - TP +%' + num(data.tpPercent) + ' / SL -%' + num(data.slPercent) + ' izleniyor';
+        } else if (last.signal) {
+          bannerCls = 'buy';
+          bannerTxt = 'ALIM SINYALI - otonom pozisyon acilacak';
+        } else if (last.price != null && last.bbLower != null) {
+          const prox = (last.price - last.bbLower) / last.bbLower;
+          if (prox < 0.01) {
+            bannerCls = 'watch';
+            bannerTxt = 'Fiyat alt banda cok yakin (%' + num(prox * 100, 1) + ') - sinyal izleniyor';
+          }
+        }
+        banner.className = 'banner ' + bannerCls;
+        banner.textContent = bannerTxt;
+      } catch (err) {
+        priceEl.textContent = 'HATA';
+        banner.className = 'banner error';
+        banner.textContent = 'Canli veri alinamadi: ' + err.message;
+      }
+    }
+
     $('checkBtn').addEventListener('click', async () => {
       const btn = $('checkBtn');
       const box = $('traderResult');
@@ -492,9 +593,13 @@
     $('refreshBtn').addEventListener('click', loadStatus);
     loadStatus();
     loadTrader();
+    loadLive();
     loadChart();
     setInterval(loadStatus, 30000);
     setInterval(loadTrader, 30000);
+    setInterval(loadLive, 10000);
+    setInterval(liveCountdown, 1000);
+    setInterval(loadChart, 120000);
 
     $('telegramBtn').addEventListener('click', async () => {
       const btn = $('telegramBtn');
