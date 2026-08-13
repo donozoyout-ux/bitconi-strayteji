@@ -157,6 +157,19 @@
     </div>
 
     <div class="card">
+      <h2>Telegram Bildirimleri</h2>
+      <p class="muted" style="margin-bottom:14px; font-size:13px;">
+        Bot bir alim/satim emri acinca Telegram'a otomatik bildirim gonderir.
+        Token ve Chat ID, <code>TELEGRAM_BOT_TOKEN</code> ve <code>TELEGRAM_CHAT_ID</code> olarak
+        sunucu ortam degiskenlerinde olmali.
+      </p>
+      <div class="row actions">
+        <button type="button" class="btn ghost" id="telegramBtn">Test Telegram</button>
+      </div>
+      <div id="telegramResult" class="result" style="display:none; margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
       <h2>TradingView Webhook</h2>
       <div class="hint">
         Alarm olustururken <b>Webhook URL</b> olarak sunucu adresinizin <code>/webhook</code> yolunu kullanin.<br />
@@ -265,6 +278,29 @@
     $('refreshBtn').addEventListener('click', loadStatus);
     loadStatus();
     setInterval(loadStatus, 30000);
+
+    $('telegramBtn').addEventListener('click', async () => {
+      const btn = $('telegramBtn');
+      const box = $('telegramResult');
+      btn.disabled = true;
+      btn.textContent = 'Gonderiliyor...';
+      box.style.display = 'block';
+      box.className = 'result';
+      box.textContent = 'Telegram'a test mesaji gonderiliyor...';
+
+      try {
+        const res = await fetch('/api/test-telegram', { method: 'POST' });
+        const data = await res.json();
+        box.className = 'result ' + (res.ok ? 'success' : 'error');
+        box.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.className = 'result error';
+        box.textContent = JSON.stringify({ success: false, error: err.message }, null, 2);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Test Telegram';
+      }
+    });
   </script>
 </body>
 </html>

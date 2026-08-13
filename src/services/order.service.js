@@ -1,6 +1,7 @@
 const exchange = require('../config/binance');
 const env = require('../config/env');
 const logger = require('../utils/logger');
+const telegramService = require('./telegram.service');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
 
@@ -99,6 +100,11 @@ async function placeOrder(action, symbol, quantity, budget) {
       error: err.message,
       timestamp,
     });
+    telegramService
+      .sendTelegramMessage(
+        `<b>${normalizedAction} EMRI BASARISIZ</b>\nParite: ${ccxtSymbol}\nHata: ${err.message}\nZaman: ${new Date(timestamp).toLocaleString('tr-TR')}`
+      )
+      .catch(() => {});
     throw err;
   }
 
@@ -127,6 +133,10 @@ async function placeOrder(action, symbol, quantity, budget) {
     cost: result.cost,
     fee: result.fee,
   });
+
+  telegramService
+    .sendTelegramMessage(telegramService.formatOrderNotification(result))
+    .catch(() => {});
 
   return result;
 }
