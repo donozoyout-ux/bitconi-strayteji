@@ -650,7 +650,7 @@
     function startAutoAnalyze() {
       if (autoAnalyzeTimer) clearInterval(autoAnalyzeTimer);
       runTraderAnalyze();
-      autoAnalyzeTimer = setInterval(runTraderAnalyze, 60000);
+      autoAnalyzeTimer = setInterval(runTraderAnalyze, 300000);
     }
 
     async function runTraderAnalyze() {
@@ -668,13 +668,13 @@
         box.className = 'result ' + (res.ok ? 'success' : 'error');
         box.textContent = traderSummary(data);
         const meta = $('traderAutoMeta');
-        if (meta) meta.textContent = 'Otomatik analiz: her 60 sn | Son: ' + new Date().toLocaleTimeString('tr-TR');
+        if (meta) meta.textContent = 'Otomatik analiz: her 5 dk | Son: ' + new Date().toLocaleTimeString('tr-TR');
         loadTrader();
         loadLive();
         loadAnalysis(true);
       } catch (err) {
         box.className = 'result error';
-        box.textContent = 'ANALIZ HATASI: ' + err.message + '\n\nSunucu calisiyor mu? (npm start) ve Binance erisimi kontrol edin. 60 sn sonra otomatik tekrar denenir.';
+        box.textContent = 'ANALIZ HATASI: ' + err.message + '\n\nSunucu calisiyor mu? (npm start) ve Binance erisimi kontrol edin. 5 dk sonra otomatik tekrar denenir.';
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Simdi Analiz Et';
