@@ -180,6 +180,10 @@ async function runCycle() {
         bbLower: analysis.reasons.bbLower,
         k: analysis.reasons.k,
         d: analysis.reasons.d,
+        priceTouch: analysis.reasons.priceTouch,
+        goldenCross: analysis.reasons.goldenCross,
+        oversoldLevel: analysis.reasons.oversoldLevel,
+        cooldownUntil: st.cooldownUntil,
         price,
       },
     });

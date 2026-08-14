@@ -25,7 +25,24 @@
       min-height: 100vh;
       padding: 24px;
     }
-    .wrap { max-width: 860px; margin: 0 auto; }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 0 8px; }
+    @media (min-width: 1200px) {
+      .wrap { padding: 0 24px; }
+    }
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      h1 { font-size: 18px; }
+      .ticker-price { font-size: 28px; }
+      .card { padding: 14px; }
+      .row { flex-direction: column; }
+      .row.actions { flex-direction: row; justify-content: stretch; }
+      .row.actions .btn { flex: 1; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .field { min-width: 100%; }
+      #priceChart { height: 260px !important; }
+      #stochChart { height: 130px !important; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
     header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
@@ -389,13 +406,17 @@
       if (stochChart) { stochChart.remove(); stochChart = null; }
     }
 
+    function chartHeight(base) {
+      return window.innerWidth < 768 ? Math.round(base * 0.65) : base;
+    }
+
     function ensureCharts() {
       if (!window.LightweightCharts) return false;
       if (!priceChart) {
-        priceChart = LightweightCharts.createChart($('priceChart'), chartOptions(380));
+        priceChart = LightweightCharts.createChart($('priceChart'), chartOptions(chartHeight(380)));
         stochChart = LightweightCharts.createChart(
           $('stochChart'),
-          Object.assign(chartOptions(170), {
+          Object.assign(chartOptions(chartHeight(170)), {
             rightPriceScale: {
               borderColor: '#2a3242',
               scaleMargins: { top: 0.2, bottom: 0.1 },
@@ -482,14 +503,29 @@
           ? '<b style="color:var(--green);">BUY SINYALI</b>'
           : 'Sinyal yok';
 
+        let whyTxt = 'Henuz analiz yapilmadi';
+        if (last.close != null) {
+          const touchOk = last.priceTouch ? 'EVET' : 'HAYIR';
+          const crossOk = last.goldenCross ? 'EVET' : 'HAYIR';
+          whyTxt =
+            'Fiyat alt banda temas etti: ' + touchOk +
+            ' | Stoch altin capraz (a.satis): ' + crossOk +
+            (last.oversoldLevel != null ? ' (esik: ' + last.oversoldLevel + ')' : '') +
+            ' | ' + signalTxt;
+          if (!last.signal && !last.priceTouch) {
+            whyTxt += ' -> Fiyat alt bandin USTUNDE, alim kosulu bekleniyor';
+          }
+        }
+
         const rows = [
           ['Mod', mode],
           ['Zaman dilimi', data.timeframe + ' | kontrol: her ' + data.intervalMin + ' dk'],
           ['Butce / TP / SL', num(data.budgetUsdt) + ' USDT | +' + num(data.tpPercent) + '% / -' + num(data.slPercent) + '%'],
           ['Pozisyon', pos],
           ['Son analiz', last.close != null
-            ? 'Kapanis: ' + num(last.close, 2) + ' | BB Alt: ' + num(last.bbLower, 2) + ' | %K: ' + num(last.k, 2) + ' | %D: ' + num(last.d, 2) + ' | ' + signalTxt
+            ? 'Kapanis: ' + num(last.close, 2) + ' | BB Alt: ' + num(last.bbLower, 2) + ' | %K: ' + num(last.k, 2) + ' | %D: ' + num(last.d, 2)
             : 'Henuz analiz yapilmadi'],
+          ['Alim kosulu', whyTxt],
           ['Son kontrol', data.lastCheck ? new Date(data.lastCheck).toLocaleString('tr-TR') : '-'],
           ['Son hata', data.lastError ? '<span style="color:var(--red);">' + data.lastError + '</span>' : '-'],
         ];
