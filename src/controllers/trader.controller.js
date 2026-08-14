@@ -20,6 +20,7 @@ function getStatus(req, res) {
 
 async function checkNow(req, res) {
   try {
+    stateService.update({ busy: false });
     await tradingEngine.runCycle();
     res.status(200).json({ success: true, message: 'Analiz tamamlandi.', state: stateService.get() });
   } catch (err) {

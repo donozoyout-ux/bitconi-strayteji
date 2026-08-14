@@ -13,6 +13,7 @@ function start() {
     logger.warn('Otonom motor KAPALI (TRADING_MODE=off).');
     return;
   }
+  stateService.update({ busy: false, lastError: null });
   logger.info(
     `Otonom analiz motoru baslatildi -> zaman: ${env.analysisTimeframe}, siklik: ${env.checkIntervalMin} dk, mod: ${env.dryRun ? 'DRY-RUN' : 'GERCEK TESTNET'}`
   );
