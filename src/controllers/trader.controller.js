@@ -32,4 +32,13 @@ function resetState(req, res) {
   res.status(200).json({ success: true, message: 'Motor durumu sifirlandi.' });
 }
 
-module.exports = { getStatus, checkNow, resetState };
+async function analyze(req, res) {
+  try {
+    const report = await tradingEngine.analyzeOnly();
+    res.status(200).json({ success: true, ...report });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+module.exports = { getStatus, checkNow, resetState, analyze };

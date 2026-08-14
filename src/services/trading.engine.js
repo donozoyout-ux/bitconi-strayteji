@@ -74,6 +74,37 @@ async function buildStrategy(symbol) {
   };
 }
 
+async function analyzeOnly() {
+  const symbol = env.tradingSymbol || 'BTC/USDT';
+  const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
+  const analysis = analyzer.detectSignal(candles, env);
+
+  let price = null;
+  try {
+    price = await fetchLivePrice(symbol);
+  } catch (err) {
+    price = analysis.close;
+  }
+
+  const strategy = await buildStrategy(symbol);
+  const state = stateService.get();
+
+  return {
+    enabled: env.tradingEnabled,
+    dryRunMode: env.dryRun,
+    ts: analysis.ts,
+    price,
+    signal: analysis.signal,
+    reasons: analysis.reasons,
+    strategy,
+    verdict: strategy.verdict,
+    position: state.position,
+    dryRun: state.dryRun,
+    cooldownUntil: state.cooldownUntil,
+    lastError: state.lastError,
+  };
+}
+
 async function runCycle() {
   const state = stateService.get();
   if (!env.tradingEnabled) return;
@@ -206,4 +237,4 @@ async function handleExit(analysis, price, symbol) {
   stateService.update({ lastAnalyzedTs: analysis.ts });
 }
 
-module.exports = { start, stop, runCycle };
+module.exports = { start, stop, runCycle, analyzeOnly };

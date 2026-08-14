@@ -200,6 +200,7 @@
         <button type="button" class="btn ghost" id="checkBtn">Simdi Analiz Et</button>
         <button type="button" class="btn ghost" id="resetBtn">Motor Durumunu Sifirla</button>
       </div>
+      <div class="muted" id="traderAutoMeta" style="margin-top:10px; font-size:12px;"></div>
       <div id="traderResult" class="result" style="display:none; margin-top:14px;"></div>
     </div>
 
@@ -574,7 +575,85 @@
       }
     }
 
-    $('checkBtn').addEventListener('click', async () => {
+    function fmtNum(v, digits) {
+      if (v == null || isNaN(v)) return '-';
+      return Number(v).toLocaleString('tr-TR', { minimumFractionDigits: digits == null ? 2 : digits, maximumFractionDigits: digits == null ? 2 : digits });
+    }
+
+    function traderSummary(data) {
+      const L = [];
+      L.push('=== OTONOM STRATEJI MOTORU ANALIZ RAPORU ===');
+
+      const mode = !data.enabled ? 'KAPALI (TRADING_MODE=off)'
+        : data.dryRunMode ? 'DRY-RUN (sanal, gercek emir yok)'
+        : 'GERCEK TESTNET (sanal para)';
+      L.push('Motor modu: ' + mode);
+      L.push('Canli fiyat: ' + fmtNum(data.price, 2) + ' USDT');
+
+      const st = data.strategy || {};
+      const scores = st.scores || {};
+      const pct = (v) => { const x = Math.round((v || 0) * 100); return (x > 0 ? '+' : '') + x + '%'; };
+      L.push('');
+      L.push('KARAR: ' + (st.verdict || '-'));
+      L.push('Skorlar -> Teknik: ' + pct(scores.technical) + ' | Grafik: ' + pct(scores.chart) + ' | Haber: ' + pct(scores.news) + ' | Genel: ' + pct(scores.overall));
+
+      const td = st.technicals || {};
+      L.push('');
+      L.push('TEKNIK GOSTERGELER:');
+      L.push('  RSI(14): ' + fmtNum(td.rsi, 1));
+      L.push('  Stoch RSI %K: ' + fmtNum(td.stochK, 1));
+      L.push('  MACD histogram: ' + fmtNum(td.macdHist, 0));
+      L.push('  EMA20: ' + fmtNum(td.ema20, 0) + ' | EMA50: ' + fmtNum(td.ema50, 0));
+
+      const r = data.reasons || {};
+      const bol = (v) => v === true ? 'EVET' : v === false ? 'HAYIR' : (v == null ? 'bilinmiyor' : v);
+      L.push('');
+      L.push('SINYAL KOSULLARI:');
+      L.push('  Bollinger alt banda dokunma: ' + bol(r.priceTouch) + ' (alt bant: ' + fmtNum(r.bbLower, 2) + ')');
+      L.push('  Stoch RSI altin capraz (%K>%D, asiri satista): ' + bol(r.goldenCross) + ' (%K: ' + fmtNum(r.k, 1) + ' / %D: ' + fmtNum(r.d, 1) + ')');
+      if (r.rsi2 != null) L.push('  RSI(2) teyidi: ' + bol(r.rsi2Confirm) + ' (RSI2: ' + fmtNum(r.rsi2, 1) + ')');
+
+      L.push('');
+      L.push('TREND VE YAPI:');
+      L.push('  Trend: ' + (st.trend || '-'));
+      L.push('  Formasyonlar: ' + ((st.patterns && st.patterns.length) ? st.patterns.join(', ') : 'yok'));
+      L.push('  Destek: ' + ((st.support && st.support.length) ? st.support.map((x) => fmtNum(x, 0)).join(', ') : '-'));
+      L.push('  Direnc: ' + ((st.resistance && st.resistance.length) ? st.resistance.map((x) => fmtNum(x, 0)).join(', ') : '-'));
+
+      const n = st.news || {};
+      L.push('');
+      L.push('HABER & DUYGU:');
+      L.push('  Duygu: ' + (n.label || '-') + ' | Fear&Greed: ' + (n.fearGreed != null ? n.fearGreed + ' (' + (n.classification || '') + ')' : 'n/a'));
+      L.push('  Haberler: ' + (n.bull || 0) + ' olumlu / ' + (n.bear || 0) + ' olumsuz');
+
+      L.push('');
+      if (data.position) {
+        L.push('POZISYON: ACIK -> Giris: ' + fmtNum(data.position.entryPrice, 2) + ' | Miktar: ' + data.position.quantity + ' | Mod: ' + data.position.mode);
+      } else {
+        L.push('POZISYON: YOK (flat)');
+      }
+      const dr = data.dryRun || {};
+      if (dr.USDT != null) L.push('Sanal bakiye -> USDT: ' + fmtNum(dr.USDT, 2) + ' | BTC: ' + fmtNum(dr.BTC, 6));
+
+      if (data.cooldownUntil && Date.now() < data.cooldownUntil) {
+        L.push('Soguma suresi devam ediyor (' + Math.ceil((data.cooldownUntil - Date.now()) / 60000) + ' dk kaldi).');
+      }
+      if (data.lastError) L.push('');
+      if (data.lastError) L.push('SON HATA: ' + data.lastError);
+      if (data.ts) L.push('');
+      if (data.ts) L.push('Veri zaman damgasi: ' + new Date(data.ts).toLocaleString('tr-TR'));
+      return L.join('\n');
+    }
+
+    let autoAnalyzeTimer = null;
+
+    function startAutoAnalyze() {
+      if (autoAnalyzeTimer) clearInterval(autoAnalyzeTimer);
+      runTraderAnalyze();
+      autoAnalyzeTimer = setInterval(runTraderAnalyze, 60000);
+    }
+
+    async function runTraderAnalyze() {
       const btn = $('checkBtn');
       const box = $('traderResult');
       btn.disabled = true;
@@ -583,20 +662,26 @@
       box.className = 'result';
       box.textContent = 'Binance verisi cekilip indikatorler hesaplaniyor...';
       try {
-        const res = await fetchWithTimeout('/api/trader/check', { method: 'POST' }, 20000);
+        const res = await fetchWithTimeout('/api/trader/analyze', { method: 'POST' }, 30000);
         const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
         box.className = 'result ' + (res.ok ? 'success' : 'error');
-        box.textContent = JSON.stringify(data.state || data, null, 2);
+        box.textContent = traderSummary(data);
+        const meta = $('traderAutoMeta');
+        if (meta) meta.textContent = 'Otomatik analiz: her 60 sn | Son: ' + new Date().toLocaleTimeString('tr-TR');
         loadTrader();
+        loadLive();
         loadAnalysis(true);
       } catch (err) {
         box.className = 'result error';
-        box.textContent = JSON.stringify({ success: false, error: err.message }, null, 2);
+        box.textContent = 'ANALIZ HATASI: ' + err.message + '\n\nSunucu calisiyor mu? (npm start) ve Binance erisimi kontrol edin. 60 sn sonra otomatik tekrar denenir.';
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Simdi Analiz Et';
       }
-    });
+    }
+
+    $('checkBtn').addEventListener('click', startAutoAnalyze);
 
     $('resetBtn').addEventListener('click', async () => {
       await fetchWithTimeout('/api/trader/reset', { method: 'POST' }, 20000);
@@ -692,6 +777,7 @@
     loadLive();
     loadChart();
     loadAnalysis();
+    startAutoAnalyze();
     setInterval(loadStatus, 30000);
     setInterval(loadTrader, 30000);
     setInterval(loadLive, 10000);

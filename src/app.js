@@ -24,6 +24,7 @@ app.get('/api/status', statusController.getStatus);
 app.post('/api/test-telegram', telegramController.sendTest);
 app.get('/api/trader', traderController.getStatus);
 app.post('/api/trader/check', traderController.checkNow);
+app.post('/api/trader/analyze', traderController.analyze);
 app.post('/api/trader/reset', traderController.resetState);
 app.get('/api/chart', chartController.getChart);
 app.get('/api/analysis', analysisController.getAnalysis);
