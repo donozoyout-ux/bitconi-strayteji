@@ -41,4 +41,14 @@ async function analyze(req, res) {
   }
 }
 
-module.exports = { getStatus, checkNow, resetState, analyze };
+async function getLivePrice(req, res) {
+  try {
+    const symbol = env.tradingSymbol || 'BTC/USDT';
+    const ticker = await tradingEngine.fetchLivePrice(symbol);
+    res.status(200).json({ success: true, symbol, price: ticker, ts: Date.now() });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+module.exports = { getStatus, checkNow, resetState, analyze, getLivePrice };

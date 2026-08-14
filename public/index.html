@@ -517,8 +517,13 @@
       const sigEl = $('liveSignal');
       const banner = $('signalBanner');
       try {
-        const res = await fetchWithTimeout('/api/trader', null, 20000);
-        const data = await res.json();
+        const [priceRes, traderRes] = await Promise.all([
+          fetchWithTimeout('/api/trader/price', null, 20000),
+          fetchWithTimeout('/api/trader', null, 20000),
+        ]);
+        const priceData = await priceRes.json();
+        if (!priceData.success) throw new Error(priceData.error || 'Hata');
+        const data = await traderRes.json();
         if (!data.success) throw new Error(data.error || 'Hata');
 
         $('liveMode').innerHTML = !data.enabled
@@ -527,16 +532,17 @@
             ? '<span style="color:var(--orange);">DRY-RUN</span>'
             : '<span style="color:var(--green);">GERCEK TESTNET</span>';
 
-        const last = data.lastAnalysis || {};
-        if (last.price != null) {
-          const prev = parseFloat(priceEl.dataset.prev || last.price);
-          const cur = last.price;
+        if (priceData.price != null) {
+          const prev = parseFloat(priceEl.dataset.prev || priceData.price);
+          const cur = priceData.price;
           priceEl.textContent = num(cur, 2);
           priceEl.classList.remove('up', 'down');
           if (cur > prev) priceEl.classList.add('up');
           else if (cur < prev) priceEl.classList.add('down');
           priceEl.dataset.prev = cur;
         }
+
+        const last = data.lastAnalysis || {};
         if (last.close != null) closeEl.textContent = num(last.close, 2);
 
         sigEl.innerHTML = data.position
@@ -559,8 +565,8 @@
         } else if (last.signal) {
           bannerCls = 'buy';
           bannerTxt = 'ALIM SINYALI - otonom pozisyon acilacak';
-        } else if (last.price != null && last.bbLower != null) {
-          const prox = (last.price - last.bbLower) / last.bbLower;
+        } else if (priceData.price != null && last.bbLower != null) {
+          const prox = (priceData.price - last.bbLower) / last.bbLower;
           if (prox < 0.01) {
             bannerCls = 'watch';
             bannerTxt = 'Fiyat alt banda cok yakin (%' + num(prox * 100, 1) + ') - sinyal izleniyor';
@@ -792,7 +798,7 @@
     setInterval(loadLive, 10000);
     setInterval(loadAnalysis, 300000);
     setInterval(liveCountdown, 1000);
-    setInterval(loadChart, 120000);
+    setInterval(loadChart, 30000);
 
     $('telegramBtn').addEventListener('click', async () => {
       const btn = $('telegramBtn');

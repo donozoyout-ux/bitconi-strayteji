@@ -237,4 +237,4 @@ async function handleExit(analysis, price, symbol) {
   stateService.update({ lastAnalyzedTs: analysis.ts });
 }
 
-module.exports = { start, stop, runCycle, analyzeOnly };
+module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice };

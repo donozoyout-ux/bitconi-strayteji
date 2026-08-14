@@ -14,7 +14,7 @@ async function getChart(req, res) {
     const symbol = env.tradingSymbol || 'BTC/USDT';
     const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, limit + 1);
 
-    const closed = candles.slice(0, -1);
+    const closed = candles;
     const closes = closed.map((c) => c[4]);
 
     const bb = analyzer.bollinger(closes, BB_LENGTH, BB_MULT);
