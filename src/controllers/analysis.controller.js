@@ -23,6 +23,7 @@ async function buildReport() {
     symbol: tech.symbol,
     timeframe: tech.timeframe,
     ts: tech.ts,
+    ranAt: Date.now(),
     price: tech.price,
     signal: tech.signal,
     technicals: tech.technicals,

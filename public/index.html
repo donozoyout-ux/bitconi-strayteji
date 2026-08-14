@@ -747,8 +747,9 @@
           '  |  Teknik ' + pct(s.technical) + ' | Grafik ' + pct(s.chart) + ' | Haber ' + pct(s.news);
 
         $('analysisMeta').textContent =
-          'Son analiz: ' + new Date(d.ts).toLocaleString('tr-TR') +
-          ' | ' + (d.signal ? 'BUY sinyali var' : 'Sinyal yok');
+          'Son analiz: ' + new Date(d.ranAt || d.ts).toLocaleString('tr-TR') +
+          ' | ' + (d.signal ? 'BUY sinyali var' : 'Sinyal yok') +
+          (d.ts && d.ts !== d.ranAt ? ' | Mum zaman: ' + new Date(d.ts).toLocaleString('tr-TR') : '');
 
         box.innerHTML =
           '<div class="grid">' +
@@ -769,7 +770,15 @@
       }
     }
 
-    $('analysisBtn').addEventListener('click', () => loadAnalysis(true));
+    $('analysisBtn').addEventListener('click', () => {
+      const btn = $('analysisBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>Yenileniyor...';
+      loadAnalysis(true).finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Analizi Yenile';
+      });
+    });
 
     $('refreshBtn').addEventListener('click', loadStatus);
     loadStatus();
