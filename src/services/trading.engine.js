@@ -27,6 +27,37 @@ function stop() {
 }
 
 async function fetchLivePrice(symbol) {
+  const [base, quote] = symbol.split('/');
+  const pair = base + quote;
+
+  const sources = [
+    `https://data-api.binance.vision/api/v3/ticker/price?symbol=${pair}`,
+    `https://api.binance.com/api/v3/ticker/price?symbol=${pair}`,
+    `https://api1.binance.com/api/v3/ticker/price?symbol=${pair}`,
+    `https://api2.binance.com/api/v3/ticker/price?symbol=${pair}`,
+  ];
+
+  for (const src of sources) {
+    try {
+      const data = await analyzer.fetchWithTimeout(src, 10000);
+      if (data && data.price) return Number(data.price);
+    } catch (err) {
+      // sonraki kaynağa geç
+    }
+  }
+
+  try {
+    const bybit = await analyzer.fetchWithTimeout(
+      `https://api.bybit.com/v5/market/tickers?category=spot&symbol=${pair}`,
+      10000
+    );
+    if (bybit.retCode === 0 && bybit.result && bybit.result.list && bybit.result.list[0]) {
+      return Number(bybit.result.list[0].lastPrice);
+    }
+  } catch (err) {
+    // son çare testnet
+  }
+
   const ticker = await exchange.fetchTicker(symbol);
   return ticker.last;
 }

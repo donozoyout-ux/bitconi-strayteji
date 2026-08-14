@@ -416,4 +416,4 @@ async function runFullAnalysis(symbol, timeframe = '1d', opts = {}) {
   };
 }
 
-module.exports = { detectSignal, fetchCandles, rsiSeries, bollinger, stochRsi, emaSeries, macdSeries, detectPatterns, detectStructure, scoreTechnicals, scoreChart, verdictFor, runFullAnalysis };
+module.exports = { detectSignal, fetchCandles, fetchWithTimeout, rsiSeries, bollinger, stochRsi, emaSeries, macdSeries, detectPatterns, detectStructure, scoreTechnicals, scoreChart, verdictFor, runFullAnalysis };
