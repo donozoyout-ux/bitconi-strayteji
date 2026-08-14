@@ -391,7 +391,7 @@ function verdictFor(overall) {
 
 async function runFullAnalysis(symbol, timeframe = '1d', opts = {}) {
   const candles = await fetchCandles(symbol, timeframe, 220);
-  const closed = candles.slice(0, -1);
+  const closed = candles;
   if (closed.length < 60) throw new Error('Analiz icin yeterli veri yok');
 
   const structure = detectStructure(closed);
