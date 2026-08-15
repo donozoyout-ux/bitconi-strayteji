@@ -52,4 +52,43 @@ async function getLivePrice(req, res) {
   }
 }
 
-module.exports = { getStatus, checkNow, resetState, analyze, getLivePrice };
+function getHistory(req, res) {
+  const state = stateService.get();
+  const trades = state.trades || [];
+  const orderLog = state.orderLog || [];
+
+  const totalTrades = trades.length;
+  const wins = trades.filter((t) => t.result === 'KAR').length;
+  const losses = trades.filter((t) => t.result === 'ZARAR').length;
+  const totalPnl = trades.reduce((s, t) => s + (t.pnl || 0), 0);
+  const fees = trades.reduce((s, t) => s + (t.feeUsdt || 0), 0);
+
+  let openPosition = null;
+  if (state.position) {
+    const pos = state.position;
+    openPosition = {
+      symbol: pos.symbol,
+      entryPrice: pos.entryPrice,
+      quantity: pos.quantity,
+      mode: pos.mode,
+      openedAt: pos.entryTime,
+    };
+  }
+
+  res.status(200).json({
+    success: true,
+    summary: {
+      totalTrades,
+      wins,
+      losses,
+      totalPnl,
+      fees,
+      winRate: totalTrades ? (wins / totalTrades) * 100 : 0,
+    },
+    trades,
+    orderLog,
+    openPosition,
+  });
+}
+
+module.exports = { getStatus, checkNow, resetState, analyze, getLivePrice, getHistory };

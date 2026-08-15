@@ -29,6 +29,15 @@ const env = {
   useRsi2: (process.env.USE_RSI2_FILTER || 'false') === 'true',
 };
 
+try {
+  if (process.env.GOOGLE_FORM_FIELDS) {
+    env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
+  }
+} catch (e) {
+  console.warn('[WARN] GOOGLE_FORM_FIELDS gecerli bir JSON degil.');
+}
+env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
+
 function sanitizeFloat(value, min, max, fallback) {
   const v = parseFloat(value);
   if (Number.isNaN(v) || v < min || v > max) return fallback;

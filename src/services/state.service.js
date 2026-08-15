@@ -13,7 +13,26 @@ const DEFAULT_STATE = {
   lastError: null,
   lastAnalysis: null,
   busy: false,
+  trades: [],
+  orderLog: [],
 };
+
+const MAX_TRADES = 100;
+const MAX_LOG = 50;
+
+function pushTrades(trade) {
+  const s = load();
+  s.trades = [trade, ...(s.trades || [])].slice(0, MAX_TRADES);
+  save();
+  return s;
+}
+
+function pushOrderLog(entry) {
+  const s = load();
+  s.orderLog = [entry, ...(s.orderLog || [])].slice(0, MAX_LOG);
+  save();
+  return s;
+}
 
 let state = null;
 
@@ -56,4 +75,4 @@ function reset() {
   save();
 }
 
-module.exports = { get, update, reset, save, DEFAULT_STATE };
+module.exports = { get, update, reset, save, pushTrades, pushOrderLog, DEFAULT_STATE };

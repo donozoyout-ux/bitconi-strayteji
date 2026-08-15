@@ -3,8 +3,36 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 const stateService = require('./state.service');
 const telegramService = require('./telegram.service');
+const spreadsheetService = require('./spreadsheet.service');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
+
+function recordClosedTrade(position, exitPrice, exitTime, mode, result, note) {
+  if (!position) return;
+  const qty = position.quantity || 0;
+  const entry = position.entryPrice || 0;
+  const exit = exitPrice || 0;
+  const pnl = qty > 0 && entry > 0 ? (exit - entry) * qty : null;
+  const pnlPct = pnl != null && entry > 0 ? (pnl / (entry * qty)) * 100 : null;
+
+  const trade = {
+    symbol: position.symbol,
+    entryPrice: entry,
+    exitPrice: exit,
+    quantity: qty,
+    pnl,
+    pnlPercent: pnlPct,
+    result: pnl == null ? 'HATA' : pnl >= 0 ? 'KAR' : 'ZARAR',
+    mode,
+    note: note || '',
+    openedAt: position.entryTime,
+    closedAt: exitTime,
+    timestamp: exitTime,
+  };
+  stateService.pushTrades(trade);
+  spreadsheetService.logTrade(trade).catch(() => {});
+  return trade;
+}
 
 function badReq(message) {
   const error = new Error(message);
@@ -135,11 +163,15 @@ async function placeDryRun(action, symbol, qty, cost, timestamp) {
   dr.USDT += proceeds;
   dr.BTC -= quantity;
   const feeUsdt = quantity * price * env.commissionRate;
+  const prevPosition = state.position || null;
   stateService.update({
     dryRun: dr,
     position: null,
     cooldownUntil: Date.now() + env.cooldownMin * 60000,
   });
+  if (prevPosition) {
+    recordClosedTrade(prevPosition, price, timestamp, 'DRY_RUN', 'KAPANIŞ');
+  }
   const result = buildResult(
     action,
     symbol,
@@ -192,10 +224,14 @@ async function placeReal(action, symbol, qty, cost, timestamp) {
       cooldownUntil: null,
     });
   } else {
+    const prevPosition = stateService.get().position || null;
     stateService.update({
       position: null,
       cooldownUntil: Date.now() + env.cooldownMin * 60000,
     });
+    if (prevPosition) {
+      recordClosedTrade(prevPosition, order.average || order.price, timestamp, 'REAL', 'KAPANIŞ');
+    }
   }
 
   const result = {
@@ -276,6 +312,16 @@ async function placeOrder(action, symbol, quantity, budget) {
     telegramService
       .sendTelegramMessage(telegramService.formatOrderNotification(result))
       .catch(() => {});
+    stateService.pushOrderLog({
+      timestamp,
+      action: normalizedAction,
+      symbol: ccxtSymbol,
+      success: true,
+      price: result.averagePrice,
+      filled: result.filled,
+      mode: result.mode,
+    });
+    spreadsheetService.logOrder({ ...result, timestamp, success: true }).catch(() => {});
     return result;
   } catch (err) {
     logger.error(`Emir BASARISIZ -> ${normalizedAction} ${ccxtSymbol}`, {
@@ -286,6 +332,26 @@ async function placeOrder(action, symbol, quantity, budget) {
       .sendTelegramMessage(
         `<b>${normalizedAction} EMRI BASARISIZ</b>\nParite: ${ccxtSymbol}\nHata: ${err.message}\nZaman: ${new Date(timestamp).toLocaleString('tr-TR')}`
       )
+      .catch(() => {});
+    stateService.pushOrderLog({
+      timestamp,
+      action: normalizedAction,
+      symbol: ccxtSymbol,
+      success: false,
+      error: err.message,
+      price: null,
+      filled: null,
+      mode: env.dryRun ? 'DRY_RUN' : 'REAL',
+    });
+    spreadsheetService
+      .logOrder({
+        timestamp,
+        action: normalizedAction,
+        symbol: ccxtSymbol,
+        averagePrice: null,
+        filled: null,
+        success: false,
+      })
       .catch(() => {});
     throw err;
   }

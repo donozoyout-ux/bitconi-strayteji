@@ -49,6 +49,7 @@
     }
     h1 { font-size: 22px; font-weight: 700; }
     h1 span { color: var(--orange); }
+    h3 { margin: 0; }
     .badge {
       background: var(--green); color: #04140a; font-weight: 700;
       padding: 6px 12px; border-radius: 999px; font-size: 12px;
@@ -190,6 +191,25 @@
         <div class="stat"><div class="label">Yukleniyor...</div></div>
       </div>
       <div class="muted" id="serverMeta" style="margin-top:12px; font-size:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Kar / Zarar Raporu</h2>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+        <button type="button" class="btn ghost" id="historyBtn">Raporu Yenile</button>
+        <span class="muted" id="historyMeta" style="font-size:12px;"></span>
+      </div>
+      <div class="grid" id="pnlSummaryGrid">
+        <div class="stat"><div class="label">Yukleniyor...</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h3 style="font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Kapali Islemler (Kar/Zarar)</h3>
+        <div id="tradesBox" class="result" style="max-height:260px;"></div>
+      </div>
+      <div style="margin-top:12px;">
+        <h3 style="font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Emir Gecmisi (Basarili / Basarisiz)</h3>
+        <div id="orderLogBox" class="result" style="max-height:200px;"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -480,6 +500,72 @@
     }
 
     $('chartRefreshBtn').addEventListener('click', loadChart);
+
+    async function loadHistory() {
+      const summaryGrid = $('pnlSummaryGrid');
+      const tradesBox = $('tradesBox');
+      const logBox = $('orderLogBox');
+      try {
+        const res = await fetchWithTimeout('/api/trader/history', null, 20000);
+        const d = await res.json();
+        if (!d.success) throw new Error(d.error || 'Hata');
+
+        const s = d.summary || {};
+        const pnlColor = s.totalPnl > 0 ? 'var(--green)' : s.totalPnl < 0 ? 'var(--red)' : 'var(--muted)';
+        const pnlTxt = (s.totalPnl > 0 ? '+' : '') + num(s.totalPnl, 2);
+
+        const rows = [
+          ['Toplam Islem', s.totalTrades || 0],
+          ['Kazanilan (KAR)', s.wins || 0],
+          ['Kaybedilen (ZARAR)', s.losses || 0],
+          ['Basari Orani', num(s.winRate, 1) + '%'],
+          ['Net Kar/Zarar', '<span style="color:' + pnlColor + ';">' + pnlTxt + ' USDT</span>'],
+        ];
+        summaryGrid.innerHTML = rows.map(([l, v]) =>
+          '<div class="stat"><div class="label">' + l + '</div><div class="value" style="font-size:18px;">' + v + '</div></div>'
+        ).join('');
+
+        const openPos = d.openPosition;
+        $('historyMeta').textContent = openPos
+          ? 'Acik pozisyon: ' + openPos.symbol + ' @ ' + num(openPos.entryPrice, 2) + ' | acilis: ' + new Date(openPos.openedAt).toLocaleString('tr-TR')
+          : 'Acik pozisyon yok';
+
+        const fmtDate = (v) => v ? new Date(v).toLocaleString('tr-TR') : '-';
+        const fmtSign = (v) => v == null ? '-' : (v > 0 ? '+' : '') + num(v, 2);
+        const tradeLines = (d.trades || []).map((t) => {
+          const cls = t.result === 'KAR' ? 'var(--green)' : t.result === 'ZARAR' ? 'var(--red)' : 'var(--muted)';
+          return '[' + fmtDate(t.closedAt || t.timestamp) + '] ' +
+            (t.symbol || '-') + ' | Giris: ' + num(t.entryPrice, 2) +
+            ' -> Cikis: ' + num(t.exitPrice, 2) +
+            ' | Miktar: ' + t.quantity +
+            ' | K/Z: ' + fmtSign(t.pnl) + ' (' + num(t.pnlPercent, 2) + '%)' +
+            ' | <b style="color:' + cls + ';">' + t.result + '</b>' +
+            (t.note ? ' | ' + t.note : '');
+        });
+        tradesBox.innerHTML = tradeLines.length
+          ? tradeLines.join('\n')
+          : 'Henuz kapali islem yok.';
+
+        const logLines = (d.orderLog || []).map((o) => {
+          const cls = o.success ? 'var(--green)' : 'var(--red)';
+          const st = o.success ? 'BASARILI' : 'BASARISIZ';
+          return '[' + fmtDate(o.timestamp) + '] ' + o.action + ' ' + (o.symbol || '') +
+            (o.price != null ? ' @ ' + num(o.price, 2) : '') +
+            (o.filled != null ? ' | Miktar: ' + o.filled : '') +
+            (o.error ? ' | Hata: ' + o.error : '') +
+            ' | <b style="color:' + cls + ';">' + st + '</b>';
+        });
+        logBox.innerHTML = logLines.length
+          ? logLines.join('\n')
+          : 'Henuz emir gecmisi yok.';
+      } catch (err) {
+        summaryGrid.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
+        tradesBox.innerHTML = '';
+        logBox.innerHTML = '';
+      }
+    }
+
+    $('historyBtn').addEventListener('click', loadHistory);
 
     async function loadTrader() {
       const box = $('traderInfo');
@@ -828,11 +914,13 @@
     loadLive();
     loadChart();
     loadAnalysis();
+    loadHistory();
     startAutoAnalyze();
     setInterval(loadStatus, 30000);
     setInterval(loadTrader, 30000);
     setInterval(loadLive, 10000);
     setInterval(loadAnalysis, 300000);
+    setInterval(loadHistory, 60000);
     setInterval(liveCountdown, 1000);
     setInterval(loadChart, 30000);
 
