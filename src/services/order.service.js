@@ -54,6 +54,17 @@ function normalizeSymbol(symbol) {
   return match ? `${match[1]}/${match[2]}` : cleaned;
 }
 
+function assertAllowedSymbol(symbol) {
+  const allowed = env.allowSymbols && env.allowSymbols.length ? env.allowSymbols : ['BTC/USDT'];
+  const normalized = normalizeSymbol(symbol);
+  if (!allowed.some((s) => normalizeSymbol(s) === normalized)) {
+    const err = new Error(`Sadece ${allowed.join(', ')} islem yapilabilir. Istek: ${symbol}`);
+    err.statusCode = 400;
+    throw err;
+  }
+  return normalized;
+}
+
 async function fetchLastPrice(symbol) {
   const ticker = await exchange.fetchTicker(symbol);
   if (!ticker || !ticker.last) {
@@ -275,7 +286,7 @@ async function placeOrder(action, symbol, quantity, budget) {
     throw badReq('symbol alani bos olamaz.');
   }
 
-  const ccxtSymbol = normalizeSymbol(symbol);
+  const ccxtSymbol = assertAllowedSymbol(symbol);
 
   let qty = null;
   let cost = null;
