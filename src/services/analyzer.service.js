@@ -196,7 +196,7 @@ async function fetchCandles(symbol, timeframe = '1d', limit = 220) {
   }
 
   try {
-    const bybitInterval = interval === '1d' ? 'D' : interval;
+    const bybitInterval = interval === '1d' ? 'D' : interval === '4h' ? '240' : interval === '1h' ? '60' : interval.replace('m', '');
     const bybit = await fetchWithTimeout(
       `https://api.bybit.com/v5/market/kline?category=spot&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`,
       10000
