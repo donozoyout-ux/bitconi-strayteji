@@ -7,24 +7,35 @@ const orderService = require('./order.service');
 const newsService = require('./news.service');
 
 let timer = null;
+let stopped = false;
 
 function start() {
   if (!env.tradingEnabled) {
     logger.warn('Otonom motor KAPALI (TRADING_MODE=off).');
     return;
   }
+  stopped = false;
   stateService.update({ busy: false, lastError: null });
   logger.info(
     `Otonom analiz motoru baslatildi -> zaman: ${env.analysisTimeframe}, siklik: ${env.checkIntervalMin} dk, mod: ${env.dryRun ? 'DRY-RUN' : 'GERCEK TESTNET'}`
   );
   runCycle();
-  timer = setInterval(runCycle, env.checkIntervalMin * 60000);
-  if (timer.unref) timer.unref();
+  scheduleNext();
 }
 
 function stop() {
-  if (timer) clearInterval(timer);
+  stopped = true;
+  if (timer) clearTimeout(timer);
   timer = null;
+}
+
+function scheduleNext() {
+  if (stopped) return;
+  timer = setTimeout(async () => {
+    await runCycle();
+    scheduleNext();
+  }, env.checkIntervalMin * 60000);
+  if (timer.unref) timer.unref();
 }
 
 async function fetchLivePrice(symbol) {
@@ -141,8 +152,16 @@ async function runCycle() {
   const state = stateService.get();
   if (!env.tradingEnabled) return;
   if (state.busy) {
-    logger.warn('Onceki analiz hala suruyor, bu tur atlandi.');
-    return;
+    const stale =
+      state.lastCheck &&
+      Date.now() - new Date(state.lastCheck).getTime() > env.checkIntervalMin * 60000 * 2;
+    if (stale) {
+      logger.warn('busy bayragi takili kalmis, sifirlaniyor ve tur devam ediyor.');
+      stateService.update({ busy: false, lastError: null });
+    } else {
+      logger.warn('Onceki analiz hala suruyor, bu tur atlandi.');
+      return;
+    }
   }
   stateService.update({ busy: true });
 
