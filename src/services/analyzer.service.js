@@ -115,7 +115,7 @@ function detectSignal(candles, opts = {}) {
   const prevK = kd.k[i - 1];
   const prevD = kd.d[i - 1];
 
-  const priceTouch = bbLower != null && (low <= bbLower || close < bbLower);
+  const priceTouch = bbLower != null && (low <= bbLower || close < bbLower || (close != null && (close - bbLower) / bbLower < 0.005));
   const goldenCross =
     k != null &&
     d != null &&
@@ -125,10 +125,12 @@ function detectSignal(candles, opts = {}) {
     k > d &&
     k < oversoldLevel;
 
+  const oversoldBelow = k != null && k < oversoldLevel;
+
   const rsi2 = rsi2SeriesArr ? rsi2SeriesArr[i] : null;
   const rsi2Confirm = !useRsi2 || (close < bbLower && rsi2 != null && rsi2 < 10);
 
-  const signal = priceTouch && goldenCross && rsi2Confirm ? 'BUY' : null;
+  const signal = priceTouch && (goldenCross || oversoldBelow) && rsi2Confirm ? 'BUY' : null;
 
   return {
     ts,
@@ -146,6 +148,7 @@ function detectSignal(candles, opts = {}) {
       k,
       d,
       goldenCross,
+      oversoldBelow,
       oversoldLevel,
       rsi2,
       rsi2Confirm,

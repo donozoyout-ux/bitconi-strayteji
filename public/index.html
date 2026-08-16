@@ -593,13 +593,16 @@
         if (last.close != null) {
           const touchOk = last.priceTouch ? 'EVET' : 'HAYIR';
           const crossOk = last.goldenCross ? 'EVET' : 'HAYIR';
+          const oversoldOk = last.oversoldBelow ? 'EVET' : 'HAYIR';
           whyTxt =
-            'Fiyat alt banda temas etti: ' + touchOk +
-            ' | Stoch altin capraz (a.satis): ' + crossOk +
-            (last.oversoldLevel != null ? ' (esik: ' + last.oversoldLevel + ')' : '') +
+            'Fiyat alt banda temas/yakin: ' + touchOk +
+            ' | Stoch %K asiri satista (<' + (last.oversoldLevel != null ? last.oversoldLevel : 20) + '): ' + oversoldOk +
+            ' | Altin capraz: ' + crossOk +
             ' | ' + signalTxt;
           if (!last.signal && !last.priceTouch) {
             whyTxt += ' -> Fiyat alt bandin USTUNDE, alim kosulu bekleniyor';
+          } else if (!last.signal && !last.oversoldBelow) {
+            whyTxt += ' -> %K asiri satis seviyesinde degil, alim bekleniyor';
           }
         }
 

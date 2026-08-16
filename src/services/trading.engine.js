@@ -183,6 +183,7 @@ async function runCycle() {
         d: analysis.reasons.d,
         priceTouch: analysis.reasons.priceTouch,
         goldenCross: analysis.reasons.goldenCross,
+        oversoldBelow: analysis.reasons.oversoldBelow,
         oversoldLevel: analysis.reasons.oversoldLevel,
         cooldownUntil: st.cooldownUntil,
         price,
