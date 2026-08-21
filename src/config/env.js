@@ -34,6 +34,12 @@ const env = {
   tradingSymbol: process.env.TRADING_SYMBOL || 'BTC/USDT',
   oversoldLevel: parseInt(process.env.STOCH_OVERSOLD) || 20,
   useRsi2: (process.env.USE_RSI2_FILTER || 'false') === 'true',
+  strategyMode: process.env.STRATEGY_MODE || 'trend',
+  adxMin: sanitizeFloat(process.env.ADX_MIN, 5, 50, 18),
+  atrStopMult: sanitizeFloat(process.env.ATR_STOP_MULT, 0.5, 6, 2),
+  atrTrailMult: sanitizeFloat(process.env.ATR_TRAIL_MULT, 0.5, 8, 2.5),
+  timeExitCandles: parseInt(process.env.TIME_EXIT_CANDLES) || 5,
+  partialTpPercent: sanitizeFloat(process.env.PARTIAL_TP_PERCENT, 20, 100, 50),
   allowSymbols: ['BTC/USDT'],
 };
 

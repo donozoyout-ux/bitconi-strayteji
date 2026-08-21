@@ -2,6 +2,7 @@ const exchange = require('../config/binance');
 const env = require('../config/env');
 const logger = require('../utils/logger');
 const analyzer = require('./analyzer.service');
+const strategyEngine = require('./strategy.service');
 const stateService = require('./state.service');
 const orderService = require('./order.service');
 const newsService = require('./news.service');
@@ -163,6 +164,7 @@ async function analyzeOnly() {
   const symbol = env.tradingSymbol || 'BTC/USDT';
   const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
   const analysis = analyzer.detectSignal(candles, env);
+  const entryEval = strategyEngine.evaluateEntry(candles, env);
 
   let price = null;
   try {
@@ -181,6 +183,7 @@ async function analyzeOnly() {
     price,
     signal: analysis.signal,
     reasons: analysis.reasons,
+    trendEntry: { signal: entryEval.signal, type: entryEval.type, reasons: entryEval.reasons },
     strategy,
     verdict: strategy.verdict,
     position: state.position,
@@ -234,8 +237,12 @@ async function runCycle() {
       stateService.update({ dryRun: { USDT: realUsdt, BTC: realBtc } });
     }
 
+    const entryEval = strategyEngine.evaluateEntry(candles, env);
+
     if (st.position) {
-      await handleExit(analysis, price, symbol);
+      await handleExit(price, symbol, candles);
+    } else if (env.strategyMode === 'trend') {
+      await handleEntry(entryEval, symbol, strategy);
     } else {
       await handleEntry(analysis, symbol, strategy);
     }
@@ -246,8 +253,16 @@ async function runCycle() {
       lastError: null,
       lastAnalysis: {
         ts: analysis.ts,
-        signal: analysis.signal,
+        signal: entryEval.signal || analysis.signal,
+        entryType: entryEval.type,
         close: analysis.close,
+        adx: entryEval.reasons.adx,
+        atr: entryEval.reasons.atr,
+        trendUp: entryEval.reasons.trendUp,
+        zzTrend: entryEval.reasons.zzTrend,
+        stopPrice: entryEval.reasons.stopPrice,
+        tp1: entryEval.reasons.tp1,
+        tp2: entryEval.reasons.tp2,
         bbLower: analysis.reasons.bbLower,
         k: analysis.reasons.k,
         d: analysis.reasons.d,
@@ -273,7 +288,8 @@ async function handleEntry(analysis, symbol, strategy) {
   if (!analysis.signal) return;
 
   const state = stateService.get();
-  if (state.lastAnalyzedTs === analysis.ts) return;
+  const candleTs = analysis.ts != null ? analysis.ts : analysis.reasons && analysis.reasons.price;
+  if (state.lastAnalyzedTs === candleTs) return;
   if (state.cooldownUntil && Date.now() < state.cooldownUntil) {
     const remaining = Math.ceil((state.cooldownUntil - Date.now()) / 60000);
     logger.info(`BUY sinyali var ama soguma suresi devam ediyor (${remaining} dk kaldi).`);
@@ -284,66 +300,128 @@ async function handleEntry(analysis, symbol, strategy) {
     logger.warn(
       `BUY sinyali var ama strateji riski yuksek (genel skor ${strategy.scores.overall.toFixed(2)}). Emir atlanildi. Verdict: ${strategy.verdict}`
     );
-    stateService.update({ lastAnalyzedTs: analysis.ts });
+    stateService.update({ lastAnalyzedTs: candleTs });
     return;
   }
 
   logger.info('[STRATEJI] BUY sinyali tespit edildi', analysis.reasons);
   try {
     const result = await orderService.placeOrder('BUY', symbol, null, env.budgetUsdt);
+
+    const pos = stateService.get().position;
+    if (pos && env.strategyMode === 'trend') {
+      stateService.update({
+        position: {
+          ...pos,
+          entryTs: Date.parse(result.timestamp),
+          stopPrice: analysis.reasons.stopPrice,
+          tp1: analysis.reasons.tp1,
+          tp2: analysis.reasons.tp2,
+          highestSinceEntry: result.averagePrice || pos.entryPrice,
+        },
+      });
+    }
+
     logger.info('[STRATEJI] BUY emri acildi', {
       orderId: result.orderId,
       price: result.averagePrice,
       quantity: result.filled,
       mode: result.mode,
+      stopPrice: analysis.reasons.stopPrice,
+      tp1: analysis.reasons.tp1,
+      tp2: analysis.reasons.tp2,
     });
   } catch (err) {
     logger.error('[STRATEJI] BUY emri basarisiz', { error: err.message });
   }
-  stateService.update({ lastAnalyzedTs: analysis.ts });
+  stateService.update({ lastAnalyzedTs: candleTs });
 }
 
-async function handleExit(analysis, price, symbol) {
+async function handleExit(price, symbol, candles) {
   const state = stateService.get();
-  const entry = state.position.entryPrice;
-  const tp = entry * (1 + env.tpPercent / 100);
-  const sl = entry * (1 - env.slPercent / 100);
+  const pos = state.position;
+  if (!pos) return;
 
-  let reason = null;
-  if (price >= tp) reason = 'TAKE PROFIT';
-  else if (price <= sl) reason = 'STOP LOSS';
+  const exitEval = strategyEngine.evaluateExit(pos, candles, price, env);
 
-  if (reason) {
-    logger.info(`[STRATEJI] ${reason} tetiklendi -> ${symbol} fiyat ${price} (giris: ${entry}, TP: ${tp}, SL: ${sl})`);
-
-    let sellQty;
-    if (env.dryRun) {
-      sellQty = state.position.quantity;
-    } else {
-      const b = await exchange.fetchBalance();
-      const free = Math.floor((b.BTC ? b.BTC.free : 0) * 1e5) / 1e5;
-      // SADECE botun aldigini sat; hesaptaki baska BTC'lere dokunma
-      sellQty = Math.min(state.position.quantity, free);
-    }
-
-    if (!sellQty || sellQty <= 0) {
-      logger.warn(`[STRATEJI] ${reason} icin satilacak miktar yok.`);
-    } else {
-      try {
-        const result = await orderService.placeOrder('SELL', symbol, sellQty, null);
-        logger.info(`[STRATEJI] ${reason} emri gonderildi`, {
-          orderId: result.orderId,
-          price: result.averagePrice,
-          proceeds: result.spent,
-          mode: result.mode,
-        });
-      } catch (err) {
-        logger.error(`[STRATEJI] ${reason} emri basarisiz`, { error: err.message });
-      }
-    }
+  if (exitEval.highest && exitEval.highest !== pos.highestSinceEntry) {
+    stateService.update({ position: { ...pos, highestSinceEntry: exitEval.highest } });
   }
 
-  stateService.update({ lastAnalyzedTs: analysis.ts });
+  let action = exitEval.action;
+  if (
+    action === 'SELL_PARTIAL' &&
+    pos.quantity * exitEval.sellFraction * price < 10
+  ) {
+    logger.info(
+      '[STRATEJI] Pozisyon kucuk, kismi kar al yerine tamami satilacak.'
+    );
+    action = 'SELL_ALL';
+  }
+
+  if (!action) return;
+
+  logger.info(`[STRATEJI] ${exitEval.reason} tetiklendi -> ${symbol} fiyat ${price}`, {
+    entry: pos.entryPrice,
+    stop: exitEval.reasons.activeStop,
+    tp1: pos.tp1,
+    tp2: pos.tp2,
+    tp1Done: !!pos.tp1Done,
+    barsHeld: exitEval.reasons.barsHeld,
+  });
+
+  let sellQty;
+  if (env.dryRun) {
+    sellQty =
+      action === 'SELL_PARTIAL'
+        ? Math.floor(pos.quantity * exitEval.sellFraction * 1e5) / 1e5
+        : pos.quantity;
+  } else {
+    const b = await exchange.fetchBalance();
+    const free = Math.floor((b.BTC ? b.BTC.free : 0) * 1e5) / 1e5;
+    const target =
+      action === 'SELL_PARTIAL'
+        ? Math.floor(pos.quantity * exitEval.sellFraction * 1e5) / 1e5
+        : pos.quantity;
+    sellQty = Math.min(target, free);
+  }
+
+  if (!sellQty || sellQty <= 0) {
+    logger.warn(`[STRATEJI] ${exitEval.reason} icin satilacak miktar yok.`);
+    return;
+  }
+
+  try {
+    const result = await orderService.placeOrder('SELL', symbol, sellQty, null, {
+      partial: action === 'SELL_PARTIAL',
+    });
+    logger.info(`[STRATEJI] ${exitEval.reason} emri gonderildi`, {
+      orderId: result.orderId,
+      price: result.averagePrice,
+      quantity: result.filled,
+      proceeds: result.spent,
+      mode: result.mode,
+    });
+
+    if (action === 'SELL_PARTIAL') {
+      const p2 = stateService.get().position;
+      if (p2) {
+        stateService.update({
+          position: {
+            ...p2,
+            tp1Done: true,
+            stopPrice: Math.max(p2.stopPrice || 0, exitEval.newStop || p2.entryPrice),
+          },
+        });
+        logger.info('[STRATEJI] Kalan pozisyon icin stop maliyete cekildi.', {
+          remaining: p2.quantity,
+          newStop: Math.max(p2.stopPrice || 0, exitEval.newStop || p2.entryPrice),
+        });
+      }
+    }
+  } catch (err) {
+    logger.error(`[STRATEJI] ${exitEval.reason} emri basarisiz`, { error: err.message });
+  }
 }
 
 module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice };

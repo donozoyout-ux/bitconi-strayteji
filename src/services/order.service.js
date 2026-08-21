@@ -106,7 +106,7 @@ function buildResult(action, symbol, quantity, cost, price, spent, mode, timesta
   };
 }
 
-async function placeDryRun(action, symbol, qty, cost, timestamp) {
+async function placeDryRun(action, symbol, qty, cost, timestamp, opts = {}) {
   await ensureDryRunBalances();
   const price = await fetchLastPrice(symbol);
   const state = stateService.get();
@@ -175,6 +175,40 @@ async function placeDryRun(action, symbol, qty, cost, timestamp) {
   dr.BTC -= quantity;
   const feeUsdt = quantity * price * env.commissionRate;
   const prevPosition = state.position || null;
+
+  if (opts.partial && prevPosition) {
+    const remaining = Math.max(0, (prevPosition.quantity || 0) - quantity);
+    stateService.update({
+      dryRun: dr,
+      position: { ...prevPosition, quantity: remaining, tp1Done: true },
+    });
+    recordClosedTrade(
+      { ...prevPosition, quantity },
+      price,
+      timestamp,
+      'DRY_RUN',
+      'KISMILI_KAR_AL'
+    );
+    const partialResult = buildResult(
+      action,
+      symbol,
+      quantity,
+      null,
+      { price },
+      proceeds,
+      'DRY_RUN',
+      timestamp,
+      { currency: 'USDT', cost: feeUsdt }
+    );
+    logger.info(`[DRY-RUN] KISMILI SELL simule edildi -> ${symbol}`, {
+      price,
+      quantity,
+      remaining,
+      proceeds: proceeds.toFixed(2),
+    });
+    return partialResult;
+  }
+
   stateService.update({
     dryRun: dr,
     position: null,
@@ -203,7 +237,7 @@ async function placeDryRun(action, symbol, qty, cost, timestamp) {
   return result;
 }
 
-async function placeReal(action, symbol, qty, cost, timestamp) {
+async function placeReal(action, symbol, qty, cost, timestamp, opts = {}) {
   let order;
   if (action === 'BUY') {
     if (cost) {
@@ -234,6 +268,21 @@ async function placeReal(action, symbol, qty, cost, timestamp) {
       },
       cooldownUntil: null,
     });
+  } else if (opts.partial) {
+    const prevPosition = stateService.get().position || null;
+    if (prevPosition) {
+      const remaining = Math.max(0, (prevPosition.quantity || 0) - (order.filled || qty));
+      stateService.update({
+        position: { ...prevPosition, quantity: remaining, tp1Done: true },
+      });
+      recordClosedTrade(
+        { ...prevPosition, quantity: order.filled || qty },
+        order.average || order.price,
+        timestamp,
+        'REAL',
+        'KISMILI_KAR_AL'
+      );
+    }
   } else {
     const prevPosition = stateService.get().position || null;
     stateService.update({
@@ -275,7 +324,7 @@ async function placeReal(action, symbol, qty, cost, timestamp) {
   return result;
 }
 
-async function placeOrder(action, symbol, quantity, budget) {
+async function placeOrder(action, symbol, quantity, budget, opts = {}) {
   const normalizedAction = action ? String(action).toUpperCase() : '';
 
   if (!VALID_ACTIONS.includes(normalizedAction)) {
@@ -317,8 +366,8 @@ async function placeOrder(action, symbol, quantity, budget) {
 
   try {
     const result = env.dryRun
-      ? await placeDryRun(normalizedAction, ccxtSymbol, qty, cost, timestamp)
-      : await placeReal(normalizedAction, ccxtSymbol, qty, cost, timestamp);
+      ? await placeDryRun(normalizedAction, ccxtSymbol, qty, cost, timestamp, opts)
+      : await placeReal(normalizedAction, ccxtSymbol, qty, cost, timestamp, opts);
 
     telegramService
       .sendTelegramMessage(telegramService.formatOrderNotification(result))
