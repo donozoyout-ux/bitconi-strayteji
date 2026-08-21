@@ -2,17 +2,24 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Binance Testnet anahtarlari (.env bos olsa bile kod icindeki varsayilanlari kullan)
-// NOT: Bunlar TESTNET anahtarlaridir (sahte para). Gercek hesap kullanilacaksa degistirin!
+// Binance anahtarlari: USE_TESTNET=true ise testnet anahtarlari, degilse gercek hesap anahtarlari kullanilir.
 const FALLBACK = {
   binanceTestnetApiKey: 'F73g8dnhf97ffrTws1QlxDTaRJNHTBKKOH5hfuKbc7vjhdsB51A81MPJRDomlnFA',
   binanceTestnetSecret: '92FODDyMiMm0gzhW63ySyica6kLAoL37pK6vXYAWF2pO9jWVANWGUwdvy4tMLUGv',
 };
 
+// Varsayilan DEMO (testnet). Gercek hesap icin .env'de USE_TESTNET=false + gercek anahtarlar gerekir.
+const useTestnet = (process.env.USE_TESTNET || 'true') === 'true';
+
 const env = {
   port: process.env.PORT || 3000,
-  binanceTestnetApiKey: process.env.BINANCE_TESTNET_API_KEY || FALLBACK.binanceTestnetApiKey,
-  binanceTestnetSecret: process.env.BINANCE_TESTNET_SECRET_KEY || FALLBACK.binanceTestnetSecret,
+  useTestnet,
+  binanceApiKey: useTestnet
+    ? process.env.BINANCE_TESTNET_API_KEY || FALLBACK.binanceTestnetApiKey
+    : process.env.BINANCE_API_KEY || '',
+  binanceSecret: useTestnet
+    ? process.env.BINANCE_TESTNET_SECRET_KEY || FALLBACK.binanceTestnetSecret
+    : process.env.BINANCE_SECRET_KEY || '',
   commissionRate: parseFloat(process.env.COMMISSION_RATE) || 0.001,
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
   telegramChatId: process.env.TELEGRAM_CHAT_ID || '',
@@ -45,8 +52,20 @@ function sanitizeFloat(value, min, max, fallback) {
   return v;
 }
 
+if (!env.binanceApiKey || !env.binanceSecret) {
+  console.warn(
+    '[WARN] Binance API anahtarlari eksik. .env dosyasina BINANCE_API_KEY / BINANCE_SECRET_KEY yazin.'
+  );
+}
+
 if (!env.telegramBotToken || !env.telegramChatId) {
   console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID tanimli degil. Bildirimler gonderilmez.');
+}
+
+if (!useTestnet && env.tradingEnabled && !env.dryRun) {
+  console.warn(
+    '[UYARI] GERCEK HESAP MODU AKTIF - gercek para ile islem yapilacak. Durdurmak icin TRADING_MODE=off yapin.'
+  );
 }
 
 module.exports = env;

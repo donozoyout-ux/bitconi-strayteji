@@ -9,6 +9,48 @@ const newsService = require('./news.service');
 let timer = null;
 let stopped = false;
 
+const DUST_BTC = 0.00001;
+
+async function syncPositionWithExchange(symbol, price) {
+  const st = stateService.get();
+  const balance = await exchange.fetchBalance();
+  const btcFree = balance.BTC ? balance.BTC.free : 0;
+
+  if (st.position) {
+    if (btcFree < st.position.quantity * 0.5) {
+      logger.warn(
+        `[SYNC] Kayitli pozisyon var (${st.position.quantity} BTC) ama borsada sadece ${btcFree} BTC var -> pozisyon kaydi temizleniyor.`
+      );
+      stateService.update({ position: null });
+    }
+    return;
+  }
+
+  if (env.useTestnet && btcFree > DUST_BTC) {
+    logger.info(
+      `[SYNC] Pozisyon kaydi yok ama borsada ${btcFree} BTC bulundu -> pozisyon devraliniyor (giris referansi: ${price}).`
+    );
+    stateService.update({
+      position: {
+        symbol,
+        entryPrice: price,
+        entryTime: new Date().toISOString(),
+        quantity: btcFree,
+        cost: btcFree * price,
+        mode: 'REAL',
+        synced: true,
+      },
+    });
+    return;
+  }
+
+  if (!env.useTestnet && btcFree > DUST_BTC) {
+    logger.info(
+      `[SYNC] Gercek hesapta bot harici ${btcFree} BTC var. Bu bota ait degil, dokunulmayacak. Bot sadece kendi aldigini satar.`
+    );
+  }
+}
+
 function start() {
   if (!env.tradingEnabled) {
     logger.warn('Otonom motor KAPALI (TRADING_MODE=off).');
@@ -178,6 +220,15 @@ async function runCycle() {
     const realBtc = balance.BTC ? balance.BTC.total : 0;
     const realUsdt = balance.USDT ? balance.USDT.total : 0;
 
+    const st0 = stateService.get();
+    if (st0.dryRun.USDT === null || st0.dryRun.USDT === undefined) {
+      stateService.update({ dryRun: { USDT: realUsdt, BTC: realBtc } });
+    }
+
+    if (!env.dryRun) {
+      await syncPositionWithExchange(symbol, price);
+    }
+
     const st = stateService.get();
     if (st.dryRun.USDT === null || st.dryRun.USDT === undefined) {
       stateService.update({ dryRun: { USDT: realUsdt, BTC: realBtc } });
@@ -270,7 +321,9 @@ async function handleExit(analysis, price, symbol) {
       sellQty = state.position.quantity;
     } else {
       const b = await exchange.fetchBalance();
-      sellQty = Math.floor((b.BTC ? b.BTC.free : 0) * 1e5) / 1e5;
+      const free = Math.floor((b.BTC ? b.BTC.free : 0) * 1e5) / 1e5;
+      // SADECE botun aldigini sat; hesaptaki baska BTC'lere dokunma
+      sellQty = Math.min(state.position.quantity, free);
     }
 
     if (!sellQty || sellQty <= 0) {
