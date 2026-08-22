@@ -238,11 +238,11 @@ function evaluateEntry(candles, opts = {}) {
 
   const pullback = Boolean(trendUp && supportTouch && histRising);
 
-  let type = null;
+  var type = null;
   if (breakout && adxOk && diOk) type = 'KIRILIM';
   else if (pullback && adxOk) type = 'DESTEK_TEPKISI';
 
-  let psychBlock = false;
+  var psychBlock = false;
   if (type) {
     const nextPsych = nextPsychAbove(price);
     psychBlock = nextPsych - price < 0.35 * atr;
