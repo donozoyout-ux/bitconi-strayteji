@@ -11,6 +11,27 @@ let stopped = false;
 
 const DUST_BTC = 0.00001;
 
+function computeBuyBudget() {
+  const st = stateService.get();
+  const realized = (st.trades || []).reduce((s, t) => s + (t.pnl || 0), 0);
+  const base = env.budgetUsdt;
+  const cap = base * (env.maxBudgetMultiplier || 3);
+  const floor = base * 0.5;
+  const budget = Math.max(floor, Math.min(cap, base + realized));
+  return Math.floor(budget * 100) / 100;
+}
+
+function recordStartCapital(usdt, btc, price) {
+  const st = stateService.get();
+  if (!st.capital || st.capital.startEquityUsdt == null) {
+    const equity = (usdt || 0) + (btc || 0) * (price || 0);
+    stateService.update({
+      capital: { startEquityUsdt: Math.floor(equity * 100) / 100, startedAt: new Date().toISOString() },
+    });
+    logger.info(`[SERMAYE] Baslangic varlik kaydi alindi: ${equity.toFixed(2)} USDT`);
+  }
+}
+
 async function syncPositionWithExchange(symbol, price) {
   const st = stateService.get();
   const balance = await exchange.fetchBalance();
@@ -230,6 +251,8 @@ async function runCycle() {
     const realBtc = balance.BTC ? balance.BTC.total : 0;
     const realUsdt = balance.USDT ? balance.USDT.total : 0;
 
+    recordStartCapital(realUsdt, realBtc, price);
+
     const st0 = stateService.get();
     if (st0.dryRun.USDT === null || st0.dryRun.USDT === undefined) {
       stateService.update({ dryRun: { USDT: realUsdt, BTC: realBtc } });
@@ -333,7 +356,9 @@ async function handleEntry(analysis, symbol, strategy) {
 
   logger.info('[STRATEJI] BUY sinyali tespit edildi', analysis.reasons);
   try {
-    const result = await orderService.placeOrder('BUY', symbol, null, env.budgetUsdt);
+    const budget = env.strategyMode === 'trend' ? computeBuyBudget() : env.budgetUsdt;
+    logger.info(`[BUTCE] Bu islem icin kullanilacak butce: ${budget} USDT (baslangic: ${env.budgetUsdt}, birikmis K/Z ile guncel)`);
+    const result = await orderService.placeOrder('BUY', symbol, null, budget);
 
     const pos = stateService.get().position;
     if (pos && env.strategyMode === 'trend') {
@@ -451,4 +476,4 @@ async function handleExit(price, symbol, candles) {
   }
 }
 
-module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice };
+module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice, computeBuyBudget };

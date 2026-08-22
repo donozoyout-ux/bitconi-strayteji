@@ -40,6 +40,7 @@ const env = {
   atrTrailMult: sanitizeFloat(process.env.ATR_TRAIL_MULT, 0.5, 8, 2.5),
   timeExitCandles: parseInt(process.env.TIME_EXIT_CANDLES) || 5,
   partialTpPercent: sanitizeFloat(process.env.PARTIAL_TP_PERCENT, 20, 100, 50),
+  maxBudgetMultiplier: sanitizeFloat(process.env.MAX_BUDGET_MULTIPLIER, 1, 10, 3),
   allowSymbols: ['BTC/USDT'],
 };
 

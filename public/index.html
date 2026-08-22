@@ -93,6 +93,7 @@
     .btn:hover { opacity: .85; }
     .btn.buy { background: var(--green); }
     .btn.sell { background: var(--red); }
+    .btn.danger { background: var(--red); }
     .btn.ghost {
       background: transparent; border: 1px solid var(--border); color: var(--text);
     }
@@ -235,6 +236,8 @@
       </div>
       <div class="row actions">
         <button type="button" class="btn ghost" id="checkBtn">Simdi Analiz Et</button>
+        <button type="button" class="btn" id="openBtn">Manuel AL Ac</button>
+        <button type="button" class="btn danger" id="closeBtn">Pozisyonu Kapat (SAT)</button>
         <button type="button" class="btn ghost" id="resetBtn">Motor Durumunu Sifirla</button>
       </div>
       <div class="muted" id="traderAutoMeta" style="margin-top:10px; font-size:12px;"></div>
@@ -501,6 +504,15 @@
 
     $('chartRefreshBtn').addEventListener('click', loadChart);
 
+    function openPosHtml(pos) {
+      if (!pos) return '<span style="color:var(--muted);">pozisyon yok</span>';
+      const pnl = pos.unrealizedPnl;
+      const color = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
+      const txt = pnl != null ? (pnl > 0 ? '+' : '') + num(pnl, 2) + ' USDT (' + (pos.unrealizedPnlPercent > 0 ? '+' : '') + num(pos.unrealizedPnlPercent, 2) + '%)' : '-';
+      return '<span style="color:' + color + ';">' + txt + '</span><br><span style="font-size:11px;color:var(--muted);">' +
+        num(pos.quantity, 5) + ' BTC @ ' + num(pos.entryPrice, 0) + ' | deger: ' + (pos.valueUsdt != null ? num(pos.valueUsdt, 2) : '-') + ' USDT</span>';
+    }
+
     async function loadHistory() {
       const summaryGrid = $('pnlSummaryGrid');
       const tradesBox = $('tradesBox');
@@ -511,15 +523,22 @@
         if (!d.success) throw new Error(d.error || 'Hata');
 
         const s = d.summary || {};
+        const p = d.performance || {};
         const pnlColor = s.totalPnl > 0 ? 'var(--green)' : s.totalPnl < 0 ? 'var(--red)' : 'var(--muted)';
         const pnlTxt = (s.totalPnl > 0 ? '+' : '') + num(s.totalPnl, 2);
+        const retColor = p.returnPercent > 0 ? 'var(--green)' : p.returnPercent < 0 ? 'var(--red)' : 'var(--muted)';
+        const retTxt = p.returnPercent != null ? (p.returnPercent > 0 ? '+' : '') + num(p.returnPercent, 2) + '%' : '-';
+        const retUsdtTxt = p.returnUsdt != null ? (p.returnUsdt > 0 ? '+' : '') + num(p.returnUsdt, 2) + ' USDT' : '-';
 
         const rows = [
+          ['Baslangic Sermayesi', p.startCapital != null ? num(p.startCapital, 2) + ' USDT' : '-'],
+          ['Guncel Varlik', p.currentEquity != null ? '<b>' + num(p.currentEquity, 2) + '</b> USDT' : '-'],
+          ['Toplam Getiri', '<span style="color:' + retColor + ';">' + retTxt + ' (' + retUsdtTxt + ')</span>'],
+          ['Acik Pozisyon K/Z', openPosHtml(d.openPosition)],
+          ['Sonraki Islem Butcesi', p.nextBuyBudget != null ? '<b>' + num(p.nextBuyBudget, 2) + '</b> USDT' : '-'],
           ['Toplam Islem', s.totalTrades || 0],
-          ['Kazanilan (KAR)', s.wins || 0],
-          ['Kaybedilen (ZARAR)', s.losses || 0],
-          ['Basari Orani', num(s.winRate, 1) + '%'],
-          ['Net Kar/Zarar', '<span style="color:' + pnlColor + ';">' + pnlTxt + ' USDT</span>'],
+          ['Kazanilan / Kaybedilen', (s.wins || 0) + ' / ' + (s.losses || 0) + ' (%' + num(s.winRate, 1) + ')'],
+          ['Kapali Islem Net K/Z', '<span style="color:' + pnlColor + ';">' + pnlTxt + ' USDT</span>'],
         ];
         summaryGrid.innerHTML = rows.map(([l, v]) =>
           '<div class="stat"><div class="label">' + l + '</div><div class="value" style="font-size:18px;">' + v + '</div></div>'
@@ -817,6 +836,54 @@
     $('resetBtn').addEventListener('click', async () => {
       await fetchWithTimeout('/api/trader/reset', { method: 'POST' }, 20000);
       loadTrader();
+    });
+
+    $('openBtn').addEventListener('click', async () => {
+      const btn = $('openBtn');
+      if (!confirm('Manuel ALIS acilsin mi? (butce: birikimli bakiye hesabina gore)')) return;
+      btn.disabled = true;
+      btn.innerHTML = 'Emir gonderiliyor...';
+      const box = $('traderResult');
+      try {
+        const res = await fetchWithTimeout('/api/trader/open', { method: 'POST' }, 30000);
+        const d = await res.json();
+        box.style.display = 'block';
+        box.textContent = d.success
+          ? 'MANUEL ALIM ACILDI -> ' + JSON.stringify(d.result && { fiyat: d.result.averagePrice, miktar: d.result.filled, butce: d.result.cost })
+          : 'HATA: ' + d.error;
+        loadHistory();
+        loadTrader();
+      } catch (err) {
+        box.style.display = 'block';
+        box.textContent = 'HATA: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Manuel AL Ac';
+      }
+    });
+
+    $('closeBtn').addEventListener('click', async () => {
+      const btn = $('closeBtn');
+      if (!confirm('Acik pozisyonun TAMAMI piyasa fiyatindan satilacak. Emin misin?')) return;
+      btn.disabled = true;
+      btn.innerHTML = 'Satis gonderiliyor...';
+      const box = $('traderResult');
+      try {
+        const res = await fetchWithTimeout('/api/trader/close', { method: 'POST' }, 30000);
+        const d = await res.json();
+        box.style.display = 'block';
+        box.textContent = d.success
+          ? 'POZISYON KAPATILDI -> ' + JSON.stringify(d.result && { fiyat: d.result.averagePrice, miktar: d.result.filled })
+          : 'HATA: ' + d.error;
+        loadHistory();
+        loadTrader();
+      } catch (err) {
+        box.style.display = 'block';
+        box.textContent = 'HATA: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Pozisyonu Kapat (SAT)';
+      }
     });
 
     async function loadAnalysis(force) {

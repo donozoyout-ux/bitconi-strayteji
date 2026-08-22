@@ -15,6 +15,7 @@ const DEFAULT_STATE = {
   busy: false,
   trades: [],
   orderLog: [],
+  capital: { startEquityUsdt: null, startedAt: null },
 };
 
 const MAX_TRADES = 100;

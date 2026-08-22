@@ -28,6 +28,8 @@ app.post('/api/trader/analyze', traderController.analyze);
 app.get('/api/trader/price', traderController.getLivePrice);
 app.get('/api/trader/history', traderController.getHistory);
 app.post('/api/trader/reset', traderController.resetState);
+app.post('/api/trader/close', traderController.closePosition);
+app.post('/api/trader/open', traderController.openManual);
 app.get('/api/chart', chartController.getChart);
 app.get('/api/analysis', analysisController.getAnalysis);
 
