@@ -648,4 +648,4 @@ riskEngine.checkRiskLimits = function (dailyPnL, consecutiveLosses, tradesToday,
   };
 };
 
-module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice, computeBuyBudget, calculatePositionSize };
+module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice, computeBuyBudget, riskEngine };
