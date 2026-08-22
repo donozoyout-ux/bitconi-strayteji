@@ -2,16 +2,18 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Binance anahtarlari: USE_TESTNET=true ise testnet anahtarlari, degilse gercek hesap anahtarlari kullanilir.
+// ----------------------------
+// SECRETS: Only infrastructure secrets from ENV
+// ----------------------------
 const FALLBACK = {
   binanceTestnetApiKey: 'F73g8dnhf97ffrTws1QlxDTaRJNHTBKKOH5hfuKbc7vjhdsB51A81MPJRDomlnFA',
   binanceTestnetSecret: '92FODDyMiMm0gzhW63ySyica6kLAoL37pK6vXYAWF2pO9jWVANWGUwdvy4tMLUGv',
 };
 
-// Varsayilan DEMO (testnet). Gercek hesap icin .env'de USE_TESTNET=false + gercek anahtarlar gerekir.
 const useTestnet = (process.env.USE_TESTNET || 'true') === 'true';
 
 const env = {
+  // Infrastructure / Secrets
   port: process.env.PORT || 3000,
   useTestnet,
   binanceApiKey: useTestnet
@@ -25,24 +27,33 @@ const env = {
   telegramChatId: process.env.TELEGRAM_CHAT_ID || '',
   tradingEnabled: (process.env.TRADING_MODE || 'on') !== 'off',
   dryRun: (process.env.DRY_RUN || 'false') === 'true',
-  analysisTimeframe: process.env.ANALYSIS_TIMEFRAME || '15m',
-  checkIntervalMin: parseInt(process.env.CHECK_INTERVAL_MIN) || 5,
-  budgetUsdt: sanitizeFloat(process.env.BUDGET_USDT, 5, 10000, 1000),
-  tpPercent: sanitizeFloat(process.env.TP_PERCENT, 0.5, 20, 5),
-  slPercent: sanitizeFloat(process.env.SL_PERCENT, 0.5, 9.9, 2.5),
-  cooldownMin: parseInt(process.env.COOLDOWN_MIN) || 60,
-  tradingSymbol: process.env.TRADING_SYMBOL || 'BTC/USDT',
-  oversoldLevel: parseInt(process.env.STOCH_OVERSOLD) || 20,
-  useRsi2: (process.env.USE_RSI2_FILTER || 'false') === 'true',
-  strategyMode: process.env.STRATEGY_MODE || 'trend',
-  adxMin: sanitizeFloat(process.env.ADX_MIN, 5, 50, 18),
-  atrStopMult: sanitizeFloat(process.env.ATR_STOP_MULT, 0.5, 6, 2),
-  atrTrailMult: sanitizeFloat(process.env.ATR_TRAIL_MULT, 0.5, 8, 2.5),
-  timeExitCandles: parseInt(process.env.TIME_EXIT_CANDLES) || 5,
-  partialTpPercent: sanitizeFloat(process.env.PARTIAL_TP_PERCENT, 20, 100, 50),
-  maxBudgetMultiplier: sanitizeFloat(process.env.MAX_BUDGET_MULTIPLIER, 1, 10, 3),
+
+  // Trading Configuration (loaded from persistent storage, defaults below)
+  // These are OVERRIDDEN by settings service at runtime
+  analysisTimeframe: '1d',
+  checkIntervalMin: 5,
+  budgetUsdt: 500,
+  tpPercent: 5,
+  slPercent: 2.5,
+  cooldownMin: 60,
+  tradingSymbol: 'BTC/USDT',
+  oversoldLevel: 20,
+  useRsi2: false,
+  strategyMode: 'regime',
+
+  // Risk engine defaults
+  adxMin: 18,
+  atrStopMult: 2.0,
+  atrTrailMult: 2.5,
+  timeExitCandles: 5,
+  partialTpPercent: 50,
+  maxBudgetMultiplier: 3,
   allowSymbols: ['BTC/USDT'],
 };
+
+// Non-trading env vars (populated by deployment infrastructure)
+env.environment = process.env.NODE_ENV || 'development';
+env.isTestnet = env.useTestnet;
 
 try {
   if (process.env.GOOGLE_FORM_FIELDS) {
@@ -59,6 +70,7 @@ function sanitizeFloat(value, min, max, fallback) {
   return v;
 }
 
+// Validate secrets are present
 if (!env.binanceApiKey || !env.binanceSecret) {
   console.warn(
     '[WARN] Binance API anahtarlari eksik. .env dosyasina BINANCE_API_KEY / BINANCE_SECRET_KEY yazin.'

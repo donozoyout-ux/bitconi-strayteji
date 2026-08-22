@@ -7,7 +7,7 @@ const spreadsheetService = require('./spreadsheet.service');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
 
-function recordClosedTrade(position, exitPrice, exitTime, mode, result, note) {
+function recordClosedTrade(position, exitPrice, exitTime, mode, result, note, exitReason, tradeDetails = {}) {
   if (!position) return;
   const qty = position.quantity || 0;
   const entry = position.entryPrice || 0;
@@ -17,14 +17,26 @@ function recordClosedTrade(position, exitPrice, exitTime, mode, result, note) {
 
   const trade = {
     symbol: position.symbol,
+    side: position.side || 'LONG',
     entryPrice: entry,
     exitPrice: exit,
-    quantity: qty,
+    size: qty,
+    leverage: position.leverage || env.maxLeverage || 5,
+    stopLoss: position.stopPrice || null,
+    takeProfit1: position.tp1 || null,
+    takeProfit2: position.tp2 || null,
+    signalScore: position.signalScore || null,
+    marketRegime: position.regime || null,
+    rsi: position.rsi || null,
+    bbState: position.bbState || null,
+    volume: position.volume || null,
+    reason: note || tradeDetails.reason || '',
+    exitReason: exitReason || '',
     pnl,
     pnlPercent: pnlPct,
-    result: pnl == null ? 'HATA' : pnl >= 0 ? 'KAR' : 'ZARAR',
-    mode,
-    note: note || '',
+    fees: tradeDetails.fees || 0,
+    funding: tradeDetails.funding || 0,
+    duration: tradeDetails.duration || null,
     openedAt: position.entryTime,
     closedAt: exitTime,
     timestamp: exitTime,
@@ -187,7 +199,9 @@ async function placeDryRun(action, symbol, qty, cost, timestamp, opts = {}) {
       price,
       timestamp,
       'DRY_RUN',
-      'KISMILI_KAR_AL'
+      'KISMILI_KAR_AL',
+      'KISMILI_KAR_AL',
+      { fees: feeUsdt }
     );
     const partialResult = buildResult(
       action,
@@ -280,7 +294,9 @@ async function placeReal(action, symbol, qty, cost, timestamp, opts = {}) {
         order.average || order.price,
         timestamp,
         'REAL',
-        'KISMILI_KAR_AL'
+        'KISMILI_KAR_AL',
+        'KISMILI_KAR_AL',
+        { fees: quantity * price * env.commissionRate }
       );
     }
   } else {
@@ -290,7 +306,7 @@ async function placeReal(action, symbol, qty, cost, timestamp, opts = {}) {
       cooldownUntil: Date.now() + env.cooldownMin * 60000,
     });
     if (prevPosition) {
-      recordClosedTrade(prevPosition, order.average || order.price, timestamp, 'REAL', 'KAPANIŞ');
+      recordClosedTrade(prevPosition, order.average || order.price, timestamp, 'REAL', 'KAPANIŞ', 'KAPANIŞ', { fees: order.fee ? Math.abs(order.fee.total) : 0 });
     }
   }
 

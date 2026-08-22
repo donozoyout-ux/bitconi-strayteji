@@ -228,7 +228,7 @@
     <div class="card">
       <h2>Otonom Strateji Motoru</h2>
       <p class="muted" style="margin-bottom:14px; font-size:13px;">
-        Bot Binance'ten 1D mum verisini ceker, Bollinger + Stoch RSI analizini kendisi yapar,
+        Bot Binance'ten 1D mum verisini ceker, Bollinger + RSI analizini kendisi yapar,
         kosul olusunca otonom alim yapar; +TP / -SL seviyelerinde otomatik satar.
       </p>
       <div id="traderInfo" style="margin-bottom:14px;">
@@ -242,6 +242,155 @@
       </div>
       <div class="muted" id="traderAutoMeta" style="margin-top:10px; font-size:12px;"></div>
       <div id="traderResult" class="result" style="display:none; margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Settings (Ayarlar)</h2>
+      <p class="muted" style="margin-bottom:14px; font-size:13px;">
+        Ayarlar persistent olarak saklandi. Uygulama restart'i sonucu kaybolmaz.
+        Degisiklikler Binance API'yi etkilemez, sadece strateji davranimini kontrol eder.
+      </div>
+      <form id="settingsForm">
+        <div class="grid">
+          <div class="field">
+            <label>Strategy Version</label>
+            <input type="text" id="settingsStrategyVersion" value="1.0.0" readonly />
+          </div>
+          <div class="field">
+            <label>Strategy</label>
+            <select id="settingsStrategy">
+              <option value="rsi-bollinger">RSI + Bollinger (core)</option>
+              <option value="bb-squeeze">BB Squeeze</option>
+              <option value="rsi-only">RSI Only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>RSI Length</label>
+            <input type="number" id="settingsRSILength" value="20" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display:block;">RSI hesaplama periyodu.</span>
+          </div>
+          <div class="field">
+            <label>RSI MA Length</label>
+            <input type="number" id="settingsRSIMaLength" value="20" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display:block;">RSI hareketli ortalamasi periyodu.</span>
+          </div>
+          <div class="field">
+            <label>Bollinger Length</label>
+            <input type="number" id="settingsBBLength" value="30" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display:block;">Bollinger Band uzunlugu (SMA periyodu).</span>
+          </div>
+          <div class="field">
+            <label>Bollinger Std</label>
+            <input type="number" id="settingsBBStd" value="2" min="0.1" max="10" step="0.1" />
+            <span class="muted" style="font-size:11px; display:block;">Standart sapma katsayisi.</span>
+          </div>
+          <div class="field">
+            <label>Execution Timeframe</label>
+            <select id="settingsExecutionTimeframe">
+              <option value="15m">15m</option>
+              <option value="30m">30m</option>
+              <option value="1h">1h</option>
+              <option value="4h">4h</option>
+              <option value="1d">1d</option>
+            </select>
+            <span class="muted" style="font-size:11px; display:block;">Emir calistirilacak timeframe.</span>
+          </div>
+          <div class="field">
+            <label>Higher Timeframe</label>
+            <select id="settingsHigherTimeframe">
+              <option value="1h">1h</option>
+              <option value="4h">4h</option>
+              <option value="1d">1d</option>
+              <option value="1w">1w</option>
+            </select>
+            <span class="muted" style="font-size:11px; display-block;">Piyasay regimi icin higher timeframe.</span>
+          </div>
+          <div class="field">
+            <label>Regime Timeframe</label>
+            <select id="settingsRegimeTimeframe">
+              <option value="4h">4h</option>
+              <option value="1d">1d</option>
+              <option value="1w">1w</option>
+            </select>
+            <span class="muted" style="font-size:11px; display-block;">Market regimi tespiti icin timeframe.</span>
+          </div>
+          <div class="field">
+            <label>Risk Per Trade (%)</label>
+            <input type="number" id="settingsRiskPerTrade" value="0.5" min="0.1" max="10" step="0.1" />
+            <span class="muted" style="font-size:11px; display-block;">Bir islemde kaybedilecek maksimum sermaye yuzdesi.</span>
+          </div>
+          <div class="field">
+            <label>Maximum Leverage</label>
+            <input type="number" id="settingsMaxLeverage" value="5" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display-block;">Botun kullanabilecegi maksimum kaldıraç.</span>
+          </div>
+          <div class="field">
+            <label>Maximum Daily Loss (%)</label>
+            <input type="number" id="settingsMaxDailyLoss" value="2" min="0.1" max="50" step="0.1" />
+            <span class="muted" style="font-size:11px; display-block;">Gunluk maksimum kaybetilebilir loss percentage.</span>
+          </div>
+          <div class="field">
+            <label>Maximum Drawdown (%)</label>
+            <input type="number" id="settingsMaxDrawdown" value="8" min="0.1" max="99.9" step="0.1" />
+            <span class="muted" style="font-size:11px; display-block;">Maksimum drawdown orani (%8 = %8'e ucertan sonra dur).</span>
+          </div>
+          <div class="field">
+            <label>Maximum Consecutive Losses</label>
+            <input type="number" id="settingsMaxConsecutiveLosses" value="3" min="1" max="20" />
+            <span class="muted" style="font-size:11px; display-block;">Ard arda kaybedilen islem sayisi limiti.</span>
+          </div>
+          <div class="field">
+            <label>Cooldown (minutes)</label>
+            <input type="number" id="settingsCooldown" value="60" min="1" max="1440" />
+            <span class="muted" style="font-size:11px; display-block;">Pozisyon kapandıktan sonra yeni pozisyon acmadanonce beklenecek sure.</span>
+          </div>
+          <div class="field">
+            <label>Maximum Trades Per Day</label>
+            <input type="number" id="settingsMaxTradesPerDay" value="10" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display-block;">Gun içinde maksimum islem sayisi.</span>
+          </div>
+          <div class="field">
+            <label>Dry Run</label>
+            <select id="settingsDryRun">
+              <option value="true">ON (sanal, emir acilmaz)</option>
+              <option value="false">OFF (gercek testnet)</option>
+            </select>
+            <span class="muted" style="font-size:11px; display-block;">Gerçek emir gönderip göndermeyecegi.</span>
+          </div>
+          <div class="field">
+            <label>Trading Enabled</label>
+            <select id="settingsTradingEnabled">
+              <option value="true">ON</option>
+              <option value="false">OFF</option>
+            </select>
+            <span class="muted" style="font-size:11px; display-block;">Botun otonom olarak trade etmesine izin ver.</span>
+          </div>
+          <div class="field">
+            <label>Allow Short</label>
+            <select id="settingsAllowShort">
+              <option value="true">ON (LONG + SHORT)</option>
+              <option value="false">LONG only</option>
+            </select>
+            <span class="muted" style="font-size:11px; display-block;">Kısa (short) pozisyon açmaya izin ver.</span>
+          </div>
+          <div class="field">
+            <label>Volume Threshold</label>
+            <input type="number" id="settingsVolumeThreshold" value="1.0" min="0.1" max="10" step="0.1" />
+            <span class="muted" style="font-size:11px; display-block;">Hacim onayı eşiği (1.0 = normal).</span>
+          </div>
+          <div class="field">
+            <label>Chop Threshold</label>
+            <input type="number" id="settingsChopThreshold" value="35" min="1" max="100" />
+            <span class="muted" style="font-size:11px; display-block;">Choppy piyasaya kapı eşiği (%35'in altı = no trade).</span>
+          </div>
+        </div>
+      </form>
+      <div style="margin-top:16px; display:flex; gap:12px; justify-content:flex-end;">
+        <button type="button" class="btn ghost" id="settingsLoadBtn">Yukle</button>
+        <button type="submit" class="btn buy" id="settingsSaveBtn">Kaydet</button>
+        <button type="button" class="btn ghost" id="settingsResetBtn">Sıfırla</button>
+      </div>
+      <div id="settingsChangeLog" style="margin-top:16px; max-height:120px; overflow-y:auto; font-size:12px;"></div>
     </div>
 
     <div class="card">
@@ -1016,6 +1165,120 @@
         btn.textContent = 'Test Telegram';
       }
     });
+
+    // Settings panel JavaScript
+    const settingsApiBase = '/api/settings';
+
+    async function apiFetch(method, endpoint, body = null) {
+      const options = { method };
+      if (body) {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(body);
+      }
+      const res = await fetchWithTimeout(settingsApiBase + endpoint, options);
+      return await res.json();
+    }
+
+    async function loadSettings() {
+      try {
+        const data = await apiFetch('GET', '');
+        if (!data.success) throw new Error(data.error || 'Hata');
+
+        const s = data.settings;
+        $('settingsStrategyVersion').value = s.strategyVersion || '1.0.0';
+        $('settingsStrategy').value = s.strategy || 'rsi-bollinger';
+        $('settingsRSILength').value = s.rsiLength || 20;
+        $('settingsRSIMaLength').value = s.rsiMaLength || 20;
+        $('settingsBBLength').value = s.bbLength || 30;
+        $('settingsBBStd').value = s.bbStd || 2;
+        $('settingsExecutionTimeframe').value = s.executionTimeframe || '15m';
+        $('settingsHigherTimeframe').value = s.higherTimeframe || '1h';
+        $('settingsRegimeTimeframe').value = s.regimeTimeframe || '4h';
+        $('settingsRiskPerTrade').value = s.riskPerTrade || 0.5;
+        $('settingsMaxLeverage').value = s.maxLeverage || 5;
+        $('settingsMaxDailyLoss').value = s.maxDailyLoss || 2;
+        $('settingsMaxDrawdown').value = s.maxDrawdown || 8;
+        $('settingsMaxConsecutiveLosses').value = s.maxConsecutiveLosses || 3;
+        $('settingsCooldown').value = s.cooldown || 60;
+        $('settingsMaxTradesPerDay').value = s.maxTradesPerDay || 10;
+        $('settingsDryRun').value = s.dryRun ? 'true' : 'false';
+        $('settingsTradingEnabled').value = s.tradingEnabled ? 'true' : 'false';
+        $('settingsAllowShort').value = s.allowShort !== false ? 'true' : 'false';
+        $('settingsVolumeThreshold').value = s.volumeThreshold || 1.0;
+        $('settingsChopThreshold').value = s.chopThreshold || 35;
+
+        // Show change log
+        const log = data.changeLog || [];
+        const logEl = $('settingsChangeLog');
+        if (log && log.length > 0) {
+          logEl.innerHTML = log.map(e => {
+            const direction = e.oldValue > e.newValue ? 'azaltildi' : e.oldValue < e.newValue ? 'artti' : 'degisti';
+            return `<div style="margin-bottom:4px;"><span style="color:var(--muted);">[${e.timestamp}]</span> ${e.setting}: ${e.oldValue} -> ${e.newValue} <span style="color:var(--orange);">${direction}</span></div>`;
+          }).join('');
+        } else {
+          logEl.textContent = 'Henuz ayar degisikligi yok.';
+        }
+      } catch (err) {
+        console.error('Settings load error:', err);
+        alert('Settings yuklenemedi: ' + err.message);
+      }
+    }
+
+    async function saveSettings() {
+      const patch = {
+        strategyVersion: $('settingsStrategyVersion').value,
+        strategy: $('settingsStrategy').value,
+        rsiLength: parseInt($('settingsRSILength').value),
+        rsiMaLength: parseInt($('settingsRSIMaLength').value),
+        bbLength: parseInt($('settingsBBLength').value),
+        bbStd: parseFloat($('settingsBBStd').value),
+        executionTimeframe: $('settingsExecutionTimeframe').value,
+        higherTimeframe: $('settingsHigherTimeframe').value,
+        regimeTimeframe: $('settingsRegimeTimeframe').value,
+        riskPerTrade: parseFloat($('settingsRiskPerTrade').value),
+        maxLeverage: parseInt($('settingsMaxLeverage').value),
+        maxDailyLoss: parseFloat($('settingsMaxDailyLoss').value),
+        maxDrawdown: parseFloat($('settingsMaxDrawdown').value),
+        maxConsecutiveLosses: parseInt($('settingsMaxConsecutiveLosses').value),
+        cooldown: parseInt($('settingsCooldown').value),
+        maxTradesPerDay: parseInt($('settingsMaxTradesPerDay').value),
+        dryRun: $('settingsDryRun').value === 'true',
+        tradingEnabled: $('settingsTradingEnabled').value === 'true',
+        allowShort: $('settingsAllowShort').value === 'true',
+        volumeThreshold: parseFloat($('settingsVolumeThreshold').value),
+        chopThreshold: parseInt($('settingsChopThreshold').value),
+      };
+
+      try {
+        const result = await apiFetch('PUT', '', patch);
+        if (result.success) {
+          alert('Ayarlar kaydedildi!\nDegisiklikler uygulama restart'i sonrasi aktif olur.');
+          loadSettings();
+        } else {
+          alert('Kaydetme hatasi: ' + (result.error || 'Bilinmeyen hata'));
+        }
+      } catch (err) {
+        alert('Kaydetme hatasi: ' + err.message);
+      }
+    }
+
+    function resetSettings() {
+      if (confirm('Tum ayarlar sifirlansin mi? Varsayilan configgeri yuklenecek.')) {
+        apiFetch('PUT', '/reset').then(res => {
+          if (res.success) {
+            alert('Ayarlar sifirlandi.');
+            loadSettings();
+          }
+        });
+      }
+    }
+
+    $('settingsLoadBtn').addEventListener('click', loadSettings);
+    $('settingsSaveBtn').addEventListener('click', saveSettings);
+    $('settingsResetBtn').addEventListener('click', resetSettings);
+
+    // Load settings on page init
+    loadSettings();
   </script>
 </body>
 </html>

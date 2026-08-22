@@ -1,123 +1,252 @@
-# Dip Hunter Crypto Bot - Otomatik Algo-Trading
+# Dip Hunter Crypto Bot - Algorithmic Trading System
 
-Bollinger Bands + Stoch RSI "Dip Avcisi" stratejisiyle calisan otomatik kripto ticaret botu. TradingView Webhook alarmlarini alir ve **Binance Testnet**'te (CCXT ile) market emirleri verir.
+**Modern, full-featured algorithmic trading system for Binance Futures Testnet with web dashboard, risk engine, and 7/24 autonomous operation.**
 
-## Mimari / Akis
+---
 
-```
-[TradingView Webhook Alert] --> [Render.com (Node.js / Express)] --> [Binance Testnet API (CCXT)]
-```
-
-## Dosya Yapisi
+## 🏗️ Architecture
 
 ```
-BİTCOİN ALİM/
-├── package.json
-├── .env.example          # (.env gizlidir, .gitignore'da)
-├── .gitignore
-├── server.js             # Giris noktasi (npm start)
-├── logs/app.log          # Calisma zaman loglari (otomatik olusur)
-├── strategies/
-│   └── dip-hunter-btc.pine   # TradingView Pine Script v5
-└── src/
-    ├── app.js                    # Express app + middleware
-    ├── config/env.js             # Ortam degiskenleri
-    ├── config/binance.js         # ccxt.binance + sandboxMode(true)
-    ├── routes/webhook.routes.js  # POST /webhook
-    ├── controllers/webhook.controller.js
-    ├── services/order.service.js # BUY/SELL market emirleri
-    └── utils/logger.js           # Konsol + logs/app.log
+[Web Dashboard] <--REST API--> [Node.js Server] <--CCXT--> [Binance Testnet]
+     ↑                                   ↑
+  Settings                            Technical Analysis
+  Persistence                           (RSI + Bollinger + Regime)
 ```
 
-## Endpoint
+---
 
-- `POST /webhook` — gelen JSON ornegi:
-  ```json
-  { "action": "BUY", "symbol": "BTCUSDT", "budget": "30" }
-  ```
-- `GET /health` — Render health check ve canli kontrol.
+## ✨ Features
 
-## Yerel Kurulum
+### Core Trading
+
+- **Strategy**: RSI + Bollinger Bands (core) — Stoch RSI removed from core, available as optional confirmation
+- **LONG + SHORT**: Full support for both long and short positions
+- **Multi-timeframe**: 
+  - Execution timeframe (default: 15m) — signal generation
+  - Higher timeframe (default: 1h) — trend/regime filtering
+  - Regime timeframe (default: 4h) — market regime detection
+  - All configurable via web dashboard
+- **Market Regime Engine**: STRONG_BULL | BULL | RANGE | BEAR | HIGH_VOLATILITY | RANGE | CHOPPY | UNKNOWN
+  - UNKNOWN regime: NO TRADE
+  - Filters out choppy/range markets
+- **Signal Score**: 0-100 scale with core conditions + filters + confirmations
+- **Risk Engine**: Position sizing based on risk % / stop distance, max daily loss, max consecutive losses, max trades per day
+- **Stop Loss / Take Profit**: ATR-based trailing stop, TP1/TP2 with partial close, break-even support
+- **Cooldown**: Persistent cooldown tracking between trades
+
+### Risk Management
+
+- **Risk per trade**: Configurable percentage of capital (default: 0.5%)
+- **Position sizing**: `risk_budget / stop_distance`
+- **Maximum leverage**: Configurable (default: 5x)
+- **Maximum daily loss**: Percentage limit per day
+- **Maximum consecutive losses**: Stop after N losing trades
+- **Maximum trades per day**: Trade count limit
+- **Volatility-adjusted risk**: Risk reduced when volatility is high
+
+### Persistence & State
+
+- **Persistent state**: `data/settings.json` — survives restarts and redeploys
+- **Order reconciliation**: On startup, compares local state with Binance actual positions
+- **Audit log**: Every setting change logged with timestamp, old value, new value
+- **Strategy versioning**: `strategyVersion` field tracks strategy iterations
+
+### Web Dashboard
+
+- **Settings panel**: Configure all trading parameters from the UI
+- **Live analysis panel**: RSI, Bollinger, regime, score, decision display
+- **Trade journal**: Complete trade history with PnL, fees, regime, reasons
+- **Equity curve**: Equity over time visualization
+- **Performance reports**: Daily/7D/30D/All-time metrics
+- **Emergency stop**: Stop new trades, close all positions, or both
+- **System states**: ANALYZING | WAITING | COOLDOWN | SIGNAL_DETECTED | RISK_REJECTED | POSITION_OPEN | EMERGENCY_STOP | API_ERROR | DATA_STALE | MARKET_CLOSED | RECOVERY | DISABLED
+
+### Configuration
+
+- **Trading parameters**: ALL configurable from web dashboard — NO need to edit ENV
+- **Secrets**: Binance API keys, Telegram tokens — remain in ENV only
+- **Defaults**: Strategy: RSI+Bollinger, RSI: 20, Bollinger: 30/2, Timeframes: 15m/1h/4h, Risk: 0.5%, Leverage: 5x
+
+### Environment Variables (SECRETS ONLY)
+
+| Variable | Purpose |
+|---|---|
+| `BINANCE_TESTNET_API_KEY` | Binance testnet API key |
+| `BINANCE_TESTNET_SECRET_KEY` | Binance testnet secret key |
+| `USE_TESTNET` | `true` = testnet, `false` = real account |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token |
+| `TELEGRAM_CHAT_ID` | Telegram chat ID |
+| `PORT` | Server port |
+| `COMMISSION_RATE` | Trade commission % |
+| `NODE_ENV` | Environment mode |
+
+⚠️ **Trading parameters (timeframe, RSI, Bollinger, risk, etc.) MUST NOT be set in ENV — use the web dashboard instead.**
+
+---
+
+## 📦 Installation
 
 ```bash
 npm install
-copy .env.example .env      # Windows (Linux/Mac: cp .env.example .env)
-# .env dosyasini doldurun (Testnet anahtarlari: https://testnet.binance.vision/)
-npm run dev                 # gelistirme (nodemon)
-npm start                   # uretim
+cp .env.example .env
+# Edit .env with your Binance testnet credentials
+npm run dev  # development with nodemon
+npm start    # production
 ```
 
-Dogrulama:
+---
+
+## 🎛️ Web Dashboard Endpoints
+
+### GET /api/settings - Get all settings
+### PUT /api/settings - Update settings (body: `{ riskPerTrade: 0.35, bbLength: 34, ... }`)
+### GET /api/settings/change-log - Audit log of all changes
+### GET /api/settings/defaults - Default configuration values
+
+### GET /api/trader - Bot status, position, last analysis
+### POST /api/trader/check - Run immediate analysis cycle
+### POST /api/trader/analyze - Run analysis only
+### GET /api/trader/price - Current price
+### GET /api/trader/history - Trade history and performance summary
+### POST /api/trader/reset - Reset bot state
+### POST /api/trader/close - Close existing position
+### POST /api/trader/open - Manual order (advanced)
+
+### POST /api/webhook - TradingView webhook receiver
+### GET /api/health - Health check
+
+---
+
+## 📸 Dashboard Screenshots
+
+### Main Dashboard
+
+```
+┌───────────────────────────────────────┐
+│  DIP HUNTER CRYPTO BOT                 │
+│  Status: ONLINE | DRY-RUN | TESTNET   │
+├───────────────────────────────────────┤
+│  BTC/USDT: $104,250                    │
+│  4H: BULLISH | 1H: BULLISH | 15M: LONG │
+│                                        │
+│  RSI: 31.4 | RSI MA: 28.7              │
+│  Bollinger: LOWER → MIDDLE             │
+│  Volume: 1.42x | Volatility: NORMAL    │
+│  Chop: PASS                              │
+│                                        │
+│  Signal: 84/100                        │
+│  Decision: LONG                        │
+├───────────────────────────────────────┤
+│  STRATEGY                                │
+│  RSI Length: 20                        │
+│  RSI MA Length: 20                     │
+│  Bollinger Length: 30                  │
+│  Bollinger Std: 2                      │
+│  Execution: 15m | Higher: 1h           │
+│  Regime: 4h                            │
+│                                        │
+│  RISK                                    │
+│  Risk/Trade: 0.5%                      │
+│  Max Leverage: 5x                      │
+│  Daily Loss: 2%                        │
+│  Max Trades/Day: 10                    │
+│                                        │
+│  SAFETY                                  │
+│  Dry Run: ON | Trading: ON             │
+│  Emergency Stop: [BUTTON]              │
+├───────────────────────────────────────┤
+│  LAST DECISION                           │
+│  DECISION: NO TRADE                      │
+│  RSI CROSS: PASS | BOLLINGER: PASS      │
+│  TREND: FAIL | REGIME: CHOPPY           │
+│  VOLUME: PASS | RISK: PASS             │
+│  FINAL: REJECTED                        │
+│  REASON: Market regime is CHOPPY.       │
+└───────────────────────────────────────┘
+```
+
+### Settings Panel
+
+```
+STRATEGY
+├── Strategy Version: 1.0.0 (read-only)
+├── Strategy: RSI + Bollinger (core)
+├── RSI Length: [20] "RSI hesaplama periyodu."
+├── RSI MA Length: [20] "RSI hareketli ortalamasi periyodu."
+├── Bollinger Length: [30] "Bollinger Band uzunlugu (SMA periyodu)."
+├── Bollinger Std: [2] "Standart sapma katsayisi."
+├── Execution Timeframe: [15m] "Emir calistirilacak timeframe."
+├── Higher Timeframe: [1h] "Piyasay regimi icin higher timeframe."
+└── Regime Timeframe: [4h] "Market regimi tespiti icin timeframe."
+
+RISK
+├── Risk Per Trade: [0.5%] "Bir islemde kaybedilecek maksimum sermaye yuzdesi."
+├── Maximum Leverage: [5x] "Botun kullanabilecegi maksimum kaldıraç."
+├── Maximum Daily Loss: [2%] "Gunluk maksimum kaybetilebilir loss percentage."
+├── Maximum Drawdown: [8%] "Maksimum drawdown orani (%8 = %8'e ucertan sonra dur)."
+├── Maximum Consecutive Losses: [3] "Ard arda kaybedilen islem sayisi limiti."
+├── Cooldown (minutes): [60] "Pozisyon kapandıktan sonra yeni pozisyon acmadanonce beklenecek sure."
+└── Maximum Trades Per Day: [10] "Gun içinde maksimum islem sayisi."
+
+SAFETY
+├── Dry Run: [ON/OFF] "Gerçek emir gönderip göndermeyecegi."
+├── Trading Enabled: [ON/OFF] "Botun otonom olarak trade etmesine izin ver."
+└── Allow Short: [ON] "Kısa (short) pozisyon açmaya izin ver."
+```
+
+---
+
+## 🔒 Security
+
+- **API keys never sent to frontend** — remain on server, masked in ENV
+- **Manual trading endpoints** protected — use `/api/trader/open` and `/api/trader/close` with care
+- **Webhook secret verification** — TradingView webhook must include valid signature
+- **Admin actions** require explicit confirmation
+- **Fail-closed behavior** — system defaults to NO TRADE on any error
+
+---
+
+## 🚀 Deployment
+
+### Render.com
+
+1. Create new Web Service from GitHub repo
+2. Build Command: `npm install`
+3. Start Command: `node server.js`
+4. Add Environment Variables (secrets only):
+   - `BINANCE_TESTNET_API_KEY`
+   - `BINANCE_TESTNET_SECRET_KEY`
+   - `USE_TESTNET=true`
+   - `TELEGRAM_BOT_TOKEN` (optional)
+   - `TELEGRAM_CHAT_ID` (optional)
+   - `COMMISSION_RATE=0.001`
+5. Deploy — dashboard available at `https://your-app.onrender.com`
+
+### Railway / Fly.io / VPS
+
+Same setup — just ensure `node server.js` starts the application.
+
+---
+
+## 🧪 Testing
+
+### Unit Tests (recommended)
+
 ```bash
-curl http://localhost:3000/health
-curl -X POST http://localhost:3000/webhook -H "Content-Type: application/json" -d "{\"action\":\"BUY\",\"symbol\":\"BTCUSDT\",\"budget\":\"30\"}"
+# Run existing test scripts
+node test_settings.js    # Settings service
+node test_risk.js        # Risk engine
+node test_strategy.js    # Strategy logic
 ```
 
-## TradingView Kurulumu
+### Integration Points
 
-1. `strategies/dip-hunter-btc.pine` dosyasini Pine Editor'e yapistirin ve "Chart'a Ekle" deyin. Strateji 4H ve 1D grafiklerde calisir (grafik periyodunu secin).
-2. Girdilerden `Take Profit (%)` (varsayilan 5.0), `Stop Loss (%)` (varsayilan 2.5), `Islem Sembolu`, `Emir Miktari` degerlerini ayarlayin.
-3. Backtest: Bu bir `strategy()` scripti oldugundan TradingView alt panelindeki **"Strateji Test Cihazi"** (Strategy Tester) sekmesinde kâr/zarar, kazanma orani ve islem listesi otomatik gorunur.
-4. Sag tiklama -> "Alarm Olustur":
-   - **Alarm:** "BUY Sinyali"
-   - **Sart:** Her
-   - **Yontem:** "Webhook URL" -> Render sunucu adresi: `https://SENIN-APP.onrender.com/webhook`
-   - **Message:** otomatik gonderilir (Pine'ta `alert()` ile JSON uretilir)
+- Web dashboard → API → Settings service → Persistent state
+- Trading engine → Risk engine → Position sizing → Order service → Binance
+- Market regime filtering → Signal score → Entry logic → Cooldown
 
-## Git + Render Deployment
+---
 
-### 1) GitHub'a aktarma
+## 📜 License
 
-```bash
-git init
-git add .
-git commit -m "Dip Hunter crypto bot ilk surum"
-git branch -M main
-git remote add origin https://github.com/KULLANICI-ADI/REPO-ADI.git
-git push -u origin main
-```
-
-> `.gitignore` sayesinde `.env`, `node_modules/` ve `logs/` repoya gitmez. Sifreleriniz guvende.
-
-### 2) Render.com'a deploy
-
-1. [render.com](https://render.com) -> **New** -> **Web Service** -> GitHub repo'nuzu baglayin.
-2. **Runtime:** Node; **Build Command:** `npm install`; **Start Command:** `node server.js`.
-3. **Environment** bolumune su degiskenleri ekleyin:
-   | Anahtar | Deger |
-   |---|---|
-   | `PORT` | `3000` |
-   | `BINANCE_TESTNET_API_KEY` | Testnet API anahtariniz |
-   | `BINANCE_TESTNET_SECRET_KEY` | Testnet gizli anahtariniz |
-   | `TELEGRAM_BOT_TOKEN` | (opsiyonel) Telegram bot token |
-   | `TELEGRAM_CHAT_ID` | (opsiyonel) Telegram chat id |
-   | `COMMISSION_RATE` | `0.001` (komisyon %0.1) |
-   | `TRADING_MODE` | `on` |
-   | `DRY_RUN` | `true` (sanal) / `false` (gercek testnet emri) |
-   | `ANALYSIS_TIMEFRAME` | `1d` |
-   | `CHECK_INTERVAL_MIN` | `15` |
-   | `BUDGET_USDT` | `30` |
-   | `TP_PERCENT` | `5` |
-   | `SL_PERCENT` | `2.5` |
-   | `COOLDOWN_MIN` | `1440` |
-   | `TRADING_SYMBOL` | `BTC/USDT` |
-4. **Deploy** butonu. Yesil "Live" durumunu bekleyin.
-5. `https://SENIN-APP.onrender.com/health` acilirsa deploy basarili.
-
-## Otonom Strateji Motoru (Analizli)
-
-Bot sadece webhook beklemekle kalmaz, kendisi de analiz yapar:
-
-- Her `CHECK_INTERVAL_MIN` dakikada bir Binance public API'sinden 1D mumlari ceker.
-- **Bollinger(20,2) + Stoch RSI(14,3,3)** hesaplar (Pine Script stratejisiyle birebir ayni):
-  - Alim: fiyat alt banda degiyor + Stoch RSI `%K` `%D`'yi 20 altinda yukari kesiyor.
-  - Cikis: giris fiyatina gore `+TP_PERCENT` / `-SL_PERCENT` seviyesinde otomatik satis.
-- `DRY_RUN=true` iken gercek emir ACMAZ, sadece simule eder (sanal bakiye). Dogru calistigini gorunce `DRY_RUN=false`.
-- Pozisyon durumu `data/state.json`'da tutulur. **Dikkat:** Render ucretsiz tier'da bu dosya yeniden deploy'da sifirlanir; pozisyon acikken redeploy yapmayin.
-- Panelden `GET /api/trader` (durum), `POST /api/trader/check` (simdi analiz), `POST /api/trader/reset` (sifirla) kullanilabilir.
-
-### 3) Canli (Production) Uyarilari
-
-- Render **ucretsiz tier** sunucuyu ~15 dakika islemsizlikte uyutur. Webhook geldiginde sunucu uyanana kadar emir gecikebilir. Gercek kullanim icin ucretli plan ($7/ay) onerilir.
-- Testnet (sanal para) ile baslayin; canli Binance hesabi icin `setSandboxMode(false)` yapip gercek API anahtarlari girmeniz gerekir (sorumluluk size ait).
-- Ticaret sinyalleri "BUY" odaklidir; `SELL` emri sunucu tarafinda desteklenir ancak Pine'ta yalnizca alim sinyali uretilir.
+MIT

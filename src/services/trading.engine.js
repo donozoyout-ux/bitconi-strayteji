@@ -5,7 +5,9 @@ const analyzer = require('./analyzer.service');
 const strategyEngine = require('./strategy.service');
 const stateService = require('./state.service');
 const orderService = require('./order.service');
+const riskEngine = require('./risk-engine');
 const newsService = require('./news.service');
+
 let timer = null;
 let stopped = false;
 
@@ -48,7 +50,8 @@ async function syncPositionWithExchange(symbol, price) {
   }
 
   if (env.useTestnet && btcFree > DUST_BTC) {
-    const stopPrice = price * (1 - env.slPercent / 100);
+    const slPercent = parseFloat(env.slPercent || 2.5);
+    const stopPrice = price * (1 - slPercent / 100);
     const tp1 = strategyEngine.nextPsychAbove(price * 1.001);
     const tp2 = strategyEngine.nextPsychAbove(tp1 * 1.001);
     logger.info(
@@ -269,32 +272,137 @@ async function runCycle() {
 
     const entryEval = strategyEngine.evaluateEntry(candles, env);
 
-    if (st.position && (!st.position.tp1 || !st.position.stopPrice)) {
-      const p = st.position;
-      const stopPrice = p.stopPrice || p.entryPrice * (1 - env.slPercent / 100);
-      const tp1 = p.tp1 || strategyEngine.nextPsychAbove(p.entryPrice * 1.001);
-      const tp2 = p.tp2 || strategyEngine.nextPsychAbove(tp1 * 1.001);
-      logger.info(
-        `[ONAR] Eski pozisyona cikis hedefleri ataniyor -> stop: ${stopPrice.toFixed(0)}, TP1: ${tp1.toFixed(0)}, TP2: ${tp2.toFixed(0)}`
-      );
+    // Apply market regime filter
+    const regime = entryEval.reasons.regime;
+    if (regime && regime === 'CHOPPY') {
+      logger.info(`Piyasa CHOPPY regimde -> Emir atlaniyor. Regime: ${regime}`);
       stateService.update({
-        position: {
-          ...p,
-          stopPrice,
-          tp1,
-          tp2,
-          entryTs: p.entryTs || Date.now(),
-          highestSinceEntry: p.highestSinceEntry || p.entryPrice,
+        busy: false,
+        lastCheck: new Date().toISOString(),
+        lastError: null,
+        lastAnalysis: {
+          ts: analysis.ts,
+          signal: null,
+          entryType: null,
+          close: analysis.close,
+          regime,
+          chop: true,
+          cooldownUntil: st.cooldownUntil,
+          price,
         },
       });
+      return;
+    }
+
+    // Check cooldown from persistent state
+    if (st.cooldownUntil && Date.now() < st.cooldownUntil) {
+      const remaining = Math.ceil((st.cooldownUntil - Date.now()) / 60000);
+      logger.info(`Cooldown aktif (${remaining} dk kaldi) -> sinyal eleniyor.`);
+      stateService.update({
+        busy: false,
+        lastCheck: new Date().toISOString(),
+        lastError: null,
+        lastAnalysis: {
+          ts: analysis.ts,
+          signal: null,
+          entryType: null,
+          close: analysis.close,
+          regime,
+          chop: true,
+          cooldownUntil: st.cooldownUntil,
+          price,
+        },
+      });
+      return;
+    }
+
+    // Check risk limits (daily loss, consecutive losses, max trades)
+    const dailyTrades = (state.trades || []).filter(
+      t => new Date(t.closedAt || t.timestamp).getDate() === new Date().getDate()
+    ).length;
+    const dailyPnL = (state.trades || []).reduce(
+      (s, t) => s + (t.pnl || 0), 0
+    );
+    const consecutiveLosses = (state.trades || [])
+      .filter(
+        t => new Date(t.closedAt || t.timestamp).getTime() > new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() && (t.pnl || 0) < 0
+      ).length || 0;
+
+    const riskCheck = riskEngine.checkRiskLimits(dailyPnL, consecutiveLosses, dailyTrades, {
+      maxDailyLossPercent: parseFloat(env.MAX_DAILY_LOSS || '2'),
+      maxConsecutiveLosses: parseInt(env.MAX_CONSECUTIVE_LOSSES || '3'),
+      maxTradesPerDay: parseInt(env.MAX_TRADES_PER_DAY || '10'),
+    });
+
+    if (!riskCheck.allowed) {
+      logger.warn(`Risk limit exceeded: ${riskCheck.reason} -> Emir atlaniyor.`);
+      stateService.update({
+        busy: false,
+        lastCheck: new Date().toISOString(),
+        lastError: null,
+        lastAnalysis: {
+          ts: analysis.ts,
+          signal: null,
+          entryType: null,
+          close: analysis.close,
+          regime,
+          chop: riskCheck.consecutiveLossesLimit > 0,
+          cooldownUntil: st.cooldownUntil,
+          price,
+        },
+      });
+      return;
+    }
+
+    // Size position using risk engine
+    let positionSize = null;
+    if (entryEval.signal && entryEval.reasons.bbLower != null && entryEval.reasons.bbUpper != null) {
+      const close = entryEval.reasons.rsi != null ? entryEval.reasons.rsi * 100 : 100; // placeholder
+      // Calculate stop distance from entry to BB lower/upper based on side
+      let stopDistance;
+      if (entryEval.side === 'LONG') {
+        stopDistance = entryEval.reasons.close != null && entryEval.reasons.bbLower != null
+          ? entryEval.reasons.close - entryEval.reasons.bbLower
+          : null;
+      } else if (entryEval.side === 'SHORT') {
+        stopDistance = entryEval.reasons.close != null && entryEval.reasons.bbUpper != null
+          ? entryEval.reasons.bbUpper - entryEval.reasons.close
+          : null;
+      }
+      if (stopDistance != null && stopDistance > 0) {
+        const riskResult = riskEngine.calculatePositionSize(
+          realUsdt,
+          entryEval.reasons.riskPerTrade || env.riskPerTrade || 0.5,
+          stopDistance,
+          entryEval.reasons.maxLeverage || env.maxLeverage || 5
+        );
+        if (riskResult.success) {
+          positionSize = riskResult.positionSize;
+        }
+      }
+    }
+
+    // Entry logic
+    if (entryEval.signal) {
+      // Check if we already have a position with same side
+      if (st.position && st.position.side === entryEval.side) {
+        logger.info(`Zaten ${entryEval.side} pozisyonu var -> yeni sinyal eleniyor.`);
+      } else if (st.position && st.position.side !== entryEval.side) {
+        // Opposite signal - close existing and reverse
+        logger.info(`Yonu degisik sinyal (${st.position.side}->${entryEval.side}) -> onceki pozisyon kapatilacak ve yenisini acilacak.`);
+        try {
+          await orderService.placeOrder('SELL', symbol, st.position.quantity, null);
+          logger.info('[STRATEJI] Onceki pozisyon kapatildi inverted entrance icin.');
+        } catch (err) {
+          logger.error('[STRATEJI] Onceki pozisyon kapatilirken hata:', { error: err.message });
+        }
+      }
     }
 
     if (st.position) {
       await handleExit(price, symbol, candles);
-    } else if (env.strategyMode === 'trend') {
-      await handleEntry(entryEval, symbol, strategy);
-    } else {
-      await handleEntry(analysis, symbol, strategy);
+    } else if (entryEval.signal) {
+      await handleEntry(entryEval, symbol, price, positionSize);
     }
 
     stateService.update({
@@ -304,7 +412,7 @@ async function runCycle() {
       lastAnalysis: {
         ts: analysis.ts,
         signal: entryEval.signal || analysis.signal,
-        entryType: entryEval.type,
+        entryType: entryEval.entryType,
         close: analysis.close,
         adx: entryEval.reasons.adx,
         atr: entryEval.reasons.atr,
@@ -322,6 +430,10 @@ async function runCycle() {
         oversoldLevel: analysis.reasons.oversoldLevel,
         cooldownUntil: st.cooldownUntil,
         price,
+        regime: entryEval.reasons.regime,
+        chop: entryEval.reasons.chop,
+        positionSide: entryEval.side,
+        positionScore: entryEval.score,
       },
     });
   } catch (err) {
@@ -334,31 +446,36 @@ async function runCycle() {
   }
 }
 
-async function handleEntry(analysis, symbol, strategy) {
-  if (!analysis.signal) return;
+async function handleEntry(entryEval, symbol, livePrice, positionSize = null) {
+  if (!entryEval.signal) return;
 
   const state = stateService.get();
-  const candleTs = analysis.ts != null ? analysis.ts : analysis.reasons && analysis.reasons.price;
+  const candleTs = entryEval.reasons && entryEval.reasons.ts
+    ? entryEval.reasons.ts
+    : entryEval.reasons && entryEval.reasons.price
+      ? entryEval.reasons.price
+      : null;
   if (state.lastAnalyzedTs === candleTs) return;
   if (state.cooldownUntil && Date.now() < state.cooldownUntil) {
     const remaining = Math.ceil((state.cooldownUntil - Date.now()) / 60000);
-    logger.info(`BUY sinyali var ama soguma suresi devam ediyor (${remaining} dk kaldi).`);
+    logger.info(`BUY/SELL sinyali var ama soguma suresi devam ediyor (${remaining} dk kaldi).`);
     return;
   }
 
-  if (strategy && strategy.scores && strategy.scores.overall < -0.5) {
-    logger.warn(
-      `BUY sinyali var ama strateji riski yuksek (genel skor ${strategy.scores.overall.toFixed(2)}). Emir atlanildi. Verdict: ${strategy.verdict}`
-    );
-    stateService.update({ lastAnalyzedTs: candleTs });
-    return;
-  }
+  // Use provided positionSize or compute from budget
+  const effectivePositionSize = positionSize != null ? positionSize : null;
+  const budget = effectivePositionSize != null
+    ? Math.floor(effectivePositionSize * livePrice * 100) / 100
+    : (env.strategyMode === 'trend' ? computeBuyBudget() : env.budgetUsdt);
 
-  logger.info('[STRATEJI] BUY sinyali tespit edildi', analysis.reasons);
+  logger.info('[STRATEJI] %s sinyali tespit edildi -> %s', entryEval.side, entryEval.signal);
   try {
-    const budget = env.strategyMode === 'trend' ? computeBuyBudget() : env.budgetUsdt;
-    logger.info(`[BUTCE] Bu islem icin kullanilacak butce: ${budget} USDT (baslangic: ${env.budgetUsdt}, birikmis K/Z ile guncel)`);
-    const result = await orderService.placeOrder('BUY', symbol, null, budget);
+    const result = await orderService.placeOrder(
+      entryEval.side,
+      symbol,
+      null,
+      entryEval.side === 'LONG' ? budget : null
+    );
 
     const pos = stateService.get().position;
     if (pos && env.strategyMode === 'trend') {
@@ -366,25 +483,24 @@ async function handleEntry(analysis, symbol, strategy) {
         position: {
           ...pos,
           entryTs: Date.parse(result.timestamp),
-          stopPrice: analysis.reasons.stopPrice,
-          tp1: analysis.reasons.tp1,
-          tp2: analysis.reasons.tp2,
+          stopPrice: entryEval.reasons.stopPrice,
+          tp1: entryEval.reasons.tp1,
+          tp2: entryEval.reasons.tp2,
           highestSinceEntry: result.averagePrice || pos.entryPrice,
         },
       });
     }
 
-    logger.info('[STRATEJI] BUY emri acildi', {
-      orderId: result.orderId,
+    logger.info('[STRATEJI] %s emri acildi -> %s %s', entryEval.side, result.orderId, result.filled, {
       price: result.averagePrice,
       quantity: result.filled,
       mode: result.mode,
-      stopPrice: analysis.reasons.stopPrice,
-      tp1: analysis.reasons.tp1,
-      tp2: analysis.reasons.tp2,
+      stopPrice: entryEval.reasons.stopPrice,
+      tp1: entryEval.reasons.tp1,
+      tp2: entryEval.reasons.tp2,
     });
   } catch (err) {
-    logger.error('[STRATEJI] BUY emri basarisiz', { error: err.message });
+    logger.error('[STRATEJI] %s emri basarisiz -> %s', entryEval.side, { error: err.message });
   }
   stateService.update({ lastAnalyzedTs: candleTs });
 }
@@ -394,7 +510,8 @@ async function handleExit(price, symbol, candles) {
   const pos = state.position;
   if (!pos) return;
 
-  const exitEval = strategyEngine.evaluateExit(pos, candles, price, env);
+  const livePrice = await fetchLivePrice(symbol);
+  const exitEval = strategyEngine.evaluateExit(pos, candles, livePrice, env);
 
   if (exitEval.highest && exitEval.highest !== pos.highestSinceEntry) {
     stateService.update({ position: { ...pos, highestSinceEntry: exitEval.highest } });
@@ -476,4 +593,59 @@ async function handleExit(price, symbol, candles) {
   }
 }
 
-module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice, computeBuyBudget };
+// Export risk engine functions
+riskEngine.calculatePositionSize = function (equity, riskPercent, stopDistance, leverage = 5) {
+  if (equity <= 0 || riskPercent <= 0 || stopDistance <= 0) {
+    return { success: false, error: 'Invalid input parameters' };
+  }
+
+  const riskBudget = equity * (riskPercent / 100);
+  const rawPositionSize = riskBudget / stopDistance;
+  const maxNotional = equity * leverage;
+  const effectiveLeverage = Math.min(rawPositionSize * 1000 / equity, leverage);
+
+  return {
+    success: true,
+    positionSize: Math.max(0.00001, rawPositionSize),
+    riskBudget,
+    stopDistance,
+    effectiveLeverage: Math.min(effectiveLeverage, leverage),
+  };
+};
+
+riskEngine.checkRiskLimits = function (dailyPnL, consecutiveLosses, tradesToday, config) {
+  const maxDailyLoss = config.maxDailyLossPercent;
+  const maxConsecutive = config.maxConsecutiveLosses;
+  const maxTrades = config.maxTradesPerDay;
+
+  let restricted = false;
+  let reason = null;
+
+  // Check daily loss limit
+  if (dailyPnL != null && dailyPnL <= -maxDailyLoss) {
+    restricted = true;
+    reason = `Daily loss limit reached: $${Math.abs(dailyPnL).toFixed(2)} USDT <= -${maxDailyLoss}%`;
+  }
+
+  // Check consecutive losses
+  if (consecutiveLosses >= maxConsecutive) {
+    restricted = true;
+    reason = reason ? `${reason} | Consecutive losses limit: ${maxConsecutive}` : `Consecutive losses limit reached: ${maxConsecutive}`;
+  }
+
+  // Check max trades per day
+  if (tradesToday >= maxTrades) {
+    restricted = true;
+    reason = reason ? `${reason} | Max trades per day limit: ${maxTrades}` : `Max trades per day limit reached: ${maxTrades}`;
+  }
+
+  return {
+    allowed: !restricted,
+    reason,
+    dailyLossLimit: maxDailyLoss,
+    consecutiveLossesLimit: maxConsecutive,
+    maxTradesPerDay: maxTrades,
+  };
+};
+
+module.exports = { start, stop, runCycle, analyzeOnly, fetchLivePrice, computeBuyBudget, calculatePositionSize };
