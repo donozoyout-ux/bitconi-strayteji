@@ -1,6 +1,6 @@
-const env = require('../config/env');
-const analyzer = require('../services/analyzer.service');
-const newsService = require('../services/news.service');
+const env = require('../../config/env');
+const analyzer = require('../../services/analyzer.service');
+const newsService = require('../../services/news.service');
 
 let cache = { data: null, at: 0 };
 const CACHE_MS = 5 * 60000;

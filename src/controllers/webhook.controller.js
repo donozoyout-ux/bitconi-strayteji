@@ -1,5 +1,5 @@
-const orderService = require('../services/order.service');
-const logger = require('../utils/logger');
+const orderService = require('../../services/order.service');
+const logger = require('../../utils/logger');
 
 async function handleWebhook(req, res) {
   const { action, symbol, quantity, budget } = req.body || {};

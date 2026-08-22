@@ -1,6 +1,6 @@
-const env = require('../config/env');
-const analyzer = require('../services/analyzer.service');
-const logger = require('../utils/logger');
+const env = require('../../config/env');
+const analyzer = require('../../services/analyzer.service');
+const logger = require('../../utils/logger');
 
 const BB_LENGTH = 20;
 const BB_MULT = 2;

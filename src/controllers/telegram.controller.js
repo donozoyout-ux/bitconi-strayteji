@@ -1,9 +1,9 @@
-const telegramService = require('../services/telegram.service');
-const tradingEngine = require('../services/trading.engine');
-const stateService = require('../services/state.service');
-const env = require('../config/env');
-const orderService = require('../services/order.service');
-const logger = require('../utils/logger');
+const telegramService = require('../../services/telegram.service');
+const tradingEngine = require('../../services/trading.engine');
+const stateService = require('../../services/state.service');
+const env = require('../../config/env');
+const orderService = require('../../services/order.service');
+const logger = require('../../utils/logger');
 
 async function sendTest(req, res) {
   try {

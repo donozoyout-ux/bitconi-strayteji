@@ -1,4 +1,4 @@
-const exchange = require('../config/binance');
+const exchange = require('../../config/binance');
 
 function rsiSeries(closes, length) {
   const out = new Array(closes.length).fill(null);
