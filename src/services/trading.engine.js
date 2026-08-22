@@ -6,7 +6,6 @@ const strategyEngine = require('./strategy.service');
 const stateService = require('./state.service');
 const orderService = require('./order.service');
 const newsService = require('./news.service');
-
 let timer = null;
 let stopped = false;
 
@@ -28,18 +27,26 @@ async function syncPositionWithExchange(symbol, price) {
   }
 
   if (env.useTestnet && btcFree > DUST_BTC) {
+    const stopPrice = price * (1 - env.slPercent / 100);
+    const tp1 = strategyEngine.nextPsychAbove(price * 1.001);
+    const tp2 = strategyEngine.nextPsychAbove(tp1 * 1.001);
     logger.info(
-      `[SYNC] Pozisyon kaydi yok ama borsada ${btcFree} BTC bulundu -> pozisyon devraliniyor (giris referansi: ${price}).`
+      `[SYNC] Pozisyon kaydi yok ama borsada ${btcFree} BTC bulundu -> pozisyon devraliniyor (giris referansi: ${price}, stop: ${stopPrice.toFixed(0)}, TP1: ${tp1.toFixed(0)}, TP2: ${tp2.toFixed(0)}).`
     );
     stateService.update({
       position: {
         symbol,
         entryPrice: price,
         entryTime: new Date().toISOString(),
+        entryTs: Date.now(),
         quantity: btcFree,
         cost: btcFree * price,
         mode: 'REAL',
         synced: true,
+        stopPrice,
+        tp1,
+        tp2,
+        highestSinceEntry: price,
       },
     });
     return;
@@ -238,6 +245,26 @@ async function runCycle() {
     }
 
     const entryEval = strategyEngine.evaluateEntry(candles, env);
+
+    if (st.position && (!st.position.tp1 || !st.position.stopPrice)) {
+      const p = st.position;
+      const stopPrice = p.stopPrice || p.entryPrice * (1 - env.slPercent / 100);
+      const tp1 = p.tp1 || strategyEngine.nextPsychAbove(p.entryPrice * 1.001);
+      const tp2 = p.tp2 || strategyEngine.nextPsychAbove(tp1 * 1.001);
+      logger.info(
+        `[ONAR] Eski pozisyona cikis hedefleri ataniyor -> stop: ${stopPrice.toFixed(0)}, TP1: ${tp1.toFixed(0)}, TP2: ${tp2.toFixed(0)}`
+      );
+      stateService.update({
+        position: {
+          ...p,
+          stopPrice,
+          tp1,
+          tp2,
+          entryTs: p.entryTs || Date.now(),
+          highestSinceEntry: p.highestSinceEntry || p.entryPrice,
+        },
+      });
+    }
 
     if (st.position) {
       await handleExit(price, symbol, candles);

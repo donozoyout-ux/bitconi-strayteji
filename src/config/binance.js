@@ -14,6 +14,8 @@ const exchange = new ccxt.binance({
   timeout: 15000,
   options: {
     defaultType: 'spot',
+    adjustForTimeDifference: true,
+    recvWindow: 10000,
   },
 });
 
