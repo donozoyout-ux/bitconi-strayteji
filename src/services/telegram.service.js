@@ -2,7 +2,7 @@
 // Handles Telegram bot communication for notifications and commands
 
 // Telegram bot configuration
-const env = require('../../config/env');
+const env = require('../config/env');
 const TELEGRAM_BOT_TOKEN = env.telegramBotToken || '';
 const TELEGRAM_CHAT_ID = env.telegramChatId || '';
 
