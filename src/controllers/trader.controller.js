@@ -1,8 +1,8 @@
-const env = require('../../config/env');
-const stateService = require('../../services/state.service');
-const tradingEngine = require('../../services/trading.engine');
-const orderService = require('../../services/order.service');
-const logger = require('../../utils/logger');
+const env = require('../config/env');
+const stateService = require('../services/state.service');
+const tradingEngine = require('../services/trading.engine');
+const orderService = require('../services/order.service');
+const logger = require('../utils/logger');
 
 function getStatus(req, res) {
   res.status(200).json({

@@ -1,11 +1,17 @@
-const exchange = require('../../config/binance');
+const exchange = require('../config/binance');
 const env = require('../../config/env');
-const logger = require('../../utils/logger');
+const logger = require('../utils/logger');
 const stateService = require('./state.service');
 const telegramService = require('./telegram.service');
 const spreadsheetService = require('./spreadsheet.service');
+const db = require('../db');
 
 const VALID_ACTIONS = ['BUY', 'SELL'];
+
+function generateIdempotencyKey(symbol, side, candleCloseTime, strategyVersion = '1.0.0') {
+  const base = `${String(symbol).toUpperCase()}:${String(side).toUpperCase()}:${String(candleCloseTime)}:${String(strategyVersion)}`;
+  return require('crypto').createHash('sha256').update(base).digest('hex');
+}
 
 function recordClosedTrade(position, exitPrice, exitTime, mode, result, note, exitReason, tradeDetails = {}) {
   if (!position) return;
@@ -343,6 +349,12 @@ async function placeReal(action, symbol, qty, cost, timestamp, opts = {}) {
 async function placeOrder(action, symbol, quantity, budget, opts = {}) {
   const normalizedAction = action ? String(action).toUpperCase() : '';
 
+  // === EMERGENCY STOP CHECK (highest priority, above strategy/risk) ===
+  if (env.emergencyStop) {
+    logger.warn('[EMERGENCY-STOP] Kill switch aktif -> yeni emir REDDEDILDI.');
+    throw badReq('EMERGENCY STOP AKTIF - Yeni emirler reddediliyor.');
+  }
+
   if (!VALID_ACTIONS.includes(normalizedAction)) {
     throw badReq(`Gecersiz action: "${action}". Sadece BUY veya SELL kabul edilir.`);
   }
@@ -375,6 +387,48 @@ async function placeOrder(action, symbol, quantity, budget, opts = {}) {
   }
 
   const timestamp = new Date().toISOString();
+  const candleCloseTime = timestamp; // Use current timestamp as proxy for candle close
+
+  // Generate idempotency key to prevent duplicate orders
+  const strategyVersion = opts.strategyVersion || '1.0.0';
+  const side = normalizedAction;
+  const idempotencyKey = generateIdempotencyKey(ccxtSymbol, side, candleCloseTime, strategyVersion);
+
+  // Check if order already exists in DB (duplicate protection)
+  try {
+    const existingKeyResult = await db.query(
+      "SELECT id, order_id, status, filled, average_price FROM orders WHERE idempotency_key = $1",
+      [idempotencyKey]
+    );
+    if (existingKeyResult && existingKeyResult.rows && existingKeyResult.rows.length > 0) {
+      const existing = existingKeyResult.rows[0];
+      logger.info('[DUP-ORDER] Ayni idempotency key ile oncevi emir bulunuyor -> emir atlaniyor.', {
+        key: idempotencyKey,
+        existingOrderId: existing.order_id,
+      });
+      // Return the existing order result
+      return {
+        success: true,
+        timestamp,
+        action: normalizedAction,
+        symbol: ccxtSymbol,
+        quantity: existing.filled || 0,
+        cost: null,
+        feeRate: env.commissionRate,
+        fee: null,
+        orderId: existing.order_id,
+        status: existing.status,
+        filled: existing.filled || 0,
+        averagePrice: existing.average_price,
+        spent: null,
+        mode: env.dryRun ? 'DRY_RUN' : 'REAL',
+        raw: { idempotencyKey: true, source: 'duplicate_protection' },
+      };
+    }
+  } catch (err) {
+    logger.warn('[DUP-ORDER] DB check failed, proceeding without duplicate check:', err.message);
+  }
+
   logger.info(
     `Emir hazirlaniyor -> ${normalizedAction} ${ccxtSymbol} ${cost ? 'butce: ' + cost + ' USDT' : 'miktar: ' + qty}`,
     { timestamp, mode: env.dryRun ? 'DRY_RUN' : 'REAL' }
@@ -398,7 +452,55 @@ async function placeOrder(action, symbol, quantity, budget, opts = {}) {
       mode: result.mode,
     });
     spreadsheetService.logOrder({ ...result, timestamp, success: true }).catch(() => {});
-    return result;
+
+  // Store idempotency key in DB for duplicate protection
+  try {
+    await db.query(
+      `INSERT INTO orders (order_id, symbol, side, status, filled, average_price, pnl_usdt, pnl_percent, fee_usdt, idempotency_key) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (idempotency_key) DO NOTHING`,
+      [
+        result.orderId,
+        ccxtSymbol,
+        normalizedAction,
+        result.status,
+        result.filled,
+        result.averagePrice,
+        result.pnl,
+        result.pnlPercent,
+        result.fee,
+        idempotencyKey,
+      ]
+    );
+  } catch (err) {
+    logger.warn('[DUP-ORDER] Could not store idempotency key in DB:', err.message);
+  }
+
+  return result;
+    telegramService
+      .sendTelegramMessage(
+        `<b>${normalizedAction} EMRI BASARISIZ</b>\nParite: ${ccxtSymbol}\nHata: ${err.message}\nZaman: ${new Date(timestamp).toLocaleString('tr-TR')}`
+      )
+      .catch(() => {});
+    stateService.pushOrderLog({
+      timestamp,
+      action: normalizedAction,
+      symbol: ccxtSymbol,
+      success: false,
+      error: err.message,
+      price: null,
+      filled: null,
+      mode: env.dryRun ? 'DRY_RUN' : 'REAL',
+    });
+    spreadsheetService
+      .logOrder({
+        timestamp,
+        action: normalizedAction,
+        symbol: ccxtSymbol,
+        averagePrice: null,
+        filled: null,
+        success: false,
+      })
+      .catch(() => {});
+    throw err;
   } catch (err) {
     logger.error(`Emir BASARISIZ -> ${normalizedAction} ${ccxtSymbol}`, {
       error: err.message,
@@ -429,7 +531,6 @@ async function placeOrder(action, symbol, quantity, budget, opts = {}) {
         success: false,
       })
       .catch(() => {});
-    throw err;
   }
 }
 
