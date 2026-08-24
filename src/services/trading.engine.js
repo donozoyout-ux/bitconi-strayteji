@@ -1,5 +1,5 @@
-const exchange = require('../../config/binance');
-const env = require('../../config/env');
+const exchange = require('../config/binance');
+const env = require('../config/env');
 const logger = require('../utils/logger');
 const analyzer = require('./analyzer.service');
 const strategyEngine = require('./strategy.service');

@@ -1,4 +1,4 @@
-const exchange = require('../../config/binance');
+const exchange = require('../config/binance');
 const logger = require('../utils/logger');
 
 const WATCH_ASSETS = ['USDT', 'BTC', 'ETH', 'BNB'];
