@@ -14,12 +14,17 @@ const exchange = new ccxt.binance({
   enableRateLimit: true,
   timeout: 15000,
   options: {
-    defaultType: 'spot',
+    defaultType: 'future',
     adjustForTimeDifference: true,
-    recvWindow: 10000,
+    recvWindow: 60000,
+    fetchMarkets: ['linear', 'inverse'],
+    fetchCurrencies: false,
   },
 });
 
-exchange.setSandboxMode(Boolean(env.useTestnet));
+if (env.useTestnet) {
+  // Binance Demo Futures (demo.binance.com) endpoint configuration
+  exchange.urls['api'] = exchange.urls['demo'];
+}
 
 module.exports = exchange;
