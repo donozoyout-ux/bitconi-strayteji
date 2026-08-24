@@ -52,8 +52,8 @@ setTimeout(() => {
         });
       });
       req.on('error', (e) => { console.error('Error:', e); process.exit(1); });
-      req.end();
     });
+  });
 }, 2000);
 
 server.listen(3000, () => {

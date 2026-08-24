@@ -1,15 +1,16 @@
 const ccxt = require('ccxt');
 const env = require('./env');
+const logger = require('../utils/logger');
 
 if (!env.binanceApiKey || !env.binanceSecret) {
-  throw new Error(
-    'Binance API anahtarlari eksik. Lutfen .env dosyasini doldurun (BINANCE_API_KEY / BINANCE_SECRET_KEY).'
+  logger.warn(
+    '[WARN] Binance API anahtarlari eksik. Borsa bakiyesi veya emri gerektiren islemler API anahtari olmadan basarisiz olabilir.'
   );
 }
 
 const exchange = new ccxt.binance({
-  apiKey: env.binanceApiKey,
-  secret: env.binanceSecret,
+  apiKey: env.binanceApiKey || '',
+  secret: env.binanceSecret || '',
   enableRateLimit: true,
   timeout: 15000,
   options: {
@@ -19,6 +20,6 @@ const exchange = new ccxt.binance({
   },
 });
 
-exchange.setSandboxMode(env.useTestnet);
+exchange.setSandboxMode(Boolean(env.useTestnet));
 
 module.exports = exchange;

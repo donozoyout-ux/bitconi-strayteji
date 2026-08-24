@@ -6,26 +6,22 @@ const env = {};
 // SECRETS: Only infrastructure secrets from .env
 // ----------------------------
 const FALLBACK = {
-  binanceTestnetApiKey: 'F73g8dnhf97ffrTws1QlxDTaRJNHTBKKOH5hfuKbc7vjhdsB51A81MPJRDomlnFA',
-  binanceTestnetSecret: '92FODDyMiMm0gzhW63ySyica6kLAoL37pK6vXYAWF2pO9jWVANWGUwdvy4tMLUGv',
+  binanceTestnetApiKey: 'lVs9EHMUmNfdoDoqjBmqFUIeL2rcEPiKUSVjQMpp21H6i9Hj2QF58EcCvMDARc6g',
+  binanceTestnetSecret: 'KpRDeOi5nNwqwvAI0U0i6ooTPDsPomPQx7yS5S8jz9EK7Ilrfm2tq36Ft49xbYvK',
 };
 
 const useTestnet = (process.env.USE_TESTNET || 'true') === 'true';
 
 // Non-trading env vars (populated by deployment infrastructure)
 env.environment = process.env.NODE_ENV || 'development';
-env.isTestnet = env.useTestnet;
+env.useTestnet = useTestnet;
+env.isTestnet = useTestnet;
 
-// Secrets - ONLY from .env, never from frontend or dynamic config
-env.binanceApiKey = useTestnet
-  ? process.env.BINANCE_TESTNET_API_KEY || FALLBACK.binanceTestnetApiKey
-  : process.env.BINANCE_API_KEY || '';
+// Secrets - Flexible resolution from .env or deployment environment variables
+env.binanceApiKey = process.env.BINANCE_TESTNET_API_KEY || process.env.BINANCE_API_KEY || (useTestnet ? FALLBACK.binanceTestnetApiKey : '');
+env.binanceSecret = process.env.BINANCE_TESTNET_SECRET_KEY || process.env.BINANCE_SECRET_KEY || (useTestnet ? FALLBACK.binanceTestnetSecret : '');
 
-env.binanceSecret = useTestnet
-  ? process.env.BINANCE_TESTNET_SECRET_KEY || FALLBACK.binanceTestnetSecret
-  : process.env.BINANCE_SECRET_KEY || '';
-
-env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '',
+env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
 // Trading Configuration - Single source of truth

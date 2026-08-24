@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: bitconi-strayteji
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: USE_TESTNET
+        value: "true"
+      - key: DRY_RUN
+        value: "true"
+      - key: TRADING_MODE
+        value: "on"
+      - key: BINANCE_API_KEY
+        sync: false
+      - key: BINANCE_SECRET_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
