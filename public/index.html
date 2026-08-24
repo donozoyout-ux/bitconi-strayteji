@@ -1159,12 +1159,13 @@
       const timer = setTimeout(() => controller.abort(), ms);
       try {
         const response = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
-        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
         const data = await response.json();
-        $('apiErrBanner').style.display = 'none';
         return data;
       } catch (err) {
-        $('apiErrBanner').style.display = 'block';
+        console.warn(`Fetch error for ${url}:`, err.message);
         throw err;
       } finally {
         clearTimeout(timer);
@@ -1443,7 +1444,12 @@
       try {
         const res = await fetchWithTimeout('/api/status');
         
-        $('textSyncTime').textContent = new Date().toLocaleTimeString();
+        // Update BOT status to ONLINE if server responded
+        const botDot = $('dotBotStatus');
+        const botTxt = $('textBotStatus');
+        botDot.className = 'status-dot active';
+        botTxt.textContent = 'ONLINE';
+        botTxt.style.color = 'var(--emerald)';
 
         // 1. Update Binance Status
         const binanceDot = $('dotBinanceStatus');
