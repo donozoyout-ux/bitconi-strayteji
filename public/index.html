@@ -1252,7 +1252,7 @@
       try {
         const result = await apiFetch('PUT', '', patch);
         if (result.success) {
-          alert('Ayarlar kaydedildi!\nDegisiklikler uygulama restart'i sonrasi aktif olur.');
+          alert("Ayarlar kaydedildi!\nDegisiklikler uygulama restart'i sonrasi aktif olur.");
           loadSettings();
         } else {
           alert('Kaydetme hatasi: ' + (result.error || 'Bilinmeyen hata'));
