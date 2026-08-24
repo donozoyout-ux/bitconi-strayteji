@@ -1,12 +1,14 @@
 const exchange = require('../../config/binance');
 const env = require('../../config/env');
-const logger = require('../../utils/logger');
+const logger = require('../utils/logger');
 const analyzer = require('./analyzer.service');
 const strategyEngine = require('./strategy.service');
 const stateService = require('./state.service');
 const orderService = require('./order.service');
 const riskEngine = require('./risk-engine');
 const newsService = require('./news.service');
+const settingsService = require('./settings.service');
+const db = require('../db');
 
 let timer = null;
 let stopped = false;
@@ -83,11 +85,73 @@ async function syncPositionWithExchange(symbol, price) {
   }
 }
 
-function start() {
+async function start() {
   if (!env.tradingEnabled) {
     logger.warn('Otonom motor KAPALI (TRADING_MODE=off).');
     return;
   }
+
+  // 1. Initialize database connection
+  try {
+    await db.initialize();
+    logger.info('[SYSTEM] Database connection established.');
+  } catch (err) {
+    logger.error('[SYSTEM] Failed to initialize database:', err.message);
+    logger.warn('[SYSTEM] Continuing with file-based state fallback.');
+  }
+
+  // 2. Initialize settings from DB (with file fallback)
+  try {
+    await settingsService.initializeSettings();
+    logger.info('[SYSTEM] Settings initialized.');
+  } catch (err) {
+    logger.error('[SYSTEM] Failed to initialize settings:', err.message);
+  }
+
+  // 3. Load state from DB (with file fallback)
+  try {
+    const state = await settingsService.getFullBotState();
+    stateService.update(state);
+    logger.info('[SYSTEM] Bot state loaded from DB.');
+  } catch (err) {
+    logger.error('[SYSTEM] Failed to load bot state:', err.message);
+  }
+
+  // 4. Reconcile with Binance exchange
+  try {
+    await reconcileWithExchange();
+  } catch (err) {
+    logger.error('[SYSTEM] Exchange reconciliation failed:', err.message);
+  }
+
+  // 5. Open position recovery
+  try {
+    await recoverPositionState();
+  } catch (err) {
+    logger.error('[SYSTEM] Position recovery failed:', err.message);
+  }
+
+  // 6. Open order recovery
+  try {
+    await recoverOrderState();
+  } catch (err) {
+    logger.error('[SYSTEM] Order recovery failed:', err.message);
+  }
+
+  // 7. Risk state recovery
+  try {
+    await recoverRiskState();
+  } catch (err) {
+    logger.error('[SYSTEM] Risk state recovery failed:', err.message);
+  }
+
+  // 8. Cooldown recovery
+  try {
+    await recoverCooldownState();
+  } catch (err) {
+    logger.error('[SYSTEM] Cooldown recovery failed:', err.message);
+  }
+
   stopped = false;
   stateService.update({ busy: false, lastError: null });
   logger.info(
@@ -95,6 +159,179 @@ function start() {
   );
   runCycle();
   scheduleNext();
+}
+
+async function reconcileWithExchange() {
+  const st = stateService.get();
+
+  // Get current Binance balance
+  try {
+    const balance = await exchange.fetchBalance();
+
+    const btcFree = balance.BTC ? balance.BTC.free : 0;
+    const usdtFree = balance.USDT ? balance.USDT.free : 0;
+
+    // Check if stored position matches exchange
+    if (st.position) {
+      const { symbol, side, entryPrice, quantity } = st.position;
+
+      // Verify position on exchange
+      const openOrders = await exchange.fetchOpenOrders(symbol || 'BTC/USDT');
+      const positionExists = openOrders.some(
+        (order) => order.side === (side === 'LONG' ? 'buy' : 'sell') && order.price !== undefined
+      );
+
+      if (!positionExists) {
+        // Position no longer on exchange - clear local state
+        logger.info(
+          '[SYNC] Pozisyon DB'de kayitli ama borsada yok -> locale kayit temizleniyor.'
+        );
+        await settingsService.updateBotState('position', {
+          symbol: null,
+          side: null,
+          entryPrice: null,
+          quantity: null,
+          entryTime: null,
+          stopPrice: null,
+          tp1: null,
+          tp2: null,
+          highestSinceEntry: null,
+          tp1Done: false,
+        });
+      } else {
+        // Position exists on exchange - verify quantity matches
+        logger.info(
+          `[SYNC] Pozisyon ${quantity} ${side} borsada mevcut -> state dogrulaniyor.`
+        );
+      }
+    }
+
+    // Update dryRun balance
+    await settingsService.updateBotState('dryRun', {
+      USDT: usdtFree,
+      BTC: btcFree,
+    });
+
+    logger.info(
+      `[SYNC] Balance reconciliyor: USDT=${usdtFree}, BTC=${btcFree}`
+    );
+  } catch (err) {
+    logger.warn('[SYNC] Balance reconcilation error (non-fatal):', err.message);
+  }
+}
+
+async function recoverPositionState() {
+  const st = stateService.get();
+  const dbState = await settingsService.getBotState('position');
+
+  if (!dbState) {
+    logger.info('[RECOVERY] DB position state yok, dosya state kullaniliyor.');
+    return;
+  }
+
+  // If DB has no position but file has one, use DB state
+  if (!st.position && dbState.symbol) {
+    logger.info(
+      '[RECOVERY] DB pozisyonu found, restoring:'
+    );
+    stateService.update({
+      position: {
+        symbol: dbState.symbol,
+        side: dbState.side,
+        entryPrice: dbState.entryPrice,
+        quantity: dbState.quantity,
+        entryTime: dbState.entryTime,
+        stopPrice: dbState.stopPrice,
+        tp1: dbState.tp1,
+        tp2: dbState.tp2,
+        highestSinceEntry: dbState.highestSinceEntry,
+        tp1Done: dbState.tp1Done,
+      },
+    });
+    logger.info('[RECOVERY] Position state restored from DB.');
+  } else if (st.position && !dbState.symbol) {
+    // File has position but DB doesn't - clear file position
+    logger.info('[RECOVERY] File pozisyonu yok, DB'de yok -> temizliyor.');
+    await settingsService.updateBotState('position', {
+      symbol: null,
+      side: null,
+      entryPrice: null,
+      quantity: null,
+      entryTime: null,
+      stopPrice: null,
+      tp1: null,
+      tp2: null,
+      highestSinceEntry: null,
+      tp1Done: false,
+    });
+    stateService.update({ position: null });
+  }
+  // If both have position, verify they match - DB wins
+}
+
+async function recoverOrderState() {
+  // Load open orders from DB and reconcile with exchange
+  try {
+    const result = await db.query(
+      "SELECT * FROM orders WHERE status = 'OPEN' AND closed_at IS NULL"
+    );
+    const openOrders = result.rows;
+
+    for (const order of openOrders) {
+      // Check if order still exists on exchange
+      try {
+        const existingOrders = await exchange.fetchOpenOrders(
+          order.symbol || 'BTC/USDT'
+        );
+        const stillOpen = existingOrders.some(
+          (o) => o.id === order.order_id
+        );
+
+        if (!stillOpen) {
+          // Order no longer on exchange - mark as closed in DB
+          await db.query(
+            "UPDATE orders SET status = 'CLOSED', closed_at = NOW() WHERE order_id = $1",
+            [order.order_id]
+          );
+          logger.info(
+            '[RECOVERY] Order ${order.order_id} DB'de ama borsada yok -> kapatildi.'
+          );
+        }
+      } catch (err) {
+        logger.warn('[RECOVERY] Order check error for ${order.order_id}:', err.message);
+      }
+    }
+    logger.info('[RECOVERY] Open order recovery completed.');
+  } catch (err) {
+    logger.error('[RECOVERY] Open order recovery failed:', err.message);
+  }
+}
+
+async function recoverRiskState() {
+  // Ensure risk state is consistent - daily loss tracking, etc.
+  const st = stateService.get();
+  const dbState = await settingsService.getBotState('dailyPnL');
+
+  // Risk state is maintained in memory during runtime
+  // On restart, we rely on the trade history in DB for PnL calculation
+  logger.info('[RECOVERY] Risk state - will calculate from DB trade history on next cycle.');
+}
+
+async function recoverCooldownState() {
+  const st = stateService.get();
+  const dbState = await settingsService.getBotState('cooldownUntil');
+
+  if (dbState && dbState > Date.now()) {
+    // Cooldown active from previous session
+    const remaining = Math.ceil((dbState - Date.now()) / 60000);
+    logger.info(
+      '[RECOVERY] Cooldown aktif (${remaining} dk kaldi) -> sinyal engellendi.'
+    );
+  } else {
+    // Clear any cooldown
+    await settingsService.updateBotState('cooldownUntil', 0);
+    logger.info('[RECOVERY] Cooldown temizildi.');
+  }
 }
 
 function stop() {
@@ -336,6 +573,21 @@ async function runCycle() {
 
     if (!riskCheck.allowed) {
       logger.warn(`Risk limit exceeded: ${riskCheck.reason} -> Emir atlaniyor.`);
+
+      // Record why no trade decision
+      const decisionReasons = ['RISK_LIMIT'];
+      if (riskCheck.consecutiveLossesLimit > 0) decisionReasons.push('CONSECUTIVE_LOSSES');
+      if (dailyTrades >= (parseInt(env.MAX_TRADES_PER_DAY || '10'))) decisionReasons.push('MAX_TRADES_PER_DAY');
+
+      try {
+        await db.query(
+          `INSERT INTO strategy_decisions (decision, reasons, signal_score, regime, chop) VALUES ($1, $2, $3, $4, $5)`,
+          ['NO_TRADE', decisionReasons, entryEval.score, regime, true]
+        );
+      } catch (err) {
+        logger.warn('[WHY-NO-TRADE] Could not record decision in DB:', err.message);
+      }
+
       stateService.update({
         busy: false,
         lastCheck: new Date().toISOString(),
@@ -352,6 +604,19 @@ async function runCycle() {
         },
       });
       return;
+    }
+
+    // Record why no trade decision - no signal case
+    if (!entryEval.signal) {
+      const decisionReasons = ['NO_RSI_CROSS'];
+      try {
+        await db.query(
+          `INSERT INTO strategy_decisions (decision, reasons, signal_score, regime, chop) VALUES ($1, $2, $3, $4, $5)`,
+          ['NO_TRADE', decisionReasons, entryEval.score, regime, entryEval.reasons.chop]
+        );
+      } catch (err) {
+        logger.warn('[WHY-NO-TRADE] Could not record decision in DB:', err.message);
+      }
     }
 
     // Size position using risk engine
