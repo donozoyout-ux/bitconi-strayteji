@@ -1,9 +1,18 @@
-const { Pool } = require('pg');
+let Pool = null;
+try {
+  Pool = require('pg').Pool;
+} catch (e) {
+  // pg module optional fallback
+}
+
 const env = require('../config/env');
 
 let pool = null;
 
 function getPool() {
+  if (!Pool) {
+    throw new Error('pg modulu yuklu degil.');
+  }
   if (!pool) {
     const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/dip_hunter';
     pool = new Pool({

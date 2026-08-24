@@ -184,7 +184,7 @@ async function reconcileWithExchange() {
       if (!positionExists) {
         // Position no longer on exchange - clear local state
         logger.info(
-          '[SYNC] Pozisyon DB'de kayitli ama borsada yok -> locale kayit temizleniyor.'
+          "[SYNC] Pozisyon DB'de kayitli ama borsada yok -> locale kayit temizleniyor."
         );
         await settingsService.updateBotState('position', {
           symbol: null,
@@ -251,7 +251,7 @@ async function recoverPositionState() {
     logger.info('[RECOVERY] Position state restored from DB.');
   } else if (st.position && !dbState.symbol) {
     // File has position but DB doesn't - clear file position
-    logger.info('[RECOVERY] File pozisyonu yok, DB'de yok -> temizliyor.');
+    logger.info("[RECOVERY] File pozisyonu yok, DB'de yok -> temizliyor.");
     await settingsService.updateBotState('position', {
       symbol: null,
       side: null,
@@ -294,7 +294,7 @@ async function recoverOrderState() {
             [order.order_id]
           );
           logger.info(
-            '[RECOVERY] Order ${order.order_id} DB'de ama borsada yok -> kapatildi.'
+            `[RECOVERY] Order ${order.order_id} DB'de ama borsada yok -> kapatildi.`
           );
         }
       } catch (err) {
