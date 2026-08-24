@@ -81,3 +81,5 @@ try {
 } catch (e) {
   console.warn('[WARN] GOOGLE_FORM_FIELDS gecerli bir JSON degil.');
 }
+
+module.exports = env;
