@@ -18,19 +18,20 @@ env.useTestnet = useTestnet;
 env.isTestnet = useTestnet;
 
 // Secrets - Flexible resolution from .env or deployment environment variables
-env.binanceApiKey = process.env.BINANCE_TESTNET_API_KEY || process.env.BINANCE_API_KEY || (useTestnet ? FALLBACK.binanceTestnetApiKey : '');
-env.binanceSecret = process.env.BINANCE_TESTNET_SECRET_KEY || process.env.BINANCE_SECRET_KEY || (useTestnet ? FALLBACK.binanceTestnetSecret : '');
+env.binanceApiKey = process.env.BINANCE_API_KEY || process.env.BINANCE_TESTNET_API_KEY || (useTestnet ? FALLBACK.binanceTestnetApiKey : '');
+env.binanceSecret = process.env.BINANCE_SECRET_KEY || process.env.BINANCE_TESTNET_SECRET_KEY || (useTestnet ? FALLBACK.binanceTestnetSecret : '');
 
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Trading Configuration - Single source of truth
-// Priority: settings.json (persistent) > .env > defaults below
-// Frontend should NOT manage these via UI - they are backend config
+// Trading control flags (from .env, can be overridden by settings/service at runtime)
+env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
+env.dryRun = process.env.DRY_RUN !== 'false';
+env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
 
-// Timeframes
+// Trading Configuration - Single source of truth
 env.analysisTimeframe = process.env.ANALYSIS_TIMEFRAME || '1d';
-env.port = process.env.PORT || 3000;
+env.port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN) || 5;
 env.budgetUsdt = parseFloat(process.env.BUDGET_USDT) || 500;
 env.tpPercent = parseFloat(process.env.TP_PERCENT) || 5;
@@ -69,11 +70,6 @@ if (!useTestnet && env.tradingEnabled && !env.dryRun) {
     '[UYARI] GERCEK HESAP MODU AKTIF - gercek para ile islem yapilacak. Durdurmak icin TRADING_MODE=off yapin.'
   );
 }
-
-// Trading control flags (from .env, can be overridden by settings/service at runtime)
-env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
-env.dryRun = (process.env.DRY_RUN || 'false') === 'true';
-env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
 
 // Non-trading env vars
 env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
