@@ -22,6 +22,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/api/status', statusController.getStatus);
+app.get('/api/logs', statusController.getLogs);
 app.post('/api/test-telegram', telegramController.sendTest);
 app.get('/api/trader', traderController.getStatus);
 app.post('/api/trader/check', traderController.checkNow);

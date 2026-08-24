@@ -3,1282 +3,1862 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dip Hunter Crypto Bot - Kontrol Paneli</title>
+  <title>BITCONI // ALGORITHMIC TRADING TERMINAL</title>
+  <!-- Google Fonts Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0b0e14;
-      --card: #151a24;
-      --card2: #1c2230;
-      --border: #2a3242;
-      --text: #e6e9f0;
-      --muted: #8b93a7;
-      --green: #22c55e;
-      --red: #ef4444;
-      --blue: #3b82f6;
-      --orange: #f59e0b;
+      --bg: #07090e;
+      --card-bg: rgba(15, 20, 30, 0.75);
+      --card-border: rgba(42, 53, 75, 0.45);
+      --card-hover: rgba(50, 65, 95, 0.6);
+      --text: #f0f3f8;
+      --muted: #8492a6;
+      
+      /* Neon Accents */
+      --emerald: #00f076;
+      --emerald-glow: rgba(0, 240, 118, 0.15);
+      --rose: #ff3860;
+      --rose-glow: rgba(255, 56, 96, 0.15);
+      --amber: #ffb900;
+      --amber-glow: rgba(255, 185, 0, 0.15);
+      --azure: #00b0ff;
+      --azure-glow: rgba(0, 176, 255, 0.15);
+      
+      --font-main: 'Outfit', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
     body {
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 176, 255, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 240, 118, 0.04) 0%, transparent 40%);
+      background-attachment: fixed;
       color: var(--text);
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: var(--font-main);
       min-height: 100vh;
-      padding: 24px;
+      padding: 20px;
+      overflow-x: hidden;
     }
-    .wrap { max-width: 1400px; margin: 0 auto; padding: 0 8px; }
-    @media (min-width: 1200px) {
-      .wrap { padding: 0 24px; }
+
+    .wrap {
+      max-width: 1600px;
+      margin: 0 auto;
     }
-    @media (max-width: 768px) {
-      body { padding: 12px; }
-      h1 { font-size: 18px; }
-      .ticker-price { font-size: 28px; }
-      .card { padding: 14px; }
-      .row { flex-direction: column; }
-      .row.actions { flex-direction: row; justify-content: stretch; }
-      .row.actions .btn { flex: 1; }
-      .grid { grid-template-columns: repeat(2, 1fr); }
-      .field { min-width: 100%; }
-      #priceChart { height: 260px !important; }
-      #stochChart { height: 130px !important; }
-      header { flex-direction: column; align-items: flex-start; }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
     }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    /* Header styling */
     header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
-    h1 { font-size: 22px; font-weight: 700; }
-    h1 span { color: var(--orange); }
-    h3 { margin: 0; }
-    .badge {
-      background: var(--green); color: #04140a; font-weight: 700;
-      padding: 6px 12px; border-radius: 999px; font-size: 12px;
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .badge.off { background: var(--red); color: #fff; }
-    .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px; margin-bottom: 16px;
+
+    .brand-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, #fff 0%, var(--muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .card h2 {
-      font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--muted); margin-bottom: 14px;
+
+    .brand-title span {
+      color: var(--azure);
+      -webkit-text-fill-color: var(--azure);
+      font-weight: 500;
     }
-    .grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+    .pair-badge {
+      background: rgba(0, 176, 255, 0.1);
+      border: 1px solid var(--azure);
+      color: var(--azure);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rose);
+      box-shadow: 0 0 8px var(--rose);
+    }
+
+    .status-dot.active {
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+    }
+
+    .emergency-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(0, 240, 118, 0.1);
+      border: 1px solid var(--emerald);
+      color: var(--emerald);
+    }
+
+    .emergency-badge.active {
+      background: rgba(255, 56, 96, 0.1);
+      border: 1px solid var(--rose);
+      color: var(--rose);
+      animation: pulse-border 2s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 56, 96, 0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(255, 56, 96, 0); }
+    }
+
+    .sync-time {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Layout Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1400px) {
+      .dashboard-grid {
+        grid-template-columns: 1.8fr 1.2fr;
+      }
+      .col-right {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      .col-right, .col-mid {
+        grid-column: span 1;
+      }
+    }
+
+    /* Terminal Card */
+    .t-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .t-card:hover {
+      border-color: rgba(0, 176, 255, 0.25);
+    }
+
+    .t-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(42, 53, 75, 0.3);
+      padding-bottom: 10px;
+    }
+
+    .t-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .t-card-title i {
+      color: var(--azure);
+    }
+
+    /* Price Panel */
+    .price-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .price-display-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .price-val {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      transition: color 0.15s ease;
+      color: var(--text);
+    }
+
+    .price-val.up { color: var(--emerald); }
+    .price-val.down { color: var(--rose); }
+
+    .price-change-pill {
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(132, 146, 166, 0.1);
+      color: var(--muted);
+    }
+
+    .price-change-pill.up {
+      background: rgba(0, 240, 118, 0.1);
+      color: var(--emerald);
+    }
+
+    .price-change-pill.down {
+      background: rgba(255, 56, 96, 0.1);
+      color: var(--rose);
+    }
+
+    /* Decision Panel Card */
+    .decision-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      border-radius: 12px;
+      background: rgba(132, 146, 166, 0.04);
+      border: 1px dashed var(--card-border);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .decision-badge {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      padding: 6px 24px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    .decision-badge.wait {
+      background: var(--amber-glow);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+    }
+
+    .decision-badge.long {
+      background: var(--emerald-glow);
+      border: 1px solid var(--emerald);
+      color: var(--emerald);
+      animation: pulse-decision 1.5s infinite;
+    }
+
+    .decision-badge.short {
+      background: var(--rose-glow);
+      border: 1px solid var(--rose);
+      color: var(--rose);
+      animation: pulse-decision-rose 1.5s infinite;
+    }
+
+    @keyframes pulse-decision {
+      0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 118, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(0, 240, 118, 0.5); }
+    }
+    @keyframes pulse-decision-rose {
+      0%, 100% { box-shadow: 0 0 10px rgba(255, 56, 96, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(255, 56, 96, 0.5); }
+    }
+
+    /* Score Gauge Progress */
+    .score-container {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .score-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .score-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--azure) 0%, var(--emerald) 100%);
+      border-radius: 4px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    .score-threshold-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 75%;
+      width: 2px;
+      background: var(--rose);
+      z-index: 10;
+    }
+
+    /* Grid of Decision Reasons */
+    .reason-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .reason-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .reason-item .lbl {
+      color: var(--muted);
+    }
+
+    .reason-item .val {
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .reason-narrative {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 14px;
+      padding: 10px 12px;
+      background: rgba(0, 176, 255, 0.04);
+      border-left: 2px solid var(--azure);
+      border-radius: 0 6px 6px 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    /* Open Position Details */
+    .position-info-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(42, 53, 75, 0.2);
+      padding: 8px 0;
+      font-size: 14px;
+    }
+
+    .position-info-row .lbl {
+      color: var(--muted);
+    }
+
+    .position-info-row .val {
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .position-info-row .val.pnl-green {
+      color: var(--emerald);
+    }
+
+    .position-info-row .val.pnl-red {
+      color: var(--rose);
+    }
+
+    .no-position-box {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 12px;
     }
-    .stat {
-      background: var(--card2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px;
+
+    .pulse-scan-ring {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(0, 176, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .stat .label { font-size: 12px; color: var(--muted); }
-    .stat .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
-    .stat .value.green { color: var(--green); }
-    .stat .value.orange { color: var(--orange); }
-    .stat .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    form .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-    .field { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
-    .field label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    input, select {
-      background: var(--card2); border: 1px solid var(--border);
-      color: var(--text); border-radius: 8px; padding: 10px 12px;
-      font-size: 14px; outline: none;
+
+    .pulse-scan-ring::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid var(--azure);
+      animation: pulse-ring 2s infinite ease-out;
     }
-    input:focus, select:focus { border-color: var(--blue); }
-    .btn {
-      border: none; border-radius: 10px; padding: 12px 18px;
-      font-size: 14px; font-weight: 700; cursor: pointer; color: #fff;
-      background: var(--blue); transition: opacity .15s;
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 0.8; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
-    .btn:hover { opacity: .85; }
-    .btn.buy { background: var(--green); }
-    .btn.sell { background: var(--red); }
-    .btn.danger { background: var(--red); }
-    .btn.ghost {
-      background: transparent; border: 1px solid var(--border); color: var(--text);
+
+    /* Buttons styling */
+    .t-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--card-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
     }
-    .row.actions { justify-content: flex-end; }
-    .result {
-      background: #0d1117; border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px; font-family: Consolas, monospace;
-      font-size: 13px; white-space: pre-wrap; word-break: break-word;
-      max-height: 240px; overflow: auto;
+
+    .t-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--muted);
     }
-    .result.success { border-color: var(--green); }
-    .result.error { border-color: var(--red); }
-    .hint {
-      background: var(--card2); border-left: 3px solid var(--orange);
-      padding: 12px 14px; border-radius: 8px; font-size: 13px; color: var(--muted);
+
+    .t-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .t-btn.buy {
+      background: var(--emerald-glow);
+      border-color: var(--emerald);
+      color: var(--emerald);
+    }
+
+    .t-btn.buy:hover:not(:disabled) {
+      background: rgba(0, 240, 118, 0.25);
+    }
+
+    .t-btn.sell {
+      background: var(--rose-glow);
+      border-color: var(--rose);
+      color: var(--rose);
+    }
+
+    .t-btn.sell:hover:not(:disabled) {
+      background: rgba(255, 56, 96, 0.25);
+    }
+
+    .t-btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    /* Performance Tabs and Cards */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 3px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--card-border);
+      color: var(--text);
+    }
+
+    .perf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .perf-item {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(42, 53, 75, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .perf-item .lbl {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .perf-item .val {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .perf-item .val.green { color: var(--emerald); }
+    .perf-item .val.red { color: var(--rose); }
+
+    /* Strategy Parameter Grid (Read Only) */
+    .param-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .param-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(42, 53, 75, 0.15);
+    }
+
+    .param-item .lbl {
+      color: var(--muted);
+    }
+
+    .param-item .val {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--azure);
+    }
+
+    /* Emergency Alert Box */
+    .emergency-alert-card {
+      background: rgba(255, 56, 96, 0.04);
+      border: 1px solid rgba(255, 56, 96, 0.3);
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      color: var(--rose);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .emergency-alert-card.off {
+      background: rgba(0, 240, 118, 0.02);
+      border: 1px solid rgba(0, 240, 118, 0.2);
+      color: var(--emerald);
+    }
+
+    /* Trade Journal Table */
+    .journal-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin-bottom: 14px;
+    }
+
+    .journal-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .journal-table th {
+      padding: 10px 12px;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .journal-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(42, 53, 75, 0.2);
+      font-family: var(--font-mono);
+    }
+
+    .journal-side {
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+
+    .journal-side.long {
+      background: rgba(0, 240, 118, 0.1);
+      color: var(--emerald);
+    }
+
+    .journal-side.short {
+      background: rgba(255, 56, 96, 0.1);
+      color: var(--rose);
+    }
+
+    .journal-pnl.green { color: var(--emerald); }
+    .journal-pnl.red { color: var(--rose); }
+
+    .journal-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Retro Terminal scrolling console log */
+    .terminal-console {
+      background: #04060a;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px;
+      height: 240px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
       line-height: 1.6;
+      color: #39ff14; /* Matrix Green */
     }
-    code {
-      background: var(--card2); padding: 2px 6px; border-radius: 5px;
-      font-size: 12px; color: var(--orange);
+
+    .terminal-line {
+      margin-bottom: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
-    .muted { color: var(--muted); }
-    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 24px; }
-    .live-tag { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
-    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,.5); }
-      50% { opacity: .5; box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+
+    .terminal-line.warn {
+      color: var(--amber);
     }
-    .ticker-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: stretch; }
-    .ticker-main { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; min-width: 200px; flex: 1; }
-    .ticker-symbol { font-size: 13px; color: var(--muted); }
-    .ticker-price { font-size: 36px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; transition: color .3s; }
-    .ticker-price.up { color: var(--green); }
-    .ticker-price.down { color: var(--red); }
-    .ticker-stats { flex: 2; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-    .banner { border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: .5px; margin-top: 12px; }
-    .banner.idle { background: var(--card2); border: 1px solid var(--border); color: var(--muted); }
-    .banner.watch { background: rgba(245,158,11,.12); border: 1px solid var(--orange); color: var(--orange); }
-    .banner.buy { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
-    .banner.open { background: rgba(34,197,94,.15); border: 1px solid var(--green); color: var(--green); }
-    .banner.error { background: rgba(239,68,68,.12); border: 1px solid var(--red); color: var(--red); }
-    .spin {
-      display: inline-block; width: 14px; height: 14px; margin-right: 8px;
-      border: 2px solid var(--border); border-top-color: var(--blue);
-      border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+
+    .terminal-line.error {
+      color: var(--rose);
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .terminal-line.info {
+      color: #39ff14;
+    }
+
+    .terminal-line .ts {
+      color: var(--muted);
+      margin-right: 8px;
+    }
+
+    /* Error and banner overlays */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(7, 9, 14, 0.85);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .api-err-banner {
+      display: none;
+      background: var(--rose);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(255, 56, 96, 0.3);
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    
+    <!-- API Connection error banner -->
+    <div id="apiErrBanner" class="api-err-banner">
+      ⚠️ Sunucu bağlantısı koptu. Yeniden bağlanmaya çalışılıyor...
+    </div>
+
+    <!-- Header Panel -->
     <header>
-      <h1>Dip Hunter <span>Crypto Bot</span></h1>
-      <div style="display:flex; align-items:center; gap:12px;">
-        <span class="live-tag"><span class="live-dot"></span>CANLI</span>
-        <div id="connBadge" class="badge off">Baglaniyor...</div>
+      <div class="brand-section">
+        <h1 class="brand-title">BITCONI <span>// TERMINAL</span></h1>
+        <span class="pair-badge">BTC/USDT</span>
+      </div>
+
+      <div class="system-status">
+        <div class="status-item">
+          BOT: <span id="dotBotStatus" class="status-dot"></span> <span id="textBotStatus">DEVREDIŞI</span>
+        </div>
+        <div class="status-item">
+          BINANCE: <span id="dotBinanceStatus" class="status-dot"></span> <span id="textBinanceStatus">BAĞLANTI YOK</span>
+        </div>
+        <div class="status-item">
+          DATABASE: <span id="dotDbStatus" class="status-dot"></span> <span id="textDbStatus">BAĞLANTI YOK</span>
+        </div>
+        <div id="badgeEmergencyStop" class="emergency-badge">
+          🛡️ E-STOP OFF
+        </div>
+        <div class="sync-time">
+          GÜNCELLEME: <span id="textSyncTime">--:--:--</span>
+        </div>
       </div>
     </header>
 
-    <div class="card">
-      <h2>Canli Durum</h2>
-      <div class="ticker-row">
-        <div class="ticker-main">
-          <div class="ticker-symbol">BTC/USDT - Canli Fiyat</div>
-          <div id="livePrice" class="ticker-price">--</div>
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column (Candlestick chart and manual trades) -->
+      <div class="col-left">
+        
+        <!-- Candlestick chart panel -->
+        <div class="t-card" style="min-height: 600px;">
+          <div class="t-card-header">
+            <div class="t-card-title">📈 BTC/USDT 15M CANDLESTICK CHART</div>
+            <button type="button" class="t-btn" id="btnRefreshChart">Yenile</button>
+          </div>
+          
+          <div class="price-panel">
+            <div class="price-display-wrapper">
+              <span class="price-label">Live Price</span>
+              <span id="textLivePrice" class="price-val">--.--</span>
+            </div>
+            <span id="pillPriceChange" class="price-change-pill">--%</span>
+          </div>
+
+          <!-- Main Candlestick Chart Pane -->
+          <div id="chartContainer" style="width: 100%; height: 350px;"></div>
+          <!-- Stoch RSI Pane -->
+          <div id="stochContainer" style="width: 100%; height: 130px; margin-top: 10px;"></div>
         </div>
-        <div class="ticker-stats">
-          <div class="stat"><div class="label">Son Kapanis (mum)</div><div id="liveClose" class="value">-</div></div>
-          <div class="stat"><div class="label">Sinyal</div><div id="liveSignal" class="value" style="font-size:15px;">-</div></div>
-          <div class="stat"><div class="label">Sonraki Kontrol</div><div id="liveCountdown" class="value">-</div></div>
-          <div class="stat"><div class="label">Motor Modu</div><div id="liveMode" class="value">-</div></div>
-        </div>
-      </div>
-      <div id="signalBanner" class="banner idle">Sinyal bekleniyor...</div>
-      <div class="muted" id="liveStampLine" style="margin-top:10px; font-size:12px;"></div>
-    </div>
 
-    <div class="card">
-      <h2>BTC/USDT - Grafik (Bollinger + Stoch RSI)</h2>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-        <button type="button" class="btn ghost" id="chartRefreshBtn">Grafiği Yenile</button>
-        <span class="muted" id="chartMeta" style="font-size:12px;"></span>
-      </div>
-      <div id="priceChart" style="width:100%; height:380px;"></div>
-      <div id="stochChart" style="width:100%; height:170px; margin-top:10px;"></div>
-      <div class="muted" style="margin-top:8px; font-size:12px;">
-        Ust: kirmizi/yesil mumlar (son kapanis), mavi orta cizgi (BB20), kirmizi alt bant, yesil ust bant.
-        Alt: Stoch RSI %K (mavi) / %D (turuncu), kesikli cizgi 20 (asiri satis).
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Hesap Durumu</h2>
-      <div class="grid" id="balanceGrid">
-        <div class="stat"><div class="label">Yukleniyor...</div></div>
-      </div>
-      <div class="muted" id="serverMeta" style="margin-top:12px; font-size:12px;"></div>
-    </div>
-
-    <div class="card">
-      <h2>Kar / Zarar Raporu</h2>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-        <button type="button" class="btn ghost" id="historyBtn">Raporu Yenile</button>
-        <span class="muted" id="historyMeta" style="font-size:12px;"></span>
-      </div>
-      <div class="grid" id="pnlSummaryGrid">
-        <div class="stat"><div class="label">Yukleniyor...</div></div>
-      </div>
-      <div style="margin-top:12px;">
-        <h3 style="font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Kapali Islemler (Kar/Zarar)</h3>
-        <div id="tradesBox" class="result" style="max-height:260px;"></div>
-      </div>
-      <div style="margin-top:12px;">
-        <h3 style="font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Emir Gecmisi (Basarili / Basarisiz)</h3>
-        <div id="orderLogBox" class="result" style="max-height:200px;"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Strateji Analizi (Teknik + Grafik + Haber)</h2>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-        <button type="button" class="btn ghost" id="analysisBtn">Analizi Yenile</button>
-        <span class="muted" id="analysisMeta" style="font-size:12px;"></span>
-      </div>
-      <div id="verdictBox" class="banner idle">Analiz bekleniyor...</div>
-      <div id="analysisInfo" style="margin-top:12px;">
-        <div class="stat"><div class="label">Yukleniyor...</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Otonom Strateji Motoru</h2>
-      <p class="muted" style="margin-bottom:14px; font-size:13px;">
-        Bot Binance'ten 1D mum verisini ceker, Bollinger + RSI analizini kendisi yapar,
-        kosul olusunca otonom alim yapar; +TP / -SL seviyelerinde otomatik satar.
-      </p>
-      <div id="traderInfo" style="margin-bottom:14px;">
-        <div class="stat"><div class="label">Yukleniyor...</div></div>
-      </div>
-      <div class="row actions">
-        <button type="button" class="btn ghost" id="checkBtn">Simdi Analiz Et</button>
-        <button type="button" class="btn" id="openBtn">Manuel AL Ac</button>
-        <button type="button" class="btn danger" id="closeBtn">Pozisyonu Kapat (SAT)</button>
-        <button type="button" class="btn ghost" id="resetBtn">Motor Durumunu Sifirla</button>
-      </div>
-      <div class="muted" id="traderAutoMeta" style="margin-top:10px; font-size:12px;"></div>
-      <div id="traderResult" class="result" style="display:none; margin-top:14px;"></div>
-    </div>
-
-    <div class="card">
-      <h2>Settings (Ayarlar)</h2>
-      <p class="muted" style="margin-bottom:14px; font-size:13px;">
-        Ayarlar persistent olarak saklandi. Uygulama restart'i sonucu kaybolmaz.
-        Degisiklikler Binance API'yi etkilemez, sadece strateji davranimini kontrol eder.
-      </div>
-      <form id="settingsForm">
-        <div class="grid">
-          <div class="field">
-            <label>Strategy Version</label>
-            <input type="text" id="settingsStrategyVersion" value="1.0.0" readonly />
+        <!-- Manual Trade Control Cards -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">🎮 MANUAL TRADE CONTROLS</div>
           </div>
-          <div class="field">
-            <label>Strategy</label>
-            <select id="settingsStrategy">
-              <option value="rsi-bollinger">RSI + Bollinger (core)</option>
-              <option value="bb-squeeze">BB Squeeze</option>
-              <option value="rsi-only">RSI Only</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>RSI Length</label>
-            <input type="number" id="settingsRSILength" value="20" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display:block;">RSI hesaplama periyodu.</span>
-          </div>
-          <div class="field">
-            <label>RSI MA Length</label>
-            <input type="number" id="settingsRSIMaLength" value="20" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display:block;">RSI hareketli ortalamasi periyodu.</span>
-          </div>
-          <div class="field">
-            <label>Bollinger Length</label>
-            <input type="number" id="settingsBBLength" value="30" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display:block;">Bollinger Band uzunlugu (SMA periyodu).</span>
-          </div>
-          <div class="field">
-            <label>Bollinger Std</label>
-            <input type="number" id="settingsBBStd" value="2" min="0.1" max="10" step="0.1" />
-            <span class="muted" style="font-size:11px; display:block;">Standart sapma katsayisi.</span>
-          </div>
-          <div class="field">
-            <label>Execution Timeframe</label>
-            <select id="settingsExecutionTimeframe">
-              <option value="15m">15m</option>
-              <option value="30m">30m</option>
-              <option value="1h">1h</option>
-              <option value="4h">4h</option>
-              <option value="1d">1d</option>
-            </select>
-            <span class="muted" style="font-size:11px; display:block;">Emir calistirilacak timeframe.</span>
-          </div>
-          <div class="field">
-            <label>Higher Timeframe</label>
-            <select id="settingsHigherTimeframe">
-              <option value="1h">1h</option>
-              <option value="4h">4h</option>
-              <option value="1d">1d</option>
-              <option value="1w">1w</option>
-            </select>
-            <span class="muted" style="font-size:11px; display-block;">Piyasay regimi icin higher timeframe.</span>
-          </div>
-          <div class="field">
-            <label>Regime Timeframe</label>
-            <select id="settingsRegimeTimeframe">
-              <option value="4h">4h</option>
-              <option value="1d">1d</option>
-              <option value="1w">1w</option>
-            </select>
-            <span class="muted" style="font-size:11px; display-block;">Market regimi tespiti icin timeframe.</span>
-          </div>
-          <div class="field">
-            <label>Risk Per Trade (%)</label>
-            <input type="number" id="settingsRiskPerTrade" value="0.5" min="0.1" max="10" step="0.1" />
-            <span class="muted" style="font-size:11px; display-block;">Bir islemde kaybedilecek maksimum sermaye yuzdesi.</span>
-          </div>
-          <div class="field">
-            <label>Maximum Leverage</label>
-            <input type="number" id="settingsMaxLeverage" value="5" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display-block;">Botun kullanabilecegi maksimum kaldıraç.</span>
-          </div>
-          <div class="field">
-            <label>Maximum Daily Loss (%)</label>
-            <input type="number" id="settingsMaxDailyLoss" value="2" min="0.1" max="50" step="0.1" />
-            <span class="muted" style="font-size:11px; display-block;">Gunluk maksimum kaybetilebilir loss percentage.</span>
-          </div>
-          <div class="field">
-            <label>Maximum Drawdown (%)</label>
-            <input type="number" id="settingsMaxDrawdown" value="8" min="0.1" max="99.9" step="0.1" />
-            <span class="muted" style="font-size:11px; display-block;">Maksimum drawdown orani (%8 = %8'e ucertan sonra dur).</span>
-          </div>
-          <div class="field">
-            <label>Maximum Consecutive Losses</label>
-            <input type="number" id="settingsMaxConsecutiveLosses" value="3" min="1" max="20" />
-            <span class="muted" style="font-size:11px; display-block;">Ard arda kaybedilen islem sayisi limiti.</span>
-          </div>
-          <div class="field">
-            <label>Cooldown (minutes)</label>
-            <input type="number" id="settingsCooldown" value="60" min="1" max="1440" />
-            <span class="muted" style="font-size:11px; display-block;">Pozisyon kapandıktan sonra yeni pozisyon acmadanonce beklenecek sure.</span>
-          </div>
-          <div class="field">
-            <label>Maximum Trades Per Day</label>
-            <input type="number" id="settingsMaxTradesPerDay" value="10" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display-block;">Gun içinde maksimum islem sayisi.</span>
-          </div>
-          <div class="field">
-            <label>Dry Run</label>
-            <select id="settingsDryRun">
-              <option value="true">ON (sanal, emir acilmaz)</option>
-              <option value="false">OFF (gercek testnet)</option>
-            </select>
-            <span class="muted" style="font-size:11px; display-block;">Gerçek emir gönderip göndermeyecegi.</span>
-          </div>
-          <div class="field">
-            <label>Trading Enabled</label>
-            <select id="settingsTradingEnabled">
-              <option value="true">ON</option>
-              <option value="false">OFF</option>
-            </select>
-            <span class="muted" style="font-size:11px; display-block;">Botun otonom olarak trade etmesine izin ver.</span>
-          </div>
-          <div class="field">
-            <label>Allow Short</label>
-            <select id="settingsAllowShort">
-              <option value="true">ON (LONG + SHORT)</option>
-              <option value="false">LONG only</option>
-            </select>
-            <span class="muted" style="font-size:11px; display-block;">Kısa (short) pozisyon açmaya izin ver.</span>
-          </div>
-          <div class="field">
-            <label>Volume Threshold</label>
-            <input type="number" id="settingsVolumeThreshold" value="1.0" min="0.1" max="10" step="0.1" />
-            <span class="muted" style="font-size:11px; display-block;">Hacim onayı eşiği (1.0 = normal).</span>
-          </div>
-          <div class="field">
-            <label>Chop Threshold</label>
-            <input type="number" id="settingsChopThreshold" value="35" min="1" max="100" />
-            <span class="muted" style="font-size:11px; display-block;">Choppy piyasaya kapı eşiği (%35'in altı = no trade).</span>
+          <p class="muted" style="font-size: 13px; margin-bottom: 12px; line-height: 1.5;">
+            Bu bölümden otonom stratejiyi bypass ederek manuel emir verebilir ya da motor durumunu sıfırlayabilirsiniz.
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="t-btn buy" id="btnManualBuy">Manuel AL Aç</button>
+            <button type="button" class="t-btn sell" id="btnManualSell">Pozisyonu Kapat (SAT)</button>
+            <button type="button" class="t-btn" id="btnCycleAnalyze">Şimdi Analiz Et</button>
+            <button type="button" class="t-btn" id="btnResetMotor">Motoru Sıfırla</button>
           </div>
         </div>
-      </form>
-      <div style="margin-top:16px; display:flex; gap:12px; justify-content:flex-end;">
-        <button type="button" class="btn ghost" id="settingsLoadBtn">Yukle</button>
-        <button type="submit" class="btn buy" id="settingsSaveBtn">Kaydet</button>
-        <button type="button" class="btn ghost" id="settingsResetBtn">Sıfırla</button>
-      </div>
-      <div id="settingsChangeLog" style="margin-top:16px; max-height:120px; overflow-y:auto; font-size:12px;"></div>
-    </div>
 
-    <div class="card">
-      <h2>Test Emri Gonder</h2>
-      <p class="muted" style="margin-bottom:14px; font-size:13px;">
-        Bu panelden TradingView alarmi gibi /webhook ucu istek atar ve Binance Testnet'te gercek emir acar.
-      </p>
-      <form id="orderForm">
-        <div class="row">
-          <div class="field">
-            <label for="action">Islem Tipi</label>
-            <select id="action">
-              <option value="BUY">BUY (Alis)</option>
-              <option value="SELL">SELL (Satis)</option>
-            </select>
+      </div>
+
+      <!-- Middle Column (Strategy verdict, open position, strategy status) -->
+      <div class="col-mid">
+        
+        <!-- Current Strategy Decision -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">💡 CURRENT STRATEGY DECISION</div>
           </div>
-          <div class="field">
-            <label for="symbol">Sembol</label>
-            <input id="symbol" type="text" value="BTCUSDT" />
-          </div>
-          <div class="field">
-            <label for="budget">Butce (USDT)</label>
-            <input id="budget" type="number" step="1" min="1" value="1000" />
-          </div>
-          <div class="field">
-            <label for="quantity">Miktar (varsa) <span class="muted">- bos birak</span></label>
-            <input id="quantity" type="number" step="0.0001" min="0.0001" placeholder="0.0001" />
+
+          <div class="decision-display">
+            <span id="badgeDecision" class="decision-badge wait">WAIT</span>
+            <div class="score-container">
+              <div class="score-labels">
+                <span>Signal Score</span>
+                <span id="textSignalScore">-- / 100</span>
+              </div>
+              <div class="score-bar-bg">
+                <div class="score-threshold-line"></div>
+                <div id="barSignalScore" class="score-bar-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Indicator reason values -->
+            <div class="reason-grid">
+              <div class="reason-item">
+                <span class="lbl">RSI (20)</span>
+                <span id="valRsi" class="val">-</span>
+              </div>
+              <div class="reason-item">
+                <span class="lbl">RSI MA</span>
+                <span id="valRsiMa" class="val">-</span>
+              </div>
+              <div class="reason-item">
+                <span class="lbl">BB Lower</span>
+                <span id="valBbLower" class="val">-</span>
+              </div>
+              <div class="reason-item">
+                <span class="lbl">BB Upper</span>
+                <span id="valBbUpper" class="val">-</span>
+              </div>
+            </div>
+
+            <div id="textDecisionReason" class="reason-narrative">
+              Sinyal hesaplanıyor...
+            </div>
           </div>
         </div>
-        <div class="row actions">
-          <button type="button" class="btn ghost" id="refreshBtn">Durumu Yenile</button>
-          <button type="submit" class="btn buy" id="sendBtn">Test Emrini Gonder</button>
+
+        <!-- Open Position Info Card -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">💼 OPEN POSITION DETAILS</div>
+          </div>
+          
+          <div id="boxOpenPosition" style="display: none;">
+            <div class="position-info-row">
+              <span class="lbl">Yön</span>
+              <span id="valPosSide" class="val">LONG</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Miktar (BTC)</span>
+              <span id="valPosSize" class="val">0.0000</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Giriş Fiyatı</span>
+              <span id="valPosEntry" class="val">0.00</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Leverage</span>
+              <span id="valPosLeverage" class="val">5x</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Stop Loss</span>
+              <span id="valPosSl" class="val">0.00</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Take Profit 1</span>
+              <span id="valPosTp1" class="val">0.00</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Take Profit 2</span>
+              <span id="valPosTp2" class="val">0.00</span>
+            </div>
+            <div class="position-info-row">
+              <span class="lbl">Holding Time</span>
+              <span id="valPosDuration" class="val">0s</span>
+            </div>
+            <div class="position-info-row" style="border-bottom: none; margin-top: 6px;">
+              <span class="lbl">Unrealized PnL</span>
+              <span id="valPosPnl" class="val pnl-green">0.00 USDT (0.00%)</span>
+            </div>
+          </div>
+
+          <div id="boxNoPosition" class="no-position-box">
+            <div class="pulse-scan-ring">
+              🔍
+            </div>
+            <span>Bot şu anda açık bir pozisyon taşımıyor.</span>
+          </div>
         </div>
-      </form>
-      <div id="resultBox" class="result" style="display:none; margin-top:14px;"></div>
-    </div>
 
-    <div class="card">
-      <h2>Telegram Bildirimleri</h2>
-      <p class="muted" style="margin-bottom:14px; font-size:13px;">
-        Bot bir alim/satim emri acinca Telegram'a otomatik bildirim gonderir.
-        Token ve Chat ID, <code>TELEGRAM_BOT_TOKEN</code> ve <code>TELEGRAM_CHAT_ID</code> olarak
-        sunucu ortam degiskenlerinde olmali.
-      </p>
-      <div class="row actions">
-        <button type="button" class="btn ghost" id="telegramBtn">Test Telegram</button>
+        <!-- Strategy parameters (Read-Only) -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">⚙️ CORE STRATEGY STATUS (READ-ONLY)</div>
+          </div>
+          <div class="param-grid">
+            <div class="param-item">
+              <span class="lbl">Strategy Version</span>
+              <span class="val">1.0.0</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Core Indicator</span>
+              <span class="val">RSI + BB</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">RSI Length</span>
+              <span class="val">20</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Bollinger Length</span>
+              <span class="val">30</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Bollinger StdDev</span>
+              <span class="val">2.0</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Timeframe</span>
+              <span class="val">15m</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Regime Timeframe</span>
+              <span class="val">4h</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Risk Per Trade</span>
+              <span class="val">0.5%</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Max Leverage</span>
+              <span class="val">5x</span>
+            </div>
+            <div class="param-item">
+              <span class="lbl">Min Signal Score</span>
+              <span class="val">75</span>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div id="telegramResult" class="result" style="display:none; margin-top:14px;"></div>
+
+      <!-- Right Column (Performance stats, trade journal, system log console) -->
+      <div class="col-right">
+        
+        <!-- Emergency Warning banner -->
+        <div id="emergencyWarningBox" class="emergency-alert-card off">
+          <span>🟢 EMERGENCY STOP IS OFF - System is trading normally.</span>
+        </div>
+
+        <!-- Performance summary -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">📊 PERFORMANCE SUMMARY</div>
+          </div>
+          <div class="tab-nav">
+            <button type="button" class="tab-btn active" data-period="all">All Time</button>
+            <button type="button" class="tab-btn" data-period="30d">30 Days</button>
+            <button type="button" class="tab-btn" data-period="7d">7 Days</button>
+            <button type="button" class="tab-btn" data-period="today">Today</button>
+          </div>
+
+          <div class="perf-grid">
+            <div class="perf-item">
+              <span class="lbl">Net PnL</span>
+              <span id="perfPnl" class="val">0.00 USDT</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">ROI (%)</span>
+              <span id="perfRoi" class="val">0.00%</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">Win Rate</span>
+              <span id="perfWinRate" class="val">0.0%</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">Profit Factor</span>
+              <span id="perfProfitFactor" class="val">0.00</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">Expectancy</span>
+              <span id="perfExpectancy" class="val">0.00</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">Total Trades</span>
+              <span id="perfTotalTrades" class="val">0</span>
+            </div>
+            <div class="perf-item" style="grid-column: span 2;">
+              <span class="lbl">Drawdown / Fees</span>
+              <span id="perfDrawdown" class="val" style="font-size: 13px;">DD: N/A | Fees: 0.00 USDT</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trade Journal Table -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">📖 TRADE JOURNAL LOG</div>
+          </div>
+          
+          <div class="journal-table-wrapper">
+            <table class="journal-table">
+              <thead>
+                <tr>
+                  <th>Zaman</th>
+                  <th>Yön</th>
+                  <th>Giriş / Çıkış</th>
+                  <th>PnL</th>
+                </tr>
+              </thead>
+              <tbody id="journalTableBody">
+                <tr>
+                  <td colspan="4" class="muted" style="text-align: center; padding: 20px;">Kayıtlı işlem bulunamadı.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="journal-pagination">
+            <button type="button" class="t-btn ghost" id="btnPrevPage" style="padding: 4px 10px; font-size: 11px;">Geri</button>
+            <span id="textPaginationPage">Page 1 of 1</span>
+            <button type="button" class="t-btn ghost" id="btnNextPage" style="padding: 4px 10px; font-size: 11px;">İleri</button>
+          </div>
+        </div>
+
+        <!-- Scrolling System Log Console -->
+        <div class="t-card" style="margin-bottom: 0;">
+          <div class="t-card-header">
+            <div class="t-card-title">🖥️ SYSTEM ACTIVITY LOG (REAL-TIME app.log)</div>
+          </div>
+          <div id="terminalConsole" class="terminal-console">
+            <div class="terminal-line"><span class="ts">[2026-08-25T00:00:00.000Z]</span> <span class="info">Konsol bağlandı. Log akışı bekleniyor...</span></div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
-    <footer>
-      Binance Testnet (sandbox) modunda calisir - Tum emirler sahte para ile yapilir.
-    </footer>
   </div>
 
+  <!-- TradingView Lightweight Charts Script -->
   <script src="/vendor/lightweight-charts.standalone.production.js"></script>
   <script>
-    const $ = (id) => document.getElementById(id);
+    // System Config
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let allTrades = [];
+    let activePeriod = 'all';
+    let currentLivePrice = 0;
+    let openPositionData = null;
+    let chartInstance = null;
+    let stochInstance = null;
+    let candleSeries = null;
+    let upperSeries = null;
+    let middleSeries = null;
+    let lowerSeries = null;
+    
+    let stochKSeries = null;
+    let stochDSeries = null;
 
-    async function fetchWithTimeout(url, options, ms) {
+    // Helpers
+    const $ = (id) => document.getElementById(id);
+    const formatNumber = (num, dec = 2) => num != null ? Number(num).toFixed(dec) : 'N/A';
+
+    // Safe API Fetch wrapper
+    async function fetchWithTimeout(url, options = {}, ms = 10000) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), ms || 15000);
+      const timer = setTimeout(() => controller.abort(), ms);
       try {
-        return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+        const response = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        const data = await response.json();
+        $('apiErrBanner').style.display = 'none';
+        return data;
       } catch (err) {
-        if (err.name === 'AbortError') throw new Error('Zaman asimi (sunucu yanit vermiyor)');
+        $('apiErrBanner').style.display = 'block';
         throw err;
       } finally {
         clearTimeout(timer);
       }
     }
 
-    async function loadStatus() {
-      const badge = $('connBadge');
-      const grid = $('balanceGrid');
-      badge.className = 'badge off';
-      badge.textContent = 'Baglaniyor...';
-
-      try {
-        const res = await fetchWithTimeout('/api/status', null, 20000);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
-
-        badge.className = 'badge';
-        badge.textContent = 'Testnet Bagli';
-
-        grid.innerHTML = '';
-        const assets = data.balance;
-        const rows = [
-          ['USDT', assets.USDT, 'green'],
-          ['BTC', assets.BTC, 'orange'],
-          ['ETH', assets.ETH, ''],
-          ['BNB', assets.BNB, ''],
-        ];
-        rows.forEach(([symbol, entry, cls]) => {
-          const div = document.createElement('div');
-          div.className = 'stat';
-          const used = entry && entry.used ? ' (Rezerve: ' + Number(entry.used).toFixed(4) + ')' : '';
-          div.innerHTML =
-            '<div class="label">' + symbol + '</div>' +
-            '<div class="value ' + cls + '">' + Number(entry.total).toFixed(4) + '</div>' +
-            '<div class="sub">Serbest: ' + Number(entry.free).toFixed(4) + used + '</div>';
-          grid.appendChild(div);
-        });
-
-        const uptime = Math.floor(data.uptime);
-        const h = String(Math.floor(uptime / 3600)).padStart(2, '0');
-        const m = String(Math.floor((uptime % 3600) / 60)).padStart(2, '0');
-        const s = String(uptime % 60).padStart(2, '0');
-        $('serverMeta').textContent =
-          'Sunucu calisma suresi: ' + h + ':' + m + ':' + s + '  |  Son guncelleme: ' +
-          new Date(data.timestamp).toLocaleTimeString('tr-TR');
-      } catch (err) {
-        badge.className = 'badge off';
-        badge.textContent = 'Baglanti Yok';
-        grid.innerHTML =
-          '<div class="stat"><div class="label">Hata</div><div class="value" style="color:var(--red);font-size:14px;">' +
-          err.message + '</div></div>';
-      }
-    }
-
-    function showResult(data, isError) {
-      const box = $('resultBox');
-      box.style.display = 'block';
-      box.className = 'result ' + (isError ? 'error' : 'success');
-      box.textContent = JSON.stringify(data, null, 2);
-    }
-
-    $('orderForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = $('sendBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spin"></span>Emir Gonderiliyor...';
-
-      const body = {
-        action: $('action').value,
-        symbol: $('symbol').value.trim().toUpperCase(),
-        quantity: $('quantity').value,
-        budget: $('budget').value,
-      };
-
-      try {
-        const res = await fetchWithTimeout('/webhook', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        showResult(data, !res.ok);
-        loadStatus();
-      } catch (err) {
-        showResult({ success: false, error: err.message }, true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Test Emrini Gonder';
-      }
-    });
-
-    function num(v, digits) {
-      return v == null || isNaN(v) ? '-' : Number(v).toFixed(digits == null ? 2 : digits);
-    }
-
-    let priceChart = null;
-    let stochChart = null;
-
-    function chartOptions(height) {
-      return {
-        height: height,
+    // Chart Initialisation
+    function initCharts() {
+      const chartWidth = $('chartContainer').clientWidth;
+      
+      chartInstance = LightweightCharts.createChart($('chartContainer'), {
+        width: chartWidth,
+        height: 350,
         layout: {
-          background: { color: '#0d1117' },
-          textColor: '#8b93a7',
+          backgroundColor: '#07090e',
+          textColor: '#8492a6',
+          fontSize: 11,
+          fontFamily: 'Outfit',
         },
         grid: {
-          vertLines: { color: '#1c2230' },
-          horzLines: { color: '#1c2230' },
+          vertLines: { color: 'rgba(42, 53, 75, 0.15)' },
+          horzLines: { color: 'rgba(42, 53, 75, 0.15)' },
         },
-        timeScale: { borderColor: '#2a3242', timeVisible: false },
-        rightPriceScale: { borderColor: '#2a3242' },
-        crosshair: { mode: 0 },
-      };
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+        },
+        timeScale: {
+          timeVisible: true,
+          borderColor: 'rgba(42, 53, 75, 0.3)',
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(42, 53, 75, 0.3)',
+        }
+      });
+
+      // Price candle series
+      candleSeries = chartInstance.addCandlestickSeries({
+        upColor: '#00f076',
+        downColor: '#ff3860',
+        borderUpColor: '#00f076',
+        borderDownColor: '#ff3860',
+        wickUpColor: '#00f076',
+        wickDownColor: '#ff3860',
+      });
+
+      // Bollinger Bands overlay lines
+      upperSeries = chartInstance.addLineSeries({
+        color: 'rgba(0, 240, 118, 0.35)',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+      });
+
+      middleSeries = chartInstance.addLineSeries({
+        color: 'rgba(0, 176, 255, 0.45)',
+        lineWidth: 1.5,
+      });
+
+      lowerSeries = chartInstance.addLineSeries({
+        color: 'rgba(255, 56, 96, 0.35)',
+        lineWidth: 1.5,
+        lineStyle: LightweightCharts.LineStyle.Dashed,
+      });
+
+      // Stoch RSI Pane Chart
+      stochInstance = LightweightCharts.createChart($('stochContainer'), {
+        width: chartWidth,
+        height: 130,
+        layout: {
+          backgroundColor: '#07090e',
+          textColor: '#8492a6',
+          fontSize: 10,
+          fontFamily: 'Outfit',
+        },
+        grid: {
+          vertLines: { color: 'rgba(42, 53, 75, 0.15)' },
+          horzLines: { color: 'rgba(42, 53, 75, 0.15)' },
+        },
+        timeScale: {
+          timeVisible: true,
+          borderColor: 'rgba(42, 53, 75, 0.3)',
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(42, 53, 75, 0.3)',
+        }
+      });
+
+      stochKSeries = stochInstance.addLineSeries({
+        color: '#00b0ff', // %K: Azure
+        lineWidth: 1.5,
+      });
+
+      stochDSeries = stochInstance.addLineSeries({
+        color: '#ffb900', // %D: Amber
+        lineWidth: 1.5,
+      });
+
+      // Resize observer to keep chart responsive
+      new ResizeObserver(entries => {
+        if (entries.length === 0 || !chartInstance) return;
+        const w = entries[0].contentRect.width;
+        chartInstance.resize(w, 350);
+        stochInstance.resize(w, 130);
+      }).observe($('chartContainer'));
     }
 
-    function destroyCharts() {
-      if (priceChart) { priceChart.remove(); priceChart = null; }
-      if (stochChart) { stochChart.remove(); stochChart = null; }
-    }
+    // Refresh charts data
+    async function loadChartData() {
+      try {
+        const res = await fetchWithTimeout('/api/chart?limit=180');
+        if (!res.success) return;
 
-    function chartHeight(base) {
-      return window.innerWidth < 768 ? Math.round(base * 0.65) : base;
-    }
+        const mainData = [];
+        const upperData = [];
+        const middleData = [];
+        const lowerData = [];
+        
+        const kData = [];
+        const dData = [];
 
-    function ensureCharts() {
-      if (!window.LightweightCharts) return false;
-      if (!priceChart) {
-        priceChart = LightweightCharts.createChart($('priceChart'), chartOptions(chartHeight(380)));
-        stochChart = LightweightCharts.createChart(
-          $('stochChart'),
-          Object.assign(chartOptions(chartHeight(170)), {
-            rightPriceScale: {
-              borderColor: '#2a3242',
-              scaleMargins: { top: 0.2, bottom: 0.1 },
-            },
-          })
-        );
+        res.data.forEach(item => {
+          // item.t is UNIX timestamp
+          mainData.push({
+            time: item.t,
+            open: item.o,
+            high: item.h,
+            low: item.l,
+            close: item.c,
+          });
+
+          if (item.bbUpper != null) upperData.push({ time: item.t, value: item.bbUpper });
+          if (item.bbBasis != null) middleData.push({ time: item.t, value: item.bbBasis });
+          if (item.bbLower != null) lowerData.push({ time: item.t, value: item.bbLower });
+
+          if (item.k != null) kData.push({ time: item.t, value: item.k });
+          if (item.d != null) dData.push({ time: item.t, value: item.d });
+        });
+
+        candleSeries.setData(mainData);
+        upperSeries.setData(upperData);
+        middleSeries.setData(middleData);
+        lowerSeries.setData(lowerData);
+
+        stochKSeries.setData(kData);
+        stochDSeries.setData(dData);
+
+        // Highlight open position line and markers
+        drawChartOverlays();
+      } catch (err) {
+        console.error('Chart load error:', err);
       }
-      return true;
     }
 
-    async function loadChart() {
-      const meta = $('chartMeta');
-      if (!window.LightweightCharts) {
-        meta.textContent = 'Grafik kutuphanesi CDN\'den yuklenemedi (internet gerekli).';
+    // Overlay indicators (SL/TP lines and Buy/Sell markers) on chart
+    function drawChartOverlays() {
+      if (!candleSeries) return;
+
+      // 1. Draw open position target price lines
+      const markersList = [];
+      
+      // Let's clear previous price lines if any by creating dummy lines or resetting them.
+      if (candleSeries.priceLines) {
+        candleSeries.priceLines.forEach(line => candleSeries.removePriceLine(line));
+      }
+      candleSeries.priceLines = [];
+
+      if (openPositionData) {
+        const p = openPositionData;
+        const entryLine = candleSeries.createPriceLine({
+          price: p.entryPrice,
+          color: '#00f076',
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: `ENTRY: ${formatNumber(p.entryPrice)}`,
+        });
+        candleSeries.priceLines.push(entryLine);
+
+        if (p.stopPrice) {
+          const slLine = candleSeries.createPriceLine({
+            price: p.stopPrice,
+            color: '#ff3860',
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: true,
+            title: `SL: ${formatNumber(p.stopPrice)}`,
+          });
+          candleSeries.priceLines.push(slLine);
+        }
+
+        if (p.tp1) {
+          const tp1Line = candleSeries.createPriceLine({
+            price: p.tp1,
+            color: '#00b0ff',
+            lineWidth: 1.5,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: `TP1: ${formatNumber(p.tp1)}`,
+          });
+          candleSeries.priceLines.push(tp1Line);
+        }
+
+        if (p.tp2) {
+          const tp2Line = candleSeries.createPriceLine({
+            price: p.tp2,
+            color: '#00b0ff',
+            lineWidth: 1.5,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
+            axisLabelVisible: true,
+            title: `TP2: ${formatNumber(p.tp2)}`,
+          });
+          candleSeries.priceLines.push(tp2Line);
+        }
+      }
+
+      // 2. Draw historical transaction execution markers
+      allTrades.forEach(trade => {
+        const entryTime = Math.floor(new Date(trade.openedAt).getTime() / 1000);
+        const exitTime = Math.floor(new Date(trade.closedAt).getTime() / 1000);
+
+        markersList.push({
+          time: entryTime,
+          position: trade.side === 'LONG' ? 'belowBar' : 'aboveBar',
+          color: trade.side === 'LONG' ? '#00f076' : '#ff3860',
+          shape: trade.side === 'LONG' ? 'arrowUp' : 'arrowDown',
+          text: `BUY ${trade.side === 'LONG' ? 'LONG' : 'SHORT'}`,
+        });
+
+        markersList.push({
+          time: exitTime,
+          position: trade.side === 'LONG' ? 'aboveBar' : 'belowBar',
+          color: '#00b0ff',
+          shape: 'circle',
+          text: `EXIT (${trade.exitReason || 'CLOSE'})`,
+        });
+      });
+
+      // Sort markers by time before assigning to chart
+      markersList.sort((a, b) => a.time - b.time);
+      candleSeries.setMarkers(markersList);
+    }
+
+    // Refresh System Logs Console Stream
+    async function loadLogs() {
+      try {
+        const res = await fetchWithTimeout('/api/logs');
+        if (!res.success) return;
+
+        const terminal = $('terminalConsole');
+        terminal.innerHTML = '';
+        res.logs.forEach(line => {
+          const div = document.createElement('div');
+          
+          let severity = 'info';
+          if (line.includes('[WARN]')) severity = 'warn';
+          if (line.includes('[ERROR]')) severity = 'error';
+
+          div.className = `terminal-line ${severity}`;
+          
+          // Parse timestamp prefix
+          const tsMatch = line.match(/^\[(.*?)\]/);
+          if (tsMatch) {
+            const cleanLine = line.replace(/^\[.*?\]\s*/, '');
+            div.innerHTML = `<span class="ts">[${new Date(tsMatch[1]).toLocaleTimeString()}]</span><span>${cleanLine}</span>`;
+          } else {
+            div.textContent = line;
+          }
+          terminal.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Log fetch error:', err);
+      }
+    }
+
+    // Check system status, connection states & updates header badges
+    async function loadStatus() {
+      try {
+        const res = await fetchWithTimeout('/api/status');
+        
+        $('textSyncTime').textContent = new Date().toLocaleTimeString();
+
+        // 1. Update Binance Status
+        const binanceDot = $('dotBinanceStatus');
+        const binanceTxt = $('textBinanceStatus');
+        if (res.binanceConnected) {
+          binanceDot.className = 'status-dot active';
+          binanceTxt.textContent = 'CONNECTED';
+          binanceTxt.style.color = 'var(--emerald)';
+        } else {
+          binanceDot.className = 'status-dot';
+          binanceTxt.textContent = 'DISCONNECTED';
+          binanceTxt.style.color = 'var(--rose)';
+        }
+
+        // 2. Update Database Status
+        const dbDot = $('dotDbStatus');
+        const dbTxt = $('textDbStatus');
+        if (res.dbConnected) {
+          dbDot.className = 'status-dot active';
+          dbTxt.textContent = 'CONNECTED';
+          dbTxt.style.color = 'var(--emerald)';
+        } else {
+          dbDot.className = 'status-dot';
+          dbTxt.textContent = 'DISCONNECTED';
+          dbTxt.style.color = 'var(--rose)';
+        }
+
+        // 3. Update Emergency Stop state
+        const eStopBadge = $('badgeEmergencyStop');
+        const eStopWarning = $('emergencyWarningBox');
+        if (res.emergencyStop) {
+          eStopBadge.className = 'emergency-badge active';
+          eStopBadge.innerHTML = '🔴 EMERGENCY STOP ACTIVE';
+          
+          eStopWarning.className = 'emergency-alert-card';
+          eStopWarning.innerHTML = '🚨 EMERGENCY STOP IS ACTIVE - BOT IS PAUSED - NEW ORDERS ARE BLOCKED';
+        } else {
+          eStopBadge.className = 'emergency-badge';
+          eStopBadge.innerHTML = '🛡️ E-STOP OFF';
+          
+          eStopWarning.className = 'emergency-alert-card off';
+          eStopWarning.innerHTML = '🟢 EMERGENCY STOP IS OFF - System is trading normally.';
+        }
+      } catch (err) {
+        console.error('Status fetch error:', err);
+      }
+    }
+
+    // Load decision details
+    async function loadDecision() {
+      try {
+        const res = await fetchWithTimeout('/api/trader/analyze');
+        if (!res.success) return;
+
+        // Update Bot online/offline status
+        const botDot = $('dotBotStatus');
+        const botTxt = $('textBotStatus');
+        if (res.enabled) {
+          botDot.className = 'status-dot active';
+          botTxt.textContent = 'ONLINE';
+          botTxt.style.color = 'var(--emerald)';
+        } else {
+          botDot.className = 'status-dot';
+          botTxt.textContent = 'OFFLINE';
+          botTxt.style.color = 'var(--rose)';
+        }
+
+        // 1. Live Price display logic
+        const priceValEl = $('textLivePrice');
+        const prevPrice = currentLivePrice;
+        currentLivePrice = res.price || 0;
+        priceValEl.textContent = formatNumber(currentLivePrice, 2);
+
+        if (prevPrice > 0) {
+          if (currentLivePrice > prevPrice) {
+            priceValEl.className = 'price-val up';
+          } else if (currentLivePrice < prevPrice) {
+            priceValEl.className = 'price-val down';
+          }
+        }
+
+        // 2. Verdict details
+        const badge = $('badgeDecision');
+        let signal = res.trendEntry ? res.trendEntry.signal : null;
+        if (signal === 'BUY') {
+          badge.className = 'decision-badge long';
+          badge.textContent = 'LONG SETUP';
+        } else if (signal === 'SELL') {
+          badge.className = 'decision-badge short';
+          badge.textContent = 'SHORT SETUP';
+        } else {
+          badge.className = 'decision-badge wait';
+          badge.textContent = 'WAIT';
+        }
+
+        // 3. Score gauge
+        const score = res.trendEntry ? res.trendEntry.score : 0;
+        $('textSignalScore').textContent = `${score} / 100`;
+        $('barSignalScore').style.width = `${score}%`;
+
+        // 4. Indicator status values
+        const reasons = res.trendEntry ? res.trendEntry.reasons : {};
+        $('valRsi').textContent = formatNumber(reasons.rsi, 2);
+        $('valRsiMa').textContent = formatNumber(reasons.rsiMa, 2);
+        $('valBbLower').textContent = formatNumber(reasons.bbLower, 1);
+        $('valBbUpper').textContent = formatNumber(reasons.bbUpper, 1);
+
+        // 5. Decision narrative explanation
+        const narrative = $('textDecisionReason');
+        if (res.trendEntry && res.trendEntry.type === 'CHOP_FILTERED') {
+          narrative.textContent = 'Karar: WAIT. Choppy/yatay piyasa filtresi aktif. Yeni emirlere izin verilmiyor.';
+        } else if (score < 75) {
+          narrative.textContent = `Karar: WAIT. Sinyal skoru (${score}) minimum alım eşiğinin (75) altında.`;
+        } else if (res.trendEntry && res.trendEntry.type === 'LONG_ONLY_MODE') {
+          narrative.textContent = 'Karar: LONG. Strateji LONG tetikledi, SHORT modu kapalı.';
+        } else if (signal === 'BUY') {
+          narrative.textContent = 'Karar: LONG SETUP. RSI kesişimi ve BB alt bant teması sağlandı. Alım koşulları olumlu.';
+        } else if (signal === 'SELL') {
+          narrative.textContent = 'Karar: SHORT SETUP. RSI aşağı yönlü kesişim ve BB üst bant teması sağlandı. Satım koşulları olumlu.';
+        } else {
+          narrative.textContent = 'Karar: WAIT. Bollinger Bantları alt sınır teması veya RSI ortalama kırılımı bekleniyor.';
+        }
+      } catch (err) {
+        console.error('Decision fetch error:', err);
+      }
+    }
+
+    // Load Open position state & trades history
+    async function loadPositionAndHistory() {
+      try {
+        const res = await fetchWithTimeout('/api/trader/history');
+        if (!res.success) return;
+
+        // 1. Open position card update
+        const boxOpen = $('boxOpenPosition');
+        const boxNo = $('boxNoPosition');
+
+        if (res.openPosition) {
+          openPositionData = res.openPosition;
+          boxOpen.style.display = 'block';
+          boxNo.style.display = 'none';
+
+          const p = res.openPosition;
+          $('valPosSide').textContent = p.side || 'LONG';
+          $('valPosSide').className = p.side === 'LONG' ? 'val pnl-green' : 'val pnl-red';
+          $('valPosSize').textContent = formatNumber(p.quantity, 5);
+          $('valPosEntry').textContent = formatNumber(p.entryPrice, 2);
+          $('valPosLeverage').textContent = p.leverage ? `${p.leverage}x` : '5x';
+          $('valPosSl').textContent = formatNumber(p.stopPrice, 2);
+          $('valPosTp1').textContent = formatNumber(p.tp1, 2);
+          $('valPosTp2').textContent = formatNumber(p.tp2, 2);
+
+          // Calculate duration
+          const ageSec = Math.floor((Date.now() - new Date(p.openedAt).getTime()) / 1000);
+          const hrs = Math.floor(ageSec / 3600);
+          const mins = Math.floor((ageSec % 3600) / 60);
+          $('valPosDuration').textContent = `${hrs}s ${mins}dk`;
+
+          // Unrealized PnL updates
+          const uPnl = p.unrealizedPnl || 0;
+          const uPnlPct = p.unrealizedPnlPercent || 0;
+          const pnlEl = $('valPosPnl');
+          pnlEl.textContent = `${formatNumber(uPnl, 2)} USDT (${formatNumber(uPnlPct, 2)}%)`;
+          if (uPnl >= 0) {
+            pnlEl.className = 'val pnl-green';
+          } else {
+            pnlEl.className = 'val pnl-red';
+          }
+        } else {
+          openPositionData = null;
+          boxOpen.style.display = 'none';
+          boxNo.style.display = 'flex';
+        }
+
+        // 2. Save all trades history list
+        allTrades = res.trades || [];
+
+        // 3. Render calculations
+        renderPerformanceStats(res.performance, res.summary);
+        renderTradeJournalTable();
+      } catch (err) {
+        console.error('History fetch error:', err);
+      }
+    }
+
+    // Calculate & render performance stats filtered by period tab
+    function renderPerformanceStats(serverPerf, serverSummary) {
+      if (!serverPerf) return;
+
+      // Filter trades array for specific ranges
+      let filtered = [...allTrades];
+      const now = new Date();
+
+      if (activePeriod === 'today') {
+        filtered = allTrades.filter(t => new Date(t.closedAt).toDateString() === now.toDateString());
+      } else if (activePeriod === '7d') {
+        const threshold = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+        filtered = allTrades.filter(t => new Date(t.closedAt).getTime() >= threshold);
+      } else if (activePeriod === '30d') {
+        const threshold = now.getTime() - 30 * 24 * 60 * 60 * 1000;
+        filtered = allTrades.filter(t => new Date(t.closedAt).getTime() >= threshold);
+      }
+
+      // Calculate parameters
+      const totalTrades = filtered.length;
+      const wins = filtered.filter(t => t.pnl > 0).length;
+      const losses = filtered.filter(t => t.pnl < 0).length;
+      const winRate = totalTrades ? (wins / totalTrades) * 100 : 0;
+      
+      const totalPnl = filtered.reduce((s, t) => s + (t.pnl || 0), 0);
+      const totalFees = filtered.reduce((s, t) => s + (t.fees || 0), 0);
+
+      // Profit factor
+      const grossProfits = filtered.filter(t => t.pnl > 0).reduce((s, t) => s + t.pnl, 0);
+      const grossLosses = Math.abs(filtered.filter(t => t.pnl < 0).reduce((s, t) => s + t.pnl, 0));
+      const profitFactor = grossLosses > 0 ? (grossProfits / grossLosses) : grossProfits > 0 ? 99.9 : 0;
+
+      // Expectancy
+      const avgWin = wins > 0 ? grossProfits / wins : 0;
+      const avgLoss = losses > 0 ? grossLosses / losses : 0;
+      const winPct = winRate / 100;
+      const expectancy = (winPct * avgWin) - ((1 - winPct) * avgLoss);
+
+      // Update UI displays
+      const pnlEl = $('perfPnl');
+      pnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}${formatNumber(totalPnl, 2)} USDT`;
+      pnlEl.className = totalPnl >= 0 ? 'val green' : 'val red';
+
+      const startCapital = serverPerf.startCapital || 500;
+      const roiPct = (totalPnl / startCapital) * 100;
+      const roiEl = $('perfRoi');
+      roiEl.textContent = `${roiPct >= 0 ? '+' : ''}${formatNumber(roiPct, 2)}%`;
+      roiEl.className = roiPct >= 0 ? 'val green' : 'val red';
+
+      $('perfWinRate').textContent = `${formatNumber(winRate, 1)}%`;
+      $('perfProfitFactor').textContent = formatNumber(profitFactor, 2);
+      $('perfExpectancy').textContent = `${expectancy >= 0 ? '+' : ''}${formatNumber(expectancy, 2)}`;
+      $('perfTotalTrades').textContent = totalTrades;
+      $('perfDrawdown').textContent = `Fees: ${formatNumber(totalFees, 2)} USDT`;
+    }
+
+    // Render Trade Journal log list
+    function renderTradeJournalTable() {
+      const tbody = $('journalTableBody');
+      tbody.innerHTML = '';
+
+      if (allTrades.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="muted" style="text-align: center; padding: 20px;">Kayıtlı işlem bulunamadı.</td></tr>`;
         return;
       }
-      if (!ensureCharts()) return;
-      try {
-        const res = await fetchWithTimeout('/api/chart?limit=160', null, 20000);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error);
 
-        const last = data.data[data.data.length - 1];
-        meta.textContent =
-          data.symbol + ' (' + data.timeframe + ') | Son kapanis: ' +
-          (last ? num(last.c) : '-') + ' USDT';
+      // Pagination slice
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const paginated = allTrades.slice(startIdx, startIdx + itemsPerPage);
 
-        destroyCharts();
-        ensureCharts();
-
-        const candle = priceChart.addCandlestickSeries({
-          upColor: '#22c55e', downColor: '#ef4444',
-          borderVisible: false,
-          wickUpColor: '#22c55e', wickDownColor: '#ef4444',
-        });
-        candle.setData(data.data.map((d) => ({ time: d.t, open: d.o, high: d.h, low: d.l, close: d.c })));
-
-        const basis = priceChart.addLineSeries({ color: '#3b82f6', lineWidth: 1 });
-        const lower = priceChart.addLineSeries({ color: '#ef4444', lineWidth: 1 });
-        const upper = priceChart.addLineSeries({ color: '#22c55e', lineWidth: 1 });
-        basis.setData(data.data.filter((d) => d.bbBasis != null).map((d) => ({ time: d.t, value: d.bbBasis })));
-        lower.setData(data.data.filter((d) => d.bbLower != null).map((d) => ({ time: d.t, value: d.bbLower })));
-        upper.setData(data.data.filter((d) => d.bbUpper != null).map((d) => ({ time: d.t, value: d.bbUpper })));
-
-        const k = stochChart.addLineSeries({ color: '#3b82f6', lineWidth: 2 });
-        const dSeries = stochChart.addLineSeries({ color: '#f59e0b', lineWidth: 2 });
-        const kData = data.data.filter((d) => d.k != null).map((d) => ({ time: d.t, value: d.k }));
-        k.setData(kData);
-        dSeries.setData(data.data.filter((d) => d.d != null).map((d) => ({ time: d.t, value: d.d })));
-
-        if (kData.length) {
-          const os = stochChart.addLineSeries({ color: '#8b93a7', lineWidth: 1, lineStyle: 2 });
-          os.setData(kData.map((p) => ({ time: p.time, value: 20 })));
-        }
-
-        priceChart.timeScale().fitContent();
-        stochChart.timeScale().fitContent();
-      } catch (err) {
-        meta.textContent = 'Grafik hatasi: ' + err.message;
-      }
-    }
-
-    $('chartRefreshBtn').addEventListener('click', loadChart);
-
-    function openPosHtml(pos) {
-      if (!pos) return '<span style="color:var(--muted);">pozisyon yok</span>';
-      const pnl = pos.unrealizedPnl;
-      const color = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
-      const txt = pnl != null ? (pnl > 0 ? '+' : '') + num(pnl, 2) + ' USDT (' + (pos.unrealizedPnlPercent > 0 ? '+' : '') + num(pos.unrealizedPnlPercent, 2) + '%)' : '-';
-      return '<span style="color:' + color + ';">' + txt + '</span><br><span style="font-size:11px;color:var(--muted);">' +
-        num(pos.quantity, 5) + ' BTC @ ' + num(pos.entryPrice, 0) + ' | deger: ' + (pos.valueUsdt != null ? num(pos.valueUsdt, 2) : '-') + ' USDT</span>';
-    }
-
-    async function loadHistory() {
-      const summaryGrid = $('pnlSummaryGrid');
-      const tradesBox = $('tradesBox');
-      const logBox = $('orderLogBox');
-      try {
-        const res = await fetchWithTimeout('/api/trader/history', null, 20000);
-        const d = await res.json();
-        if (!d.success) throw new Error(d.error || 'Hata');
-
-        const s = d.summary || {};
-        const p = d.performance || {};
-        const pnlColor = s.totalPnl > 0 ? 'var(--green)' : s.totalPnl < 0 ? 'var(--red)' : 'var(--muted)';
-        const pnlTxt = (s.totalPnl > 0 ? '+' : '') + num(s.totalPnl, 2);
-        const retColor = p.returnPercent > 0 ? 'var(--green)' : p.returnPercent < 0 ? 'var(--red)' : 'var(--muted)';
-        const retTxt = p.returnPercent != null ? (p.returnPercent > 0 ? '+' : '') + num(p.returnPercent, 2) + '%' : '-';
-        const retUsdtTxt = p.returnUsdt != null ? (p.returnUsdt > 0 ? '+' : '') + num(p.returnUsdt, 2) + ' USDT' : '-';
-
-        const rows = [
-          ['Baslangic Sermayesi', p.startCapital != null ? num(p.startCapital, 2) + ' USDT' : '-'],
-          ['Guncel Varlik', p.currentEquity != null ? '<b>' + num(p.currentEquity, 2) + '</b> USDT' : '-'],
-          ['Toplam Getiri', '<span style="color:' + retColor + ';">' + retTxt + ' (' + retUsdtTxt + ')</span>'],
-          ['Acik Pozisyon K/Z', openPosHtml(d.openPosition)],
-          ['Sonraki Islem Butcesi', p.nextBuyBudget != null ? '<b>' + num(p.nextBuyBudget, 2) + '</b> USDT' : '-'],
-          ['Toplam Islem', s.totalTrades || 0],
-          ['Kazanilan / Kaybedilen', (s.wins || 0) + ' / ' + (s.losses || 0) + ' (%' + num(s.winRate, 1) + ')'],
-          ['Kapali Islem Net K/Z', '<span style="color:' + pnlColor + ';">' + pnlTxt + ' USDT</span>'],
-        ];
-        summaryGrid.innerHTML = rows.map(([l, v]) =>
-          '<div class="stat"><div class="label">' + l + '</div><div class="value" style="font-size:18px;">' + v + '</div></div>'
-        ).join('');
-
-        const openPos = d.openPosition;
-        $('historyMeta').textContent = openPos
-          ? 'Acik pozisyon: ' + openPos.symbol + ' @ ' + num(openPos.entryPrice, 2) + ' | acilis: ' + new Date(openPos.openedAt).toLocaleString('tr-TR')
-          : 'Acik pozisyon yok';
-
-        const fmtDate = (v) => v ? new Date(v).toLocaleString('tr-TR') : '-';
-        const fmtSign = (v) => v == null ? '-' : (v > 0 ? '+' : '') + num(v, 2);
-        const tradeLines = (d.trades || []).map((t) => {
-          const cls = t.result === 'KAR' ? 'var(--green)' : t.result === 'ZARAR' ? 'var(--red)' : 'var(--muted)';
-          return '[' + fmtDate(t.closedAt || t.timestamp) + '] ' +
-            (t.symbol || '-') + ' | Giris: ' + num(t.entryPrice, 2) +
-            ' -> Cikis: ' + num(t.exitPrice, 2) +
-            ' | Miktar: ' + t.quantity +
-            ' | K/Z: ' + fmtSign(t.pnl) + ' (' + num(t.pnlPercent, 2) + '%)' +
-            ' | <b style="color:' + cls + ';">' + t.result + '</b>' +
-            (t.note ? ' | ' + t.note : '');
-        });
-        tradesBox.innerHTML = tradeLines.length
-          ? tradeLines.join('\n')
-          : 'Henuz kapali islem yok.';
-
-        const logLines = (d.orderLog || []).map((o) => {
-          const cls = o.success ? 'var(--green)' : 'var(--red)';
-          const st = o.success ? 'BASARILI' : 'BASARISIZ';
-          return '[' + fmtDate(o.timestamp) + '] ' + o.action + ' ' + (o.symbol || '') +
-            (o.price != null ? ' @ ' + num(o.price, 2) : '') +
-            (o.filled != null ? ' | Miktar: ' + o.filled : '') +
-            (o.error ? ' | Hata: ' + o.error : '') +
-            ' | <b style="color:' + cls + ';">' + st + '</b>';
-        });
-        logBox.innerHTML = logLines.length
-          ? logLines.join('\n')
-          : 'Henuz emir gecmisi yok.';
-      } catch (err) {
-        summaryGrid.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
-        tradesBox.innerHTML = '';
-        logBox.innerHTML = '';
-      }
-    }
-
-    $('historyBtn').addEventListener('click', loadHistory);
-
-    async function loadTrader() {
-      const box = $('traderInfo');
-      try {
-        const res = await fetchWithTimeout('/api/trader', null, 20000);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Hata');
-
-        const mode =
-          !data.enabled ? '<span style="color:var(--red);">KAPALI (TRADING_MODE=off)</span>'
-          : data.dryRun ? '<span style="color:var(--orange);">DRY-RUN (sanal)</span>'
-          : '<span style="color:var(--green);">GERCEK TESTNET</span>';
-
-        const pos = data.position
-          ? '<b style="color:var(--green);">ACIK</b> - Giris: ' + num(data.position.entryPrice, 2) +
-            ' | Miktar: ' + data.position.quantity + ' | Mod: ' + data.position.mode
-          : 'FLAT (pozisyon yok)';
-
-        const last = data.lastAnalysis || {};
-        const signalTxt = last.signal
-          ? '<b style="color:var(--green);">BUY SINYALI</b>'
-          : 'Sinyal yok';
-
-        let whyTxt = 'Henuz analiz yapilmadi';
-        if (last.close != null) {
-          const touchOk = last.priceTouch ? 'EVET' : 'HAYIR';
-          const crossOk = last.goldenCross ? 'EVET' : 'HAYIR';
-          const oversoldOk = last.oversoldBelow ? 'EVET' : 'HAYIR';
-          whyTxt =
-            'Fiyat alt banda temas/yakin: ' + touchOk +
-            ' | Stoch %K asiri satista (<' + (last.oversoldLevel != null ? last.oversoldLevel : 20) + '): ' + oversoldOk +
-            ' | Altin capraz: ' + crossOk +
-            ' | ' + signalTxt;
-          if (!last.signal && !last.priceTouch) {
-            whyTxt += ' -> Fiyat alt bandin USTUNDE, alim kosulu bekleniyor';
-          } else if (!last.signal && !last.oversoldBelow) {
-            whyTxt += ' -> %K asiri satis seviyesinde degil, alim bekleniyor';
-          }
-        }
-
-        const rows = [
-          ['Mod', mode],
-          ['Zaman dilimi', data.timeframe + ' | kontrol: her ' + data.intervalMin + ' dk'],
-          ['Butce / TP / SL', num(data.budgetUsdt) + ' USDT | +' + num(data.tpPercent) + '% / -' + num(data.slPercent) + '%'],
-          ['Pozisyon', pos],
-          ['Son analiz', last.close != null
-            ? 'Kapanis: ' + num(last.close, 2) + ' | BB Alt: ' + num(last.bbLower, 2) + ' | %K: ' + num(last.k, 2) + ' | %D: ' + num(last.d, 2)
-            : 'Henuz analiz yapilmadi'],
-          ['Alim kosulu', whyTxt],
-          ['Son kontrol', data.lastCheck ? new Date(data.lastCheck).toLocaleString('tr-TR') : '-'],
-          ['Son hata', data.lastError ? '<span style="color:var(--red);">' + data.lastError + '</span>' : '-'],
-        ];
-
-        box.innerHTML = '<div class="grid">' + rows.map(([l, v]) =>
-          '<div class="stat"><div class="label">' + l + '</div><div class="value" style="font-size:14px;line-height:1.5;">' + v + '</div></div>'
-        ).join('') + '</div>';
-      } catch (err) {
-        box.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
-      }
-    }
-
-    let nextCheckAt = null;
-    function pad(n) { return String(n).padStart(2, '0'); }
-    function liveCountdown() {
-      const el = $('liveCountdown');
-      if (!nextCheckAt) { el.textContent = '-'; return; }
-      const diff = Math.max(0, nextCheckAt - Date.now());
-      el.textContent = Math.floor(diff / 60000) + ':' + pad(Math.floor((diff % 60000) / 1000));
-    }
-
-    async function loadLive() {
-      const priceEl = $('livePrice');
-      const closeEl = $('liveClose');
-      const sigEl = $('liveSignal');
-      const banner = $('signalBanner');
-      try {
-        const [priceRes, traderRes] = await Promise.all([
-          fetchWithTimeout('/api/trader/price', null, 20000),
-          fetchWithTimeout('/api/trader', null, 20000),
-        ]);
-        const priceData = await priceRes.json();
-        if (!priceData.success) throw new Error(priceData.error || 'Hata');
-        const data = await traderRes.json();
-        if (!data.success) throw new Error(data.error || 'Hata');
-
-        $('liveMode').innerHTML = !data.enabled
-          ? '<span style="color:var(--red);">KAPALI</span>'
-          : data.dryRun
-            ? '<span style="color:var(--orange);">DRY-RUN</span>'
-            : '<span style="color:var(--green);">GERCEK TESTNET</span>';
-
-        if (priceData.price != null) {
-          const prev = parseFloat(priceEl.dataset.prev || priceData.price);
-          const cur = priceData.price;
-          priceEl.textContent = num(cur, 2);
-          priceEl.classList.remove('up', 'down');
-          if (cur > prev) priceEl.classList.add('up');
-          else if (cur < prev) priceEl.classList.add('down');
-          priceEl.dataset.prev = cur;
-        }
-
-        const last = data.lastAnalysis || {};
-        if (last.close != null) closeEl.textContent = num(last.close, 2);
-
-        sigEl.innerHTML = data.position
-          ? '<span style="color:var(--green);">POZISYON ACIK</span>'
-          : last.signal
-            ? '<span style="color:var(--green);">BUY SINYALI</span>'
-            : '<span class="muted">Sinyal yok</span>';
-
-        if (data.lastCheck) {
-          nextCheckAt = new Date(data.lastCheck).getTime() + (data.intervalMin || 15) * 60000;
-          $('liveStampLine').textContent =
-            'Son kontrol: ' + new Date(data.lastCheck).toLocaleTimeString('tr-TR') +
-            ' | kontrol sikligi: her ' + (data.intervalMin || 15) + ' dk';
-        }
-
-        let bannerCls = 'idle', bannerTxt = 'Sinyal bekleniyor - fiyat Bollinger alt bandinda degil';
-        if (data.position) {
-          bannerCls = 'open';
-          bannerTxt = 'POZISYON ACIK - TP +%' + num(data.tpPercent) + ' / SL -%' + num(data.slPercent) + ' izleniyor';
-        } else if (last.signal) {
-          bannerCls = 'buy';
-          bannerTxt = 'ALIM SINYALI - otonom pozisyon acilacak';
-        } else if (priceData.price != null && last.bbLower != null) {
-          const prox = (priceData.price - last.bbLower) / last.bbLower;
-          if (prox < 0.01) {
-            bannerCls = 'watch';
-            bannerTxt = 'Fiyat alt banda cok yakin (%' + num(prox * 100, 1) + ') - sinyal izleniyor';
-          }
-        }
-        banner.className = 'banner ' + bannerCls;
-        banner.textContent = bannerTxt;
-      } catch (err) {
-        priceEl.textContent = 'HATA';
-        banner.className = 'banner error';
-        banner.textContent = 'Canli veri alinamadi: ' + err.message;
-      }
-    }
-
-    function fmtNum(v, digits) {
-      if (v == null || isNaN(v)) return '-';
-      return Number(v).toLocaleString('tr-TR', { minimumFractionDigits: digits == null ? 2 : digits, maximumFractionDigits: digits == null ? 2 : digits });
-    }
-
-    function traderSummary(data) {
-      const L = [];
-      L.push('=== OTONOM STRATEJI MOTORU ANALIZ RAPORU ===');
-
-      const mode = !data.enabled ? 'KAPALI (TRADING_MODE=off)'
-        : data.dryRunMode ? 'DRY-RUN (sanal, gercek emir yok)'
-        : 'GERCEK TESTNET (sanal para)';
-      L.push('Motor modu: ' + mode);
-      L.push('Canli fiyat: ' + fmtNum(data.price, 2) + ' USDT');
-
-      const st = data.strategy || {};
-      const scores = st.scores || {};
-      const pct = (v) => { const x = Math.round((v || 0) * 100); return (x > 0 ? '+' : '') + x + '%'; };
-      L.push('');
-      L.push('KARAR: ' + (st.verdict || '-'));
-      L.push('Skorlar -> Teknik: ' + pct(scores.technical) + ' | Grafik: ' + pct(scores.chart) + ' | Haber: ' + pct(scores.news) + ' | Genel: ' + pct(scores.overall));
-
-      const td = st.technicals || {};
-      L.push('');
-      L.push('TEKNIK GOSTERGELER:');
-      L.push('  RSI(14): ' + fmtNum(td.rsi, 1));
-      L.push('  Stoch RSI %K: ' + fmtNum(td.stochK, 1));
-      L.push('  MACD histogram: ' + fmtNum(td.macdHist, 0));
-      L.push('  EMA20: ' + fmtNum(td.ema20, 0) + ' | EMA50: ' + fmtNum(td.ema50, 0));
-
-      const r = data.reasons || {};
-      const bol = (v) => v === true ? 'EVET' : v === false ? 'HAYIR' : (v == null ? 'bilinmiyor' : v);
-      L.push('');
-      L.push('SINYAL KOSULLARI:');
-      L.push('  Bollinger alt banda dokunma: ' + bol(r.priceTouch) + ' (alt bant: ' + fmtNum(r.bbLower, 2) + ')');
-      L.push('  Stoch RSI altin capraz (%K>%D, asiri satista): ' + bol(r.goldenCross) + ' (%K: ' + fmtNum(r.k, 1) + ' / %D: ' + fmtNum(r.d, 1) + ')');
-      if (r.rsi2 != null) L.push('  RSI(2) teyidi: ' + bol(r.rsi2Confirm) + ' (RSI2: ' + fmtNum(r.rsi2, 1) + ')');
-
-      L.push('');
-      L.push('TREND VE YAPI:');
-      L.push('  Trend: ' + (st.trend || '-'));
-      L.push('  Formasyonlar: ' + ((st.patterns && st.patterns.length) ? st.patterns.join(', ') : 'yok'));
-      L.push('  Destek: ' + ((st.support && st.support.length) ? st.support.map((x) => fmtNum(x, 0)).join(', ') : '-'));
-      L.push('  Direnc: ' + ((st.resistance && st.resistance.length) ? st.resistance.map((x) => fmtNum(x, 0)).join(', ') : '-'));
-
-      const n = st.news || {};
-      L.push('');
-      L.push('HABER & DUYGU:');
-      L.push('  Duygu: ' + (n.label || '-') + ' | Fear&Greed: ' + (n.fearGreed != null ? n.fearGreed + ' (' + (n.classification || '') + ')' : 'n/a'));
-      L.push('  Haberler: ' + (n.bull || 0) + ' olumlu / ' + (n.bear || 0) + ' olumsuz');
-
-      L.push('');
-      if (data.position) {
-        L.push('POZISYON: ACIK -> Giris: ' + fmtNum(data.position.entryPrice, 2) + ' | Miktar: ' + data.position.quantity + ' | Mod: ' + data.position.mode);
-      } else {
-        L.push('POZISYON: YOK (flat)');
-      }
-      const dr = data.dryRun || {};
-      if (dr.USDT != null) L.push('Sanal bakiye -> USDT: ' + fmtNum(dr.USDT, 2) + ' | BTC: ' + fmtNum(dr.BTC, 6));
-
-      if (data.cooldownUntil && Date.now() < data.cooldownUntil) {
-        L.push('Soguma suresi devam ediyor (' + Math.ceil((data.cooldownUntil - Date.now()) / 60000) + ' dk kaldi).');
-      }
-      if (data.lastError) L.push('');
-      if (data.lastError) L.push('SON HATA: ' + data.lastError);
-      if (data.ts) L.push('');
-      if (data.ts) L.push('Veri zaman damgasi: ' + new Date(data.ts).toLocaleString('tr-TR'));
-      return L.join('\n');
-    }
-
-    let autoAnalyzeTimer = null;
-
-    function startAutoAnalyze() {
-      if (autoAnalyzeTimer) clearInterval(autoAnalyzeTimer);
-      runTraderAnalyze();
-      autoAnalyzeTimer = setInterval(runTraderAnalyze, 300000);
-    }
-
-    async function runTraderAnalyze() {
-      const btn = $('checkBtn');
-      const box = $('traderResult');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spin"></span>Analiz yapiliyor...';
-      box.style.display = 'block';
-      box.className = 'result';
-      box.textContent = 'Binance verisi cekilip indikatorler hesaplaniyor...';
-      try {
-        const res = await fetchWithTimeout('/api/trader/analyze', { method: 'POST' }, 30000);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
-        box.className = 'result ' + (res.ok ? 'success' : 'error');
-        box.textContent = traderSummary(data);
-        const meta = $('traderAutoMeta');
-        if (meta) meta.textContent = 'Otomatik analiz: her 5 dk | Son: ' + new Date().toLocaleTimeString('tr-TR');
-        loadTrader();
-        loadLive();
-        loadAnalysis(true);
-      } catch (err) {
-        box.className = 'result error';
-        box.textContent = 'ANALIZ HATASI: ' + err.message + '\n\nSunucu calisiyor mu? (npm start) ve Binance erisimi kontrol edin. 5 dk sonra otomatik tekrar denenir.';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Simdi Analiz Et';
-      }
-    }
-
-    $('checkBtn').addEventListener('click', startAutoAnalyze);
-
-    $('resetBtn').addEventListener('click', async () => {
-      await fetchWithTimeout('/api/trader/reset', { method: 'POST' }, 20000);
-      loadTrader();
-    });
-
-    $('openBtn').addEventListener('click', async () => {
-      const btn = $('openBtn');
-      if (!confirm('Manuel ALIS acilsin mi? (butce: birikimli bakiye hesabina gore)')) return;
-      btn.disabled = true;
-      btn.innerHTML = 'Emir gonderiliyor...';
-      const box = $('traderResult');
-      try {
-        const res = await fetchWithTimeout('/api/trader/open', { method: 'POST' }, 30000);
-        const d = await res.json();
-        box.style.display = 'block';
-        box.textContent = d.success
-          ? 'MANUEL ALIM ACILDI -> ' + JSON.stringify(d.result && { fiyat: d.result.averagePrice, miktar: d.result.filled, butce: d.result.cost })
-          : 'HATA: ' + d.error;
-        loadHistory();
-        loadTrader();
-      } catch (err) {
-        box.style.display = 'block';
-        box.textContent = 'HATA: ' + err.message;
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Manuel AL Ac';
-      }
-    });
-
-    $('closeBtn').addEventListener('click', async () => {
-      const btn = $('closeBtn');
-      if (!confirm('Acik pozisyonun TAMAMI piyasa fiyatindan satilacak. Emin misin?')) return;
-      btn.disabled = true;
-      btn.innerHTML = 'Satis gonderiliyor...';
-      const box = $('traderResult');
-      try {
-        const res = await fetchWithTimeout('/api/trader/close', { method: 'POST' }, 30000);
-        const d = await res.json();
-        box.style.display = 'block';
-        box.textContent = d.success
-          ? 'POZISYON KAPATILDI -> ' + JSON.stringify(d.result && { fiyat: d.result.averagePrice, miktar: d.result.filled })
-          : 'HATA: ' + d.error;
-        loadHistory();
-        loadTrader();
-      } catch (err) {
-        box.style.display = 'block';
-        box.textContent = 'HATA: ' + err.message;
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Pozisyonu Kapat (SAT)';
-      }
-    });
-
-    async function loadAnalysis(force) {
-      const banner = $('verdictBox');
-      const box = $('analysisInfo');
-      try {
-        const res = await fetchWithTimeout('/api/analysis' + (force ? '?force=1' : ''), null, 30000);
-        const d = await res.json();
-        if (!d.success) throw new Error(d.error || 'Hata');
-
-        const s = d.scores || {};
-        const pct = (v) => { const x = Math.round(v * 100); return (x > 0 ? '+' : '') + x + '%'; };
-        const scoreRow = (name, v, color) =>
-          '<div class="stat"><div class="label">' + name + '</div>' +
-          '<div class="value" style="font-size:16px;color:' + color + ';">' + pct(v) + '</div>' +
-          '<div class="sub">' + (v > 0.25 ? 'olumlu' : v < -0.25 ? 'olumsuz' : 'notr') + '</div></div>';
-
-        const t = d.technicals || {};
-        const td = t.details || {};
-        let pctB = null;
-        if (td.bbLower != null && td.bbUpper != null && td.bbUpper !== td.bbLower) {
-          pctB = ((d.price - td.bbLower) / (td.bbUpper - td.bbLower)) * 100;
-        }
-        const techTxt =
-          'RSI: ' + num(td.rsi, 1) +
-          ' | %B: ' + (pctB != null ? num(pctB, 1) : '-') +
-          ' | MACD hist: ' + num(td.macdHist, 0) +
-          ' | EMA20: ' + num(td.ema20, 0) +
-          ' | EMA50: ' + num(td.ema50, 0);
-
-        const patTxt = d.patterns && d.patterns.length
-          ? d.patterns.map((p) => p.name + ' (' + (p.direction > 0 ? 'alis yonlu' : p.direction < 0 ? 'satis yonlu' : 'notr') + ')').join(', ')
-          : 'Formasyon yok';
-
-        const sup = d.structure && d.structure.support ? d.structure.support.slice(0, 3).map((x) => num(x.price, 0)).join(', ') : '-';
-        const resLevels = d.structure && d.structure.resistance ? d.structure.resistance.slice(0, 3).map((x) => num(x.price, 0)).join(', ') : '-';
-
-        const news = d.news || {};
-        const fg = news.fearGreed;
-        const newsTxt =
-          (fg ? 'Fear & Greed: ' + fg.value + ' (' + fg.classification + ')' : 'Fear & Greed: n/a') +
-          ' | Haberler: ' + news.bull + ' olumlu / ' + news.bear + ' olumsuz' +
-          ' | Duygu: ' + (news.label || '-');
-
-        const rows = [
-          ['Teknik Gorestergeler', techTxt],
-          ['Grafik Formasyonlari', patTxt],
-          ['Trend Yapisi', d.structure ? d.structure.trend : '-'],
-          ['Destek / Direnc', sup + ' / ' + resLevels],
-          ['Haber & Duygu', newsTxt],
-        ];
-
-        let bannerCls = 'idle';
-        if (s.overall > 0.25) bannerCls = 'buy';
-        else if (s.overall < -0.25) bannerCls = 'watch';
-        banner.className = 'banner ' + bannerCls;
-        banner.textContent =
-          'STRATEJI: ' + (d.verdict || '-') +
-          '  |  Teknik ' + pct(s.technical) + ' | Grafik ' + pct(s.chart) + ' | Haber ' + pct(s.news);
-
-        $('analysisMeta').textContent =
-          'Son analiz: ' + new Date(d.ranAt || d.ts).toLocaleString('tr-TR') +
-          ' | ' + (d.signal ? 'BUY sinyali var' : 'Sinyal yok') +
-          (d.ts && d.ts !== d.ranAt ? ' | Mum zaman: ' + new Date(d.ts).toLocaleString('tr-TR') : '');
-
-        box.innerHTML =
-          '<div class="grid">' +
-          scoreRow('Teknik', s.technical, '#3b82f6') +
-          scoreRow('Grafik', s.chart, '#f59e0b') +
-          scoreRow('Haber', s.news, '#22c55e') +
-          '</div>' +
-          '<div class="grid" style="margin-top:12px;">' +
-          rows.map(([l, v]) =>
-            '<div class="stat"><div class="label">' + l + '</div>' +
-            '<div class="value" style="font-size:13px;line-height:1.5;font-weight:500;">' + v + '</div></div>'
-          ).join('') +
-          '</div>';
-      } catch (err) {
-        banner.className = 'banner error';
-        banner.textContent = 'Analiz alinamadi: ' + err.message;
-        box.innerHTML = '<div class="stat"><div class="label">Hata</div><div class="value" style="font-size:13px;color:var(--red);">' + err.message + '</div></div>';
-      }
-    }
-
-    $('analysisBtn').addEventListener('click', () => {
-      const btn = $('analysisBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spin"></span>Yenileniyor...';
-      loadAnalysis(true).finally(() => {
-        btn.disabled = false;
-        btn.textContent = 'Analizi Yenile';
+      paginated.forEach(t => {
+        const row = document.createElement('tr');
+        const timeStr = new Date(t.closedAt).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' }) + ' ' + new Date(t.closedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        
+        row.innerHTML = `
+          <td class="muted">${timeStr}</td>
+          <td><span class="journal-side ${t.side === 'LONG' ? 'long' : 'short'}">${t.side || 'LONG'}</span></td>
+          <td>${formatNumber(t.entryPrice, 1)} / ${formatNumber(t.exitPrice, 1)}</td>
+          <td><span class="journal-pnl ${t.pnl >= 0 ? 'green' : 'red'}">${t.pnl >= 0 ? '+' : ''}${formatNumber(t.pnl, 2)}</span></td>
+        `;
+        tbody.appendChild(row);
       });
-    });
 
-    $('refreshBtn').addEventListener('click', loadStatus);
-    loadStatus();
-    loadTrader();
-    loadLive();
-    loadChart();
-    loadAnalysis();
-    loadHistory();
-    startAutoAnalyze();
-    setInterval(loadStatus, 30000);
-    setInterval(loadTrader, 30000);
-    setInterval(loadLive, 10000);
-    setInterval(loadAnalysis, 300000);
-    setInterval(loadHistory, 60000);
-    setInterval(liveCountdown, 1000);
-    setInterval(loadChart, 30000);
+      // Pagination UI elements
+      const totalPages = Math.ceil(allTrades.length / itemsPerPage) || 1;
+      $('textPaginationPage').textContent = `Sayfa ${currentPage} / ${totalPages}`;
+      $('btnPrevPage').disabled = currentPage === 1;
+      $('btnNextPage').disabled = currentPage === totalPages;
+    }
 
-    $('telegramBtn').addEventListener('click', async () => {
-      const btn = $('telegramBtn');
-      const box = $('telegramResult');
-      btn.disabled = true;
-      btn.textContent = 'Gonderiliyor...';
-      box.style.display = 'block';
-      box.className = 'result';
-      box.textContent = "Telegram'a test mesaji gonderiliyor...";
-
-      try {
-        const res = await fetchWithTimeout('/api/test-telegram', { method: 'POST' }, 20000);
-        const data = await res.json();
-        box.className = 'result ' + (res.ok ? 'success' : 'error');
-        box.textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        box.className = 'result error';
-        box.textContent = JSON.stringify({ success: false, error: err.message }, null, 2);
-      } finally {
+    // Setup action buttons handlers
+    function setupActions() {
+      // 1. Chart Refresh
+      $('btnRefreshChart').addEventListener('click', async () => {
+        const btn = $('btnRefreshChart');
+        btn.disabled = true;
+        btn.textContent = 'Yükleniyor...';
+        await loadChartData();
         btn.disabled = false;
-        btn.textContent = 'Test Telegram';
-      }
-    });
+        btn.textContent = 'Yenile';
+      });
 
-    // Settings panel JavaScript
-    const settingsApiBase = '/api/settings';
-
-    async function apiFetch(method, endpoint, body = null) {
-      const options = { method };
-      if (body) {
-        options.headers = { 'Content-Type': 'application/json' };
-        options.body = JSON.stringify(body);
-      }
-      const res = await fetchWithTimeout(settingsApiBase + endpoint, options);
-      return await res.json();
-    }
-
-    async function loadSettings() {
-      try {
-        const data = await apiFetch('GET', '');
-        if (!data.success) throw new Error(data.error || 'Hata');
-
-        const s = data.settings;
-        $('settingsStrategyVersion').value = s.strategyVersion || '1.0.0';
-        $('settingsStrategy').value = s.strategy || 'rsi-bollinger';
-        $('settingsRSILength').value = s.rsiLength || 20;
-        $('settingsRSIMaLength').value = s.rsiMaLength || 20;
-        $('settingsBBLength').value = s.bbLength || 30;
-        $('settingsBBStd').value = s.bbStd || 2;
-        $('settingsExecutionTimeframe').value = s.executionTimeframe || '15m';
-        $('settingsHigherTimeframe').value = s.higherTimeframe || '1h';
-        $('settingsRegimeTimeframe').value = s.regimeTimeframe || '4h';
-        $('settingsRiskPerTrade').value = s.riskPerTrade || 0.5;
-        $('settingsMaxLeverage').value = s.maxLeverage || 5;
-        $('settingsMaxDailyLoss').value = s.maxDailyLoss || 2;
-        $('settingsMaxDrawdown').value = s.maxDrawdown || 8;
-        $('settingsMaxConsecutiveLosses').value = s.maxConsecutiveLosses || 3;
-        $('settingsCooldown').value = s.cooldown || 60;
-        $('settingsMaxTradesPerDay').value = s.maxTradesPerDay || 10;
-        $('settingsDryRun').value = s.dryRun ? 'true' : 'false';
-        $('settingsTradingEnabled').value = s.tradingEnabled ? 'true' : 'false';
-        $('settingsAllowShort').value = s.allowShort !== false ? 'true' : 'false';
-        $('settingsVolumeThreshold').value = s.volumeThreshold || 1.0;
-        $('settingsChopThreshold').value = s.chopThreshold || 35;
-
-        // Show change log
-        const log = data.changeLog || [];
-        const logEl = $('settingsChangeLog');
-        if (log && log.length > 0) {
-          logEl.innerHTML = log.map(e => {
-            const direction = e.oldValue > e.newValue ? 'azaltildi' : e.oldValue < e.newValue ? 'artti' : 'degisti';
-            return `<div style="margin-bottom:4px;"><span style="color:var(--muted);">[${e.timestamp}]</span> ${e.setting}: ${e.oldValue} -> ${e.newValue} <span style="color:var(--orange);">${direction}</span></div>`;
-          }).join('');
-        } else {
-          logEl.textContent = 'Henuz ayar degisikligi yok.';
+      // 2. Manual Buy Trigger
+      $('btnManualBuy').addEventListener('click', async () => {
+        if (!confirm('Manuel olarak yeni bir AL pozisyonu açılsın mı?')) return;
+        const btn = $('btnManualBuy');
+        btn.disabled = true;
+        try {
+          const res = await fetchWithTimeout('/api/trader/open', { method: 'POST' });
+          alert(res.message || 'Alım açıldı.');
+          await loadPositionAndHistory();
+        } catch (err) {
+          alert('Manuel alım açma hatası: ' + err.message);
+        } finally {
+          btn.disabled = false;
         }
-      } catch (err) {
-        console.error('Settings load error:', err);
-        alert('Settings yuklenemedi: ' + err.message);
-      }
-    }
+      });
 
-    async function saveSettings() {
-      const patch = {
-        strategyVersion: $('settingsStrategyVersion').value,
-        strategy: $('settingsStrategy').value,
-        rsiLength: parseInt($('settingsRSILength').value),
-        rsiMaLength: parseInt($('settingsRSIMaLength').value),
-        bbLength: parseInt($('settingsBBLength').value),
-        bbStd: parseFloat($('settingsBBStd').value),
-        executionTimeframe: $('settingsExecutionTimeframe').value,
-        higherTimeframe: $('settingsHigherTimeframe').value,
-        regimeTimeframe: $('settingsRegimeTimeframe').value,
-        riskPerTrade: parseFloat($('settingsRiskPerTrade').value),
-        maxLeverage: parseInt($('settingsMaxLeverage').value),
-        maxDailyLoss: parseFloat($('settingsMaxDailyLoss').value),
-        maxDrawdown: parseFloat($('settingsMaxDrawdown').value),
-        maxConsecutiveLosses: parseInt($('settingsMaxConsecutiveLosses').value),
-        cooldown: parseInt($('settingsCooldown').value),
-        maxTradesPerDay: parseInt($('settingsMaxTradesPerDay').value),
-        dryRun: $('settingsDryRun').value === 'true',
-        tradingEnabled: $('settingsTradingEnabled').value === 'true',
-        allowShort: $('settingsAllowShort').value === 'true',
-        volumeThreshold: parseFloat($('settingsVolumeThreshold').value),
-        chopThreshold: parseInt($('settingsChopThreshold').value),
-      };
-
-      try {
-        const result = await apiFetch('PUT', '', patch);
-        if (result.success) {
-          alert("Ayarlar kaydedildi!\nDegisiklikler uygulama restart'i sonrasi aktif olur.");
-          loadSettings();
-        } else {
-          alert('Kaydetme hatasi: ' + (result.error || 'Bilinmeyen hata'));
+      // 3. Manual Close Trigger
+      $('btnManualSell').addEventListener('click', async () => {
+        if (!confirm('Mevcut açık pozisyon kapatılsın mı (SAT)?')) return;
+        const btn = $('btnManualSell');
+        btn.disabled = true;
+        try {
+          const res = await fetchWithTimeout('/api/trader/close', { method: 'POST' });
+          alert(res.message || 'Pozisyon kapatıldı.');
+          await loadPositionAndHistory();
+        } catch (err) {
+          alert('Pozisyon kapatma hatası: ' + err.message);
+        } finally {
+          btn.disabled = false;
         }
-      } catch (err) {
-        alert('Kaydetme hatasi: ' + err.message);
-      }
-    }
+      });
 
-    function resetSettings() {
-      if (confirm('Tum ayarlar sifirlansin mi? Varsayilan configgeri yuklenecek.')) {
-        apiFetch('PUT', '/reset').then(res => {
-          if (res.success) {
-            alert('Ayarlar sifirlandi.');
-            loadSettings();
-          }
+      // 4. Force cycle run checks
+      $('btnCycleAnalyze').addEventListener('click', async () => {
+        const btn = $('btnCycleAnalyze');
+        btn.disabled = true;
+        btn.textContent = 'Analiz ediliyor...';
+        try {
+          const res = await fetchWithTimeout('/api/trader/check', { method: 'POST' });
+          alert(res.message || 'Analiz tamamlandı.');
+          await loadDecision();
+          await loadPositionAndHistory();
+          await loadLogs();
+        } catch (err) {
+          alert('Analiz tetikleme hatası: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Şimdi Analiz Et';
+        }
+      });
+
+      // 5. Reset bot state variables
+      $('btnResetMotor').addEventListener('click', async () => {
+        if (!confirm('Botun tüm pozisyon ve bakiye kayıtlarını sıfırlamak istediğinize emin misiniz?')) return;
+        const btn = $('btnResetMotor');
+        btn.disabled = true;
+        try {
+          const res = await fetchWithTimeout('/api/trader/reset', { method: 'POST' });
+          alert(res.message || 'Motor sıfırlandı.');
+          await loadPositionAndHistory();
+        } catch (err) {
+          alert('Sıfırlama hatası: ' + err.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // 6. Pagination Navigation Buttons
+      $('btnPrevPage').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTradeJournalTable();
+        }
+      });
+
+      $('btnNextPage').addEventListener('click', () => {
+        const totalPages = Math.ceil(allTrades.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTradeJournalTable();
+        }
+      });
+
+      // 7. Performance tabs period filter
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          activePeriod = e.target.getAttribute('data-period');
+          loadPositionAndHistory();
         });
-      }
+      });
     }
 
-    $('settingsLoadBtn').addEventListener('click', loadSettings);
-    $('settingsSaveBtn').addEventListener('click', saveSettings);
-    $('settingsResetBtn').addEventListener('click', resetSettings);
+    // Loop Sync timers
+    function startLoops() {
+      // Fast loops (5s) for live states and price ticks
+      setInterval(async () => {
+        await loadStatus();
+        await loadDecision();
+      }, 5000);
 
-    // Load settings on page init
-    loadSettings();
+      // Mid loops (10s) for logs console
+      setInterval(async () => {
+        await loadLogs();
+      }, 10000);
+
+      // Slow loops (20s) for positions, trades, and chart candles
+      setInterval(async () => {
+        await loadPositionAndHistory();
+        await loadChartData();
+      }, 20000);
+    }
+
+    // Start Page Init
+    window.addEventListener('DOMContentLoaded', async () => {
+      initCharts();
+      setupActions();
+      
+      // Load initial batch
+      await loadStatus();
+      await loadChartData();
+      await loadDecision();
+      await loadPositionAndHistory();
+      await loadLogs();
+
+      startLoops();
+    });
   </script>
 </body>
 </html>
