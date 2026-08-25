@@ -8,11 +8,28 @@ const STOCH_LEN = 14;
 const SMOOTH_K = 3;
 const SMOOTH_D = 3;
 
+const TF_MAP = {
+    '24s': '1m',
+    '1m': '1m',
+    '5m': '5m',
+    '15m': '15m',
+    '30m': '30m',
+    '1h': '1h',
+    '2h': '2h',
+    '4h': '4h',
+    '1d': '1d',
+    '3d': '3d',
+    '1w': '1w',
+    '1M': '1M'
+  };
+
 async function getChart(req, res) {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 160, 500);
     const symbol = env.tradingSymbol || 'BTC/USDT';
-    const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, limit + 1);
+    const requestedTimeframe = req.query.timeframe || env.analysisTimeframe;
+    const timeframe = TF_MAP[requestedTimeframe] || requestedTimeframe.toLowerCase();
+    const candles = await analyzer.fetchCandles(symbol, timeframe, limit + 1);
 
     const closed = candles;
     const closes = closed.map((c) => c[4]);
@@ -36,7 +53,7 @@ async function getChart(req, res) {
     res.status(200).json({
       success: true,
       symbol,
-      timeframe: env.analysisTimeframe,
+      timeframe,
       data,
     });
   } catch (err) {

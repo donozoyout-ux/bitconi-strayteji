@@ -842,8 +842,13 @@
         <!-- Candlestick chart panel -->
         <div class="t-card" style="min-height: 600px;">
           <div class="t-card-header">
-            <div class="t-card-title">📈 BTC/USDT 15M CANDLESTICK CHART</div>
+            <div class="t-card-title">📈 BTC/USDT <span id="chartTimeframe">15m</span> CANDLESTICK CHART</div>
             <button type="button" class="t-btn" id="btnRefreshChart">Yenile</button>
+            <select id="timeframeSelect" class="t-btn" style="padding: 6px 12px; font-size: 12px; margin-left: 8px;">
+              <option value="24s">24s</option>
+              <option value="1h">1h</option>
+              <option value="1d">1d</option>
+            </select>
           </div>
           
           <div class="price-panel">
@@ -1262,7 +1267,7 @@
         lineWidth: 1.5,
       });
 
-      // Resize observer to keep chart responsive
+// Resize observer to keep chart responsive
       new ResizeObserver(entries => {
         if (entries.length === 0 || !chartInstance) return;
         const w = entries[0].contentRect.width;
@@ -1271,7 +1276,20 @@
       }).observe($('chartContainer'));
     }
 
-    // Refresh charts data
+    // Timeframe selector change handler
+    const timeframeSelect = $('#timeframeSelect');
+    if (timeframeSelect) {
+      timeframeSelect.addEventListener('change', async (e) => {
+        const tf = e.target.value;
+        $('chartTimeframe').textContent = tf.toUpperCase();
+        const res = await fetchWithTimeout(`/api/chart?limit=180&timeframe=${tf}`);
+        if (res.success && res.data) {
+          candleSeries.setData(res.data);
+        }
+      });
+    }
+
+// Refresh charts data
     async function loadChartData() {
       try {
         const res = await fetchWithTimeout('/api/chart?limit=180');
