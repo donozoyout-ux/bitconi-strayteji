@@ -554,11 +554,22 @@ async function runCycle() {
     }
 
     // Check risk limits (daily loss, consecutive losses, max trades)
-    const dailyTrades = (state.trades || []).filter(
-      t => new Date(t.closedAt || t.timestamp).getDate() === new Date().getDate()
-    ).length;
-    const dailyPnL = (state.trades || []).reduce(
-      (s, t) => s + (t.pnl || 0), 0
+    const now = new Date();
+    const isToday = (timestamp) => {
+      if (!timestamp) return false;
+      const date = new Date(timestamp);
+      return (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate()
+      );
+    };
+
+    const todayTrades = (state.trades || []).filter(t => isToday(t.closedAt || t.timestamp));
+    const dailyTrades = todayTrades.length;
+    const dailyPnL = todayTrades.reduce(
+      (sum, t) => sum + Number(t.pnl || 0),
+      0
     );
     const consecutiveLosses = (state.trades || [])
       .filter(
