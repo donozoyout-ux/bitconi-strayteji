@@ -584,7 +584,7 @@ async function analyzeOnly() {
     price,
     signal: analysis.signal,
     reasons: analysis.reasons,
-    trendEntry: { signal: entryEval.signal, type: entryEval.type, reasons: entryEval.reasons },
+    trendEntry: { signal: entryEval.signal, type: entryEval.type, score: entryEval.score, reasons: entryEval.reasons },
     strategy,
     verdict: strategy.verdict,
     position: state.position,

@@ -3,7 +3,18 @@ const analyzer = require('./analyzer.service');
 function normalizeCandle(c) {
   if (!c) return c;
   // Return as array [timestamp, open, high, low, close, volume] with Number values
-  // Preserves index-based access used throughout the codebase (c[4] for close, c[0] for ts)
+  // Preserves index-based access used throughout the codebase (c[4] for close, c[0] for ts).
+  // Candles arrive as arrays (from parseKlines), so read by index.
+  if (Array.isArray(c)) {
+    return [
+      Number(c[0]),
+      Number(c[1]),
+      Number(c[2]),
+      Number(c[3]),
+      Number(c[4]),
+      Number(c[5]),
+    ];
+  }
   return [
     Number(c.timestamp),
     Number(c.open),
