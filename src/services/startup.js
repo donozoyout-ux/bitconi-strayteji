@@ -43,6 +43,8 @@ async function runStartupChecks() {
   let blockReason = null;
   if (!dbh.ok) blockReason = 'DB_UNHEALTHY';
   else if (!parity.ok) blockReason = 'CONFIG_PARITY_FAIL';
+  if (!env.useTestnet) blockReason = blockReason || 'USE_TESTNET_FALSE';
+  if (env.emergencyStop) blockReason = blockReason || 'EMERGENCY_STOP';
 
   gate = { dbOk: dbh.ok, configOk: parity.ok, blockReason, parity, db: dbh, dbBootstrap, snapshot: snapshot(effective) };
 

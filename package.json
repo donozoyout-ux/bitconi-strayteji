@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "render:start": "node scripts/fix-render-settings.js; node scripts/render-config-verify.js; node server.js"
   },
   "keywords": [
     "binance",

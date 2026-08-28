@@ -90,7 +90,16 @@ async function safe(fn, label) {
   console.log('SHORT ADX FL:', eff.shortAdxFloor);
   console.log('EXIT MODE   :', eff.exitStrategy, '(atrMult=' + eff.trendTrailingAtrMult + ', tp=' + eff.trendUseTP + ', timeExit=' + eff.trendTimeExitCandles + ')');
 
-  const pipelineBlocked = !gate.dbOk || !gate.configOk;
+  const pipelineBlocked = !gate.dbOk || !gate.configOk || !env.useTestnet || env.emergencyStop;
+  SECTION('DEPLOYMENT LOG');
+  console.log('DB SETTINGS BOOTSTRAP : ' + ((gate.dbOk && gate.configOk) ? 'PASS' : 'FAIL'));
+  console.log('CONFIG PARITY         : ' + (gate.configOk ? 'PASS' : 'FAIL'));
+  console.log('DB HEALTH             : ' + (gate.dbOk ? 'PASS' : 'FAIL'));
+  console.log('USE_TESTNET           : ' + env.useTestnet);
+  console.log('DRY_RUN               : ' + env.dryRun);
+  console.log('STRATEGY VERSION      : ' + eff.strategyVersion);
+  console.log('ORDER PIPELINE        : ' + (pipelineBlocked ? 'BLOCKED' : 'READY'));
+
   SECTION('FINAL OUTPUT');
   console.log('RENDER CONFIG SOURCE : ' + (deploy ? 'CANONICAL (code) + DB overlay; settings.json ignored' : 'data/settings.json'));
   console.log('CONFIG PARITY        : ' + (gate.configOk ? 'PASS' : 'FAIL'));

@@ -79,6 +79,7 @@ function serialize(v) {
     console.log(r.col.padEnd(26) + ' db=' + String(dbv).padEnd(22) + ' canonical=' + r.value.padEnd(12) + (match ? ' MATCH' : ' MISMATCH'));
   }
   console.log('SETTINGS PARITY AFTER: ' + (afterAllMatch ? 'PASS' : 'FAIL'));
+  console.log('DB SETTINGS BOOTSTRAP : ' + (afterAllMatch ? 'PASS' : 'FAIL'));
   console.log('\nDone. Only the 16 candidate keys were written; no strategy code or unrelated rows changed.');
   process.exit(afterAllMatch ? 0 : 1);
 })().catch((e) => { console.error('FATAL', e); process.exit(2); });
