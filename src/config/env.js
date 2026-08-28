@@ -3,47 +3,41 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const env = {};
-// SECRETS: Only infrastructure secrets from .env
-// ----------------------------
-const FALLBACK = {
-  binanceTestnetApiKey: 'lVs9EHMUmNfdoDoqjBmqFUIeL2rcEPiKUSVjQMpp21H6i9Hj2QF58EcCvMDARc6g',
-  binanceTestnetSecret: 'KpRDeOi5nNwqwvAI0U0i6ooTPDsPomPQx7yS5S8jz9EK7Ilrfm2tq36Ft49xbYvK',
-};
-
 const useTestnet = (process.env.USE_TESTNET || 'true') === 'true';
 
-// Non-trading env vars (populated by deployment infrastructure)
+// Runtime / infrastructure
 env.environment = process.env.NODE_ENV || 'development';
 env.useTestnet = useTestnet;
 env.isTestnet = useTestnet;
+env.port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
-// Secrets - Flexible resolution from .env or deployment environment variables
-env.binanceApiKey = process.env.BINANCE_API_KEY || process.env.BINANCE_TESTNET_API_KEY || (useTestnet ? FALLBACK.binanceTestnetApiKey : '');
-env.binanceSecret = process.env.BINANCE_SECRET_KEY || process.env.BINANCE_TESTNET_SECRET_KEY || (useTestnet ? FALLBACK.binanceTestnetSecret : '');
-
+// Secrets MUST come from environment variables. Never hardcode exchange credentials.
+env.binanceApiKey = process.env.BINANCE_API_KEY || process.env.BINANCE_TESTNET_API_KEY || '';
+env.binanceSecret = process.env.BINANCE_SECRET_KEY || process.env.BINANCE_TESTNET_SECRET_KEY || '';
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
+env.adminApiToken = process.env.ADMIN_API_TOKEN || '';
+env.webhookSecret = process.env.WEBHOOK_SECRET || '';
 
-// Trading control flags (from .env, can be overridden by settings/service at runtime)
+// Trading control flags
 env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
 env.dryRun = process.env.DRY_RUN !== 'false';
 env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
 
-// Trading Configuration - Single source of truth
+// Trading configuration
 env.analysisTimeframe = process.env.ANALYSIS_TIMEFRAME || '1d';
-env.port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN) || 5;
-env.budgetUsdt = parseFloat(process.env.BUDGET_USDT) || 500;
-env.tpPercent = parseFloat(process.env.TP_PERCENT) || 5;
-env.slPercent = parseFloat(process.env.SL_PERCENT) || 2.5;
-env.commissionRate = parseFloat(process.env.COMMISSION_RATE) || 0.001;
-env.cooldownMin = parseInt(process.env.COOLDOWN_MIN) || 60;
+env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN || '5', 10);
+env.budgetUsdt = parseFloat(process.env.BUDGET_USDT || '500');
+env.tpPercent = parseFloat(process.env.TP_PERCENT || '5');
+env.slPercent = parseFloat(process.env.SL_PERCENT || '2.5');
+env.commissionRate = parseFloat(process.env.COMMISSION_RATE || '0.001');
+env.cooldownMin = parseInt(process.env.COOLDOWN_MIN || '60', 10);
 env.tradingSymbol = process.env.TRADING_SYMBOL || 'BTC/USDT';
-env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20');
+env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20', 10);
 env.useRsi2 = process.env.USE_RSI2 === 'true';
 env.strategyMode = process.env.STRATEGY_MODE || 'regime';
 
-// Risk engine defaults (can be overridden by settings.json at runtime)
+// Risk engine defaults
 env.adxMin = 18;
 env.atrStopMult = 2.0;
 env.atrTrailMult = 2.5;
@@ -52,35 +46,36 @@ env.partialTpPercent = 50;
 env.maxBudgetMultiplier = 3;
 env.allowSymbols = ['BTC/USDT'];
 
-// Database configuration
-env.databaseUrl = process.env.DATABASE_URL || 'postgresql://localhost:5432/dip_hunter';
+// Database configuration. Empty in production means DB health gate will fail closed.
+env.databaseUrl = process.env.DATABASE_URL || (env.environment === 'production' ? '' : 'postgresql://localhost:5432/dip_hunter');
 
-// Validate secrets are present
 if (!env.binanceApiKey || !env.binanceSecret) {
-  console.warn(
-    '[WARN] Binance API anahtarlari eksik. .env dosyasina BINANCE_API_KEY / BINANCE_SECRET_KEY yazin.'
-  );
+  console.warn('[WARN] Binance API credentials missing. Configure BINANCE_API_KEY/BINANCE_SECRET_KEY or TESTNET equivalents in the environment.');
 }
 
 if (!env.telegramBotToken || !env.telegramChatId) {
-  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID tanimli degil. Bildirimler gonderilmez.');
+  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured. Notifications are disabled.');
+}
+
+if (env.environment === 'production' && !env.adminApiToken) {
+  console.warn('[WARN] ADMIN_API_TOKEN is not configured. Mutating admin API endpoints will remain locked.');
+}
+
+if (env.environment === 'production' && !env.webhookSecret) {
+  console.warn('[WARN] WEBHOOK_SECRET is not configured. Trading webhook will remain locked.');
 }
 
 if (!useTestnet && env.tradingEnabled && !env.dryRun) {
-  console.warn(
-    '[UYARI] GERCEK HESAP MODU AKTIF - gercek para ile islem yapilacak. Durdurmak icin TRADING_MODE=off yapin.'
-  );
+  console.warn('[UYARI] LIVE ACCOUNT MODE ACTIVE. Real-money trading is possible.');
 }
 
-// Non-trading env vars
 env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
-
 try {
   if (process.env.GOOGLE_FORM_FIELDS) {
     env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
   }
 } catch (e) {
-  console.warn('[WARN] GOOGLE_FORM_FIELDS gecerli bir JSON degil.');
+  console.warn('[WARN] GOOGLE_FORM_FIELDS is not valid JSON.');
 }
 
 module.exports = env;
