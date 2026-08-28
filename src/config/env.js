@@ -36,6 +36,7 @@ env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN) || 5;
 env.budgetUsdt = parseFloat(process.env.BUDGET_USDT) || 500;
 env.tpPercent = parseFloat(process.env.TP_PERCENT) || 5;
 env.slPercent = parseFloat(process.env.SL_PERCENT) || 2.5;
+env.commissionRate = parseFloat(process.env.COMMISSION_RATE) || 0.001;
 env.cooldownMin = parseInt(process.env.COOLDOWN_MIN) || 60;
 env.tradingSymbol = process.env.TRADING_SYMBOL || 'BTC/USDT';
 env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20');

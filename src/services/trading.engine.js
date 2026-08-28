@@ -9,6 +9,7 @@ const riskEngine = require('./risk-engine');
 const newsService = require('./news.service');
 const settingsService = require('./settings.service');
 const db = require('../db');
+const startup = require('./startup');
 const fs = require('fs');
 const path = require('path');
 
@@ -152,6 +153,13 @@ async function start() {
     await recoverCooldownState();
   } catch (err) {
     logger.error('[SYSTEM] Cooldown recovery failed:', err.message);
+  }
+
+  // 9. Startup config-parity + DB health gate (deterministic TESTNET deployment)
+  try {
+    await startup.runStartupChecks();
+  } catch (err) {
+    logger.error('[SYSTEM] Startup checks failed:', err.message);
   }
 
   stopped = false;
@@ -501,6 +509,11 @@ function researchExitDecision(pos, candles, livePrice, settings) {
 // Pre-trade safety/startup guard (section 7). Returns { ok, reasons }.
 async function preTradeChecks(settings) {
   const reasons = [];
+  // Config parity + startup gate (global blocks)
+  const g = startup.getGate();
+  if (g && g.blockReason) reasons.push(g.blockReason);
+  const parity = settingsService.assertConfigParity(settings);
+  if (!parity.ok) reasons.push('CONFIG_PARITY_FAIL: ' + parity.mismatches.join('; '));
   if (!env.useTestnet) reasons.push('USE_TESTNET=false (live endpoint would be used)');
   if (!env.isTestnet) reasons.push('isTestnet=false');
   if (env.emergencyStop) reasons.push('EMERGENCY_STOP active');
@@ -597,6 +610,14 @@ async function runCycle() {
     }
   }
   stateService.update({ busy: true });
+
+  // Global startup gate: block ALL trading if config parity failed or DB unhealthy.
+  const gate = startup.getGate();
+  if (gate && gate.blockReason) {
+    logger.error('[GATE] ' + gate.blockReason + ' -> tum islemler engellendi (NO TRADE).');
+    stateService.update({ busy: false, lastError: gate.blockReason });
+    return;
+  }
 
   try {
     const symbol = env.tradingSymbol || 'BTC/USDT';
