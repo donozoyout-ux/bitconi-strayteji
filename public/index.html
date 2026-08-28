@@ -1282,9 +1282,13 @@
       timeframeSelect.addEventListener('change', async (e) => {
         const tf = e.target.value;
         $('chartTimeframe').textContent = tf.toUpperCase();
-        const res = await fetchWithTimeout(`/api/chart?limit=180&timeframe=${tf}`);
-        if (res.success && res.data) {
-          candleSeries.setData(res.data);
+        try {
+          const res = await fetchWithTimeout(`/api/chart?limit=180&timeframe=${tf}`);
+          if (res && res.success && res.data) {
+            candleSeries.setData(res.data);
+          }
+        } catch (err) {
+          console.warn('Chart timeframe fetch error:', err.message);
         }
       });
     }
