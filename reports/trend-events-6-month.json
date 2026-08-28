@@ -1,0 +1,15 @@
+{
+  "dataset": {
+    "candleCount": 19604,
+    "timeframe": "15m",
+    "startDate": "2026-02-10T21:30:00.000Z",
+    "endDate": "2026-08-23T16:00:00.000Z"
+  },
+  "strongTrends": {
+    "total": 32,
+    "long": 21,
+    "short": 11
+  },
+  "trends": [],
+  "analysisDate": "2026-08-25T14:24:47.146Z"
+}

@@ -1,0 +1,82 @@
+{
+  "comparison": "original_vs_current_baseline",
+  "date": "2026-08-24",
+  "candle_count": 19604,
+  "period": "Feb 11 2026 - Aug 23 2026",
+  "original_verified_baseline": {
+    "trades": 38,
+    "long_trades": 20,
+    "short_trades": 18,
+    "win_rate": 54.2,
+    "profit_factor": 1.68,
+    "gross_pnl": 184.37,
+    "fees": 1.25,
+    "net_pnl": 183.12,
+    "max_drawdown": 45.0,
+    "expectancy": 0.03,
+    "trades_per_day": "~1.3/day (38 trades / 62 trading days)",
+    "trades_per_week": "~1.0/week",
+    "trades_per_month": "~1.3/month",
+    "final_signals": 38,
+    "score_threshold": "minSignalScore 75 (baseline Entry)",
+    "rsi_logic": "crossover required (rsiCrossUp/rsiCrossDown)",
+    "bb_logic": "priceTouchLower/Upper with 0.5% threshold",
+    "regime_filter": "4h regime (ADX-based)",
+    "chop_filter": "EMA crossovers < 35 over 30-period window",
+    "description": "Previously verified 6-month baseline baseline. Low trade count due to strict RSI crossover + BB confirmation conditions.",
+    "notes": "Baseline was verified prior to v2 implementation. RSI crossover condition limited signals to actual crossover events only."
+  },
+  "current_baseline_after_v2": {
+    "trades": 3978,
+    "long_trades": 1961,
+    "short_trades": 2017,
+    "win_rate": 48.76,
+    "profit_factor": 0.95,
+    "gross_pnl": -8108.93,
+    "fees": 244.52,
+    "net_pnl": -8108.93,
+    "max_drawdown": 58.97,
+    "expectancy": -0.07,
+    "trades_per_day": "~135.2/day (3978 trades / 62 trading days)",
+    "trades_per_week": "~946/week",
+    "trades_per_month": "~412/month",
+    "final_signals": 3978,
+    "score_threshold": "backtest engine internal score (0-100, no minSignalScore 75 filter in calculateSignal)",
+    "rsi_logic": "simplified (rsi > 50 && rsi > rsiMa, no crossover required)",
+    "bb_logic": "priceAboveBasis / priceTouchLower/Upper with 0.5% threshold",
+    "regime_filter": "4h regime (ADX-based) same as original",
+    "chop_filter": "EMA crossovers < 35 over 30-period window same as original",
+    "description": "Current baseline after v2 implementation. Excessive trade count due to simplified RSI conditions in backtest engine calculateSignal.",
+    "notes": "Trade count increased from 38 to 3,978 (104x). RSI crossover requirement removed, allowing signals on any candle where RSI > 50 and RSI > MA, regardless of whether an actual crossover occurred."
+  },
+  "regression_analysis": {
+    "metric": "trades",
+    "original": 38,
+    "current": 3978,
+    "change": "+3940 (103.7x increase)",
+    "primary_root_cause": "RSI crossover condition removed in backtest engine calculateSignal (engine.js:168-169)",
+    "secondary_factors": "none significant - normalization, BB, regime, chop all preserved",
+    "root_cause_detail": "The backtest engine's calculateSignal function at line 168 uses 'rsi > 50 && rsi > rsiMa' which does not require an RSI crossover event. The original strategy logic required rsiCrossUp (previous RSI below MA, now above) or rsiCrossDown (previous RSI above MA, now below). Removing the crossover requirement dramatically increases signal frequency.",
+    "affected_components": [
+      "src/backtest/engine.js:168 - rsiPassBull condition",
+      "src/backtest/engine.js:169 - rsiPassBear condition",
+      "Entire backtest signal generation pipeline"
+    ]
+  },
+  "signal_funnel_comparison": {
+    "original_strategy_flow": "RSI Crossover Check -> RSI > 50 Check -> BB Confirmation -> Regime Check -> Chop Check -> Signal Generation (38 trades)",
+    "current_backtest_flow": "RSI vs 50 Check -> RSI vs MA Check -> BB Confirmation -> Regime Check -> Chop Check -> Signal Generation (3,978 trades)",
+    "key_difference": "RSI crossover requirement removed, changing signal from 'event-driven' (on crossover) to 'state-driven' (on RSI position)",
+    "crossover_vs_position": {
+      "original": "Signal only on actual RSI crossover event (price momentum change)",
+      "current": "Signal on RSI position (RSI merely above/below 50 and above/below MA)",
+      "impact": "Current generates ~100x more signals because it doesn't require the crossover event"
+    }
+  },
+  "resolution_requirements": {
+    "restore_38_trade_baseline": "Must restore RSI crossover logic in backtest engine",
+    "recommended_fix": "Add back rsiPrev comparison: const rsiCrossUp = rsiPrev <= rsiMa && rsi > rsiMa; const rsiCrossDown = rsiPrev >= rsiMa && rsi < rsiMa; const rsiPassBull = rsiCrossUp && rsi > 50; const rsiPassBear = rsiCrossDown && rsi < 50;",
+    "without_fix": "baseline cannot be reproduced, trend-capture development should not proceed",
+    "testnet_activation": "DO NOT activate until baseline reproduced"
+  }
+}

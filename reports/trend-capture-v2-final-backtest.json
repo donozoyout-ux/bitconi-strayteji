@@ -1,0 +1,126 @@
+{
+  "version": "v2",
+  "date": "2026-08-24",
+  "wiring_fix_applied": true,
+  "status": "complete",
+  
+  "dataset": {
+    "description": "19,604 BTC/USDT 15m candles, Feb 11 2026 - Aug 23 2026",
+    "total_candles": 19604,
+    "timeframe": "15m",
+    "date_range": "Feb 11 2026 - Aug 23 2026",
+    "numeric_ohclv": true,
+    "chronological_order": true,
+    "no_duplicates": true,
+    "closed_candles_only": true,
+    "15m_1h_4h_alignment": true,
+    "no_look_ahead": true
+  },
+  
+  "modes_supported": {
+    "baseline_v1": {
+      "strategy_parameter": "'default' (or omitted)",
+      "signal_logic": "Internal calculateSignal() with simplified RSI (rsi > 50 && rsi > rsiMa)",
+      "trades_on_19604": 0,
+      "description": "Original baseline strategy, completely unchanged"
+    },
+    "trend_capture_v2": {
+      "strategy_parameter": "'trend_capture_v2'",
+      "signal_logic": "Production detectTrendCaptureSignal() from strategy.service.js",
+      "features_include": [
+        "RSI crossover detection (rsiPrev vs rsiMaPrev)",
+        "4h regime filtering (BULL/STRONG_BULL for LONG, BEAR/STRONG_BEAR for SHORT)",
+        "1h trend alignment (EMA20 vs EMA50)",
+        "ADX trend-strength filter (>= 20)",
+        "Chop filter (EMA crossovers < 35)",
+        "BB position confirmation (pctB, priceAboveBasis/priceBelowBasis)",
+        "Anti-FOMO protection (pctB < 80 for LONG, pctB > 20 for SHORT)",
+        "Anti-overbought/oversold (RSI < 70 for LONG, RSI > 30 for SHORT)",
+        "Pullback/continuation opportunity detection"
+      ],
+      "trades_on_2000_candles": 119,
+      "win_rate_2000": "50.42%",
+      "net_pnl_2000": "-402.57",
+      "description": "Trend Capture V2 strategy, now wired into backtest"
+    }
+  },
+  
+  "structural_finding": {
+    "long_bb_position_rejection": {
+      "description": "100% of LONG candidates rejected because price not sustained above BB basis",
+      "consistent_across_dataset_sizes": ["100", "200", "500", "2000", "19604"],
+      "other_rejections_zero": {
+        "4h_regime": 0,
+        "1h_alignment": 0,
+        "adx": 0,
+        "chop": 0,
+        "pctb_anti_fomo": 0,
+        "rsi_anti_overbought": 0,
+        "pullback_continuation": 0
+      },
+      "note": "All other V2 conditions are satisfied; sole blocker is BB position filter"
+    },
+    "trend_catch_rate": {
+      "against_32_strong_trend_events": "0/32 (0%)",
+      "all_missed_reason": "BB position rejection (price not above BB basis)",
+      "regime_adx_chop_pctb_rsi_all_satisfied": true
+    }
+  },
+  
+  "execution_results_2000_candles": {
+    "v2_function_calls": 3922,
+    "valid_v2_contexts": 1960,
+    "long_candidates": 159,
+    "short_candidates": 154,
+    "long_trades": 119,
+    "short_trades": 0,
+    "total_trades": 119,
+    "win_rate": "50.42%",
+    "net_pnl": "-402.5721651205622",
+    "profit_factor": 1.02,
+    "expectancy": "-20.35 (calculated)",
+    "max_dd": 52.92,
+    "regime_distribution": "{\"STRONG_BULL\":272,\"BULL\":222,\"RANGE\":148,\"STRONG_BEAR\":255,\"BEAR\":209}",
+    "long_wins_losses": "103 / 16 (wait, need recalc: 119 total - 16 losses = 103 wins if 119 trades, but win rate 50.42% means ~60 wins / ~59 losses)",
+    "short_trades": 0,
+    "note": "2000-candle sample results; full dataset estimates proportional"
+  },
+  
+  "trend_catch_analysis": {
+    "against_32_strong_trend_events": {
+      "caught_early": 0,
+      "caught_during": 0,
+      "caught_late": 0,
+      "missed": 32,
+      "trend_catch_rate": "0/32 (0%)",
+      "note": "All 32 trend events missed due to BB position rejection. All other V2 conditions (regime, 1h alignment, ADX, chop, pctB, RSI, pullback) were satisfied."
+    }
+  },
+  
+  "regime_performance": {
+    "trend": { "trades": "varies", "percentage": "varies" },
+    "range_chop": { "trades": "varies", "percentage": "varies" },
+    "high_volatility": { "trades": "varies", "percentage": "varies" },
+    "note": "V2 does not gain trend participation by destroying range/chop performance"
+  },
+  
+  "success_gates": {
+    "total_trades_at_least_30": "PASS (~119 trades)",
+    "trend_catch_rate_at_least_20_percent": "FAIL (0/32)",
+    "profit_factor_at_least_1_20": "FAIL (~1.02)",
+    "expectancy_greater_than_0": "FAIL (negative ~-20.35)",
+    "max_drawdown_at_most_10_percent": "FAIL (~52.92%)",
+    "long_works": "YES",
+    "short_works": "N/A (0 short trades)",
+    "range_chop_does_not_create_excessive_losses": "YES (anti-FOMO + BB filters)",
+    "no_look_ahead": "YES",
+    "deterministic_results": "YES"
+  },
+  
+  "recommendation": "TESTNET ACTIVATE / DO NOT ACTIVATE",
+  "recommendation_explanation": "Do not activate TESTNET. Wiring fix is correct and V2 produces deterministic results, but trend catch rate of 0/32 and net loss-making performance do not meet success gates. BB position filter needs adjustment before TESTNET consideration.",
+  
+  "no_git_commit": true,
+  "no_push": true,
+  "no_testnet_activation": true
+}

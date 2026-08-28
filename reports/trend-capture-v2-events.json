@@ -1,0 +1,48 @@
+{
+  "description": "Trend capture v2 — individual event details and signal analysis",
+  "generated": "2026-08-24",
+  "period": "Feb 11 2026 - Aug 23 2026",
+  "candle_count": 19604,
+  "baseline_audit_reference": {
+    "strong_trends_identified": 32,
+    "baseline_catch_rate_original_audit": "0/32 (0%)",
+    "root_causes_identified": [
+      "data format mismatch (string prices -> NaN BB)",
+      "RSI 50.63 at trend starts (midpoint, no conviction)",
+      "no RSI crossover (87.5% of missed trends)",
+      "4h BEAR regime blocking LONG entries",
+      "BB touch impossible with RSI near 50 (close near BB middle band)"
+    ]
+  },
+  "trend_capture_signal_analysis": {
+    "method": "using detectTrendCaptureSignal function on 19,604 15m BTC/USDT candles",
+    "signal_generation_active": true,
+    "total_trends_analyzed": 32,
+    "trends_meeting_4h_regime_condition": "pending full analysis",
+    "trends_meeting_adx_condition": "pending full analysis",
+    "trends_meeting_bb_structure_condition": "pending full analysis",
+    "trends_meeting_rsi_condition": "pending full analysis",
+    "trends_meeting_anti_fomo": "pending full analysis",
+    "catch_rate_improvement": "from 0/32 baseline; number of additional caught trends depends on how many of the 32 trend starts meet all TREND_CAPTURE conditions",
+    "individual_event_analysis": "see reports/trend-events-6-month.json for original 32 event details"
+  },
+  "baseline_vs_trend_capture_signal_counts": {
+    "note": "Direct comparison pending full backtest integration; below are signal generation counts from preliminary analysis",
+    "baseline_signals_generated": 3978,
+    "trend_capture_signals_generated": "in progress (using detectTrendCaptureSignal on same 19,604 candles)",
+    "baseline_signals_at_trend_starts": "0 of 32 (original audit: 0/32 caught)",
+    "trend_capture_signals_at_trend_starts": "pending analysis — signals generated when regime, ADX, BB, RSI, and anti-FOMO conditions all met",
+    "catch_rate_comparison": "baseline: 0/32 -> trend capture: TBD/32 (pending backtest results)"
+  },
+  "signal_conditions_per_event": {
+    "description": "Each of the 32 strong trend events analyzed for TREND_CAPTURE condition satisfaction",
+    "format": "event_index: [regime_meet, adx_meet, bb_structure_meet, rsi_meet, anti_fomo_meet, conditions_met]",
+    "note": "Full per-event analysis to be completed as part of backtest integration and reported in final v2 report"
+  },
+  "key_findings_summary": {
+    "baseline_problem": "RSI + Bollinger strategy with current logic cannot catch strong trends (0/32); root causes: data format, RSI 50.63 at starts, no crossover, 4h regime",
+    "trend_capture_solution": "secondary entry path that: (a) does NOT require RSI crossover, (b) uses BB basis position + ADX + regime + pullback logic, (c) has anti-FOMO protection, (d) uses separate score threshold, (e) integrates through same safety pipeline",
+    "expected_impact": "trend catch rate should improve from 0/32; if conditions are met for several of the 32 trend starts, catch rate becomes meaningful; profit factor and win rate depend on trade quality of captured trends",
+    "next_steps": "run full backtest integration, analyze results, approve TESTNET activation if all 10 success criteria met"
+  }
+}

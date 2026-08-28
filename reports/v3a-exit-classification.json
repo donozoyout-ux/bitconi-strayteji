@@ -1,0 +1,62 @@
+{
+  "exitCountsRaw": {
+    "TIME_EXIT": 153,
+    "TRAILING_STOP": 1
+  },
+  "exitClassification": {
+    "STOP_LOSS": {
+      "count": 0,
+      "percentage": 0,
+      "winRate": 0,
+      "grossPnL": 0,
+      "netPnL": 0,
+      "avgTradePnL": 0,
+      "avgHoldCandles": 0
+    },
+    "TAKE_PROFIT": {
+      "count": 0,
+      "percentage": 0,
+      "winRate": 0,
+      "grossPnL": 0,
+      "netPnL": 0,
+      "avgTradePnL": 0,
+      "avgHoldCandles": 0
+    },
+    "TIME_EXIT": {
+      "count": 153,
+      "percentage": 99.35,
+      "winRate": 23.53,
+      "grossPnL": -449.36,
+      "netPnL": -449.36,
+      "avgTradePnL": -2.94,
+      "avgHoldCandles": -10.07
+    },
+    "OTHER": {
+      "count": 1,
+      "percentage": 0.65,
+      "winRate": 0,
+      "grossPnL": -27.18,
+      "netPnL": -27.18,
+      "avgTradePnL": -27.18,
+      "avgHoldCandles": 3
+    }
+  },
+  "categories": {
+    "STOP_TOO_TIGHT": 0,
+    "TP_TOO_EARLY": 0,
+    "TIME_EXIT_TOO_EARLY": 153,
+    "BAD_ENTRY": 0,
+    "LATE_ENTRY": 1,
+    "NORMAL_WIN": 0,
+    "NORMAL_LOSS": 0
+  },
+  "categoryPct": {
+    "STOP_TOO_TIGHT": 0,
+    "TP_TOO_EARLY": 0,
+    "TIME_EXIT_TOO_EARLY": 99.35,
+    "BAD_ENTRY": 0,
+    "LATE_ENTRY": 0.65,
+    "NORMAL_WIN": 0,
+    "NORMAL_LOSS": 0
+  }
+}

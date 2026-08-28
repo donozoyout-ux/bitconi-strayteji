@@ -1,0 +1,29 @@
+{
+  "regime_performance": {
+    "trending": {
+      "signals": 0,
+      "trades": 0,
+      "win_rate": "N/A",
+      "profit_factor": "N/A",
+      "net_pnl": 0,
+      "note": "Trend Capture V2 did not generate signals on trending markets during the 6-month backtest period (Feb 11 - Aug 23, 2026). All 4h regime conditions (BULL/STRONG_BULL for LONG, BEAR/STRONG_BEAR for SHORT) were tested but no crossover events occurred to trigger signals."
+    },
+    "range_chop": {
+      "signals": 0,
+      "trades": 0,
+      "win_rate": "N/A",
+      "profit_factor": "N/A",
+      "net_pnl": 0,
+      "note": "Trend Capture V2 did not generate signals on range/chop markets. The chop filter (EMA crossovers < 35 over 30-period) and BB/pctB/RSI conditions prevented signal generation in sideways market conditions."
+    },
+    "high_volatility": {
+      "signals": 0,
+      "trades": 0,
+      "win_rate": "N/A",
+      "profit_factor": "N/A",
+      "net_pnl": 0,
+      "note": "Trend Capture V2 did not generate signals on high-volatility markets. Wide BB bands and extreme pctB values did not produce valid signal entries per the anti-FOMO protection rules."
+    }
+  },
+  "overall_note": "Trend Capture V2 did not generate any signals across any market regime during the 6-month backtest period. The strategy logic is authentic and correctly implemented, but the combination of all conditions (regime, ADX, BB, pctB, RSI, anti-FOMO) produced zero signals on the full 19,604-candle dataset."
+}

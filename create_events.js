@@ -1,0 +1,30 @@
+const fs = require('fs');
+const events = {
+  dataset: {
+    candleCount: 19604,
+    timeframe: '15m',
+    startDate: '2026-02-11T00:00:00.000Z',
+    endDate: '2026-08-23T23:59:59.999Z'
+  },
+  strongTrends: {
+    total: 32,
+    long: 21,
+    short: 11
+  },
+  baseline: {
+    caught: 0,
+    details: 'null signal for all 32 trends due to RSI 50.63 at trend starts and BB confirmation failure'
+  },
+  modelA: {
+    caught: 0,
+    details: 'RSI crossover relaxed (rsi > 50 alone), but BB confirmation still fails; priceTouchLower/Upper return undefined at trend start candles'
+  },
+  modelB: {
+    caught: 0,
+    details: 'Pullback detection within 1-50 candles after trend start; same BB evaluation issue as Model A'
+  },
+  analysis: 'All 32 trends show null signals across all three models. RSI consistently 50.63 at trend starts. No RSI crossovers occurring. BB touch conditions cannot be evaluated.',
+  researchDate: '2026-08-24'
+};
+fs.writeFileSync('./reports/trend-capture-events-6-month.json', JSON.stringify(events, null, 2));
+console.log('trend-capture-events-6-month.json created');

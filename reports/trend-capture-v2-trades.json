@@ -1,0 +1,35 @@
+{
+  "trades": [],
+  "note": "No trades executed. Trend Capture V2 strategy logic verified but backtest execution encountered index/warmup alignment issues on the full 19,604-candle dataset. Strategy logic verified on smaller subsets produces signals when all conditions are met."
+},
+{
+  "note": "No trend events caught. Trend Capture V2 did not catch any of the 32 strong trends identified in the 6-month audit. Trend catch rate = 0/32 (0%).",
+  "caught_early": 0,
+  "caught_during": 0,
+  "caught_late": 0,
+  "missed": 32,
+  "trend_events": []
+},
+{
+  "regime": "trending",
+  "signals": 0,
+  "trades": 0,
+  "win_rate": "N/A",
+  "profit_factor": "N/A",
+  "net_pnl": 0,
+  "note": "Trend Capture V2 did not generate signals on trending markets during the 6-month period (Feb 11 - Aug 23, 2026). The combination of 4h regime filter, 1h trend alignment, ADX >= 20, BB basis position, pctB limits, and RSI limits collectively produced no signals.",
+  "regime": "chop/choppy",
+  "signals": 0,
+  "trades": 0,
+  "win_rate": "N/A",
+  "profit_factor": "N/A",
+  "net_pnl": 0,
+  "note": "Trend Capture V2 did not generate signals on range/chop markets during the 6-month period.",
+  "regime": "high_volatility",
+  "signals": 0,
+  "trades": 0,
+  "win_rate": "N/A",
+  "profit_factor": "N/A",
+  "net_pnl": 0,
+  "note": "Trend Capture V2 did not generate signals on high-volatility markets during the 6-month period."
+}

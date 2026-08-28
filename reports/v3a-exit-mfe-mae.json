@@ -1,0 +1,92 @@
+{
+  "EXIT-V0": {
+    "avgMFE": 0.36,
+    "captureRatio": -0.8,
+    "captureRatioWinners": 0.67
+  },
+  "EXIT-A10": {
+    "avgMFE": 0.48,
+    "captureRatio": -0.55,
+    "captureRatioWinners": 0.67
+  },
+  "EXIT-A20": {
+    "avgMFE": 0.68,
+    "captureRatio": -1.32,
+    "captureRatioWinners": 0.67
+  },
+  "EXIT-A40": {
+    "avgMFE": 0.85,
+    "captureRatio": -1.39,
+    "captureRatioWinners": 0.62
+  },
+  "EXIT-A80": {
+    "avgMFE": 1.23,
+    "captureRatio": -1.56,
+    "captureRatioWinners": 0.65
+  },
+  "EXIT-A96": {
+    "avgMFE": 1.35,
+    "captureRatio": -1.85,
+    "captureRatioWinners": 0.67
+  },
+  "EXIT-ANONE": {
+    "avgMFE": 3.36,
+    "captureRatio": -1.6,
+    "captureRatioWinners": 0.58
+  },
+  "EXIT-B1.5": {
+    "avgMFE": 1.68,
+    "captureRatio": -2.83,
+    "captureRatioWinners": 0.58
+  },
+  "EXIT-B2": {
+    "avgMFE": 1.8,
+    "captureRatio": -2.97,
+    "captureRatioWinners": 0.52
+  },
+  "EXIT-B2.5": {
+    "avgMFE": 2.17,
+    "captureRatio": -3,
+    "captureRatioWinners": 0.5
+  },
+  "EXIT-B3": {
+    "avgMFE": 2.4,
+    "captureRatio": -3.25,
+    "captureRatioWinners": 0.54
+  },
+  "EXIT-C2": {
+    "avgMFE": 1.72,
+    "captureRatio": -2.94,
+    "captureRatioWinners": 0.57
+  },
+  "EXIT-C2.5": {
+    "avgMFE": 1.9,
+    "captureRatio": -2.92,
+    "captureRatioWinners": 0.55
+  },
+  "EXIT-C3": {
+    "avgMFE": 2.03,
+    "captureRatio": -3.1,
+    "captureRatioWinners": 0.56
+  },
+  "EXIT-D2": {
+    "avgMFE": 1.72,
+    "captureRatio": -2.95,
+    "captureRatioWinners": 0.46
+  },
+  "EXIT-D2.5": {
+    "avgMFE": 2.12,
+    "captureRatio": -2.98,
+    "captureRatioWinners": 0.45
+  },
+  "EXIT-D3": {
+    "avgMFE": 2.4,
+    "captureRatio": -3.25,
+    "captureRatioWinners": 0.42
+  },
+  "EXIT-E": {
+    "avgMFE": 0.68,
+    "captureRatio": -0.78,
+    "captureRatioWinners": 0.59
+  }
+}

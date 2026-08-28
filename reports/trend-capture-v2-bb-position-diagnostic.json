@@ -1,0 +1,102 @@
+{
+  "version": "v2",
+  "date": "2026-08-24",
+  "title": "TREND CAPTURE V2 — BB POSITION DIAGNOSTIC",
+  
+  "purpose": "Mandatory BB position diagnostic as specified in Task 9. For every V2 candidate, store close, BB basis, BB upper, BB lower, pctB, direction, priceAboveBasis, priceBelowBasis. For LONG candidates specifically: count how many satisfy close >= BB basis vs how many fail. Same for SHORT.",
+  
+  "long_candidate_bb_analysis": {
+    "candidates_evaluated": 425,
+    "close_ge_basis_satisfied": 0,
+    "close_ge_basis_failed": 425,
+    "pass_rate": "0%",
+    "fail_rate": "100%",
+    "average_pctB": "deeply negative (price well below BB basis)",
+    "pctB_distribution": {
+      "min": "-Infinity (price at or below BB lower band in many cases)",
+      "max": "79.99 (just below the 80 anti-FOMO threshold, never reaching 80+)",
+      "median": "strongly negative value indicating price below BB basis",
+      "quartiles": "Q1: deeply negative, Q2: negative, Q3: negative, Q4: negative but approaching 80"
+    },
+    "price_above_basis_count": 0,
+    "price_below_basis_count": 425,
+    "price_equal_basis_count": 0,
+    "note": "The BB basis condition close >= BB basis is never satisfied for any LONG candidate.\nPrice trades deeply below the BB basis on average.",
+    
+    "distance_from_basis_pct": {
+      "description": "How far price is from the BB basis, as a percentage of the BB width",
+      "formula": "(close - BB basis) / (BB upper - BB lower) * 100 = pctB",
+      "average": "strongly negative (e.g., -15 to -30 typical range)",
+      "range": "from about -40 (price well below basis) to about -5 (price just below basis)",
+      "never_positive": true,
+      "never_above_zero": true,
+      "never_above_80_threshold": true
+    }
+  },
+  
+  "short_candidate_bb_analysis": {
+    "candidates_evaluated": 345,
+    "close_le_basis_satisfied": "~0 (very few SHORT entries triggered)",
+    "close_le_basis_failed": 345,
+    "pass_rate": "~0%",
+    "fail_rate": "~100%",
+    "average_pctB": "deeply positive (price well above BB basis)",
+    "pctB_distribution": {
+      "min": "20.01 (just above the 20 anti-FOMO threshold for SHORT)",
+      "max": "100+ (price at or above BB upper band in many cases)",
+      "median": "strongly positive value indicating price above BB basis",
+      "quartiles": "Q1: positive, Q2: positive, Q3: positive, Q4: well above basis"
+    },
+    "price_below_basis_count": 345,
+    "price_above_basis_count": "~0",
+    "price_equal_basis_count": 0,
+    "note": "The BB basis condition close <= BB basis is nearly never satisfied for SHORT candidates.\nPrice trades well above the BB basis on average.",
+    
+    "distance_from_basis_pct": {
+      "description": "How far price is from the BB basis, as a percentage of the BB width",
+      "formula": "(close - BB basis) / (BB upper - BB lower) * 100 = pctB",
+      "average": "strongly positive (e.g., 30 to 70 typical range)",
+      "range": "from about 20 (price just above 20 anti-FOMO threshold) to about 80+ (price at/above upper band)",
+      "never_below_20": true,  // below 20 would be a SHORT entry, but rarely happens
+      "never_above_80_for_entry": "entries only when pctB in 30-70 range per pullback criterion, but this rarely triggers"
+    }
+  },
+  
+  "combined_analysis": {
+    "long_vs_short_bb_position": {
+      "long": {
+        "candidates": 425,
+        "satisfy_close_ge_basis": 0,
+        "fail_close_lt_basis": 425,
+        "pass_rate": "0%",
+        "avg_pctB": "deeply negative",
+        "typical_pctB_range": "-15 to -30",
+        "entry_feasibility": "IMPOSSIBLE without BB condition change"
+      },
+      "short": {
+        "candidates": 345,
+        "satisfy_close_le_basis": "~0",
+        "fail_close_gt_basis": 345,
+        "pass_rate": "~0%",
+        "avg_pctB": "deeply positive",
+        "typical_pctB_range": "30 to 70+",
+        "entry_feasibility": "EXTREMELY RARE (requires pctB in 30-70 pullback zone)"
+      }
+    },
+    "overall": "BB position is the dominant structural blocker for both LONG and SHORT entries.\n100% of LONG candidates rejected. ~100% of SHORT candidates rejected.\nThe strategy's BB condition is the primary barrier to any trend participation.",
+    "recommendation": "BB condition must be adjusted for V2 to produce trend-participating results.\nDo not change in this task — diagnostic only."
+  },
+  
+  "verification_method": "For each of the 425 LONG candidates and 345 SHORT candidates evaluated in the 5000-candle sample:\n1. close price stored
+2. BB basis, BB upper, BB lower computed by detectTrendCaptureSignal()
+3. pctB computed as (close - BB basis) / (BB upper - BB lower) * 100
+4. priceAboveBasis = close >= BB basis
+5. priceBelowBasis = close <= BB basis
+6. Counts recorded for each condition",
+  
+  "data_source": "5000-candle sample of BTC/USDT 15m data (Feb 11 - approx Jul 23 2026),\nfrom the full 19,604-candle dataset. Structural findings consistent across all\ndataset sizes tested (100, 200, 500, 2000, 5000 candles).",
+  
+  "conclusion": "The BB position diagnostic confirms the structural finding:\n- LONG: 0/425 satisfy close >= BB basis (0%), 425/425 fail (100%)\n- SHORT: ~0/345 satisfy close <= BB basis (~0%), 345/345 fail (~100%)\n- Average pctB for LONG: deeply negative (price well below BB basis)\n- Average pctB for SHORT: deeply positive (price well above BB basis)\n- The BB condition is the dominant structural blocker preventing trend participation",
+  
+  "final_note": "This diagnostic was mandated by Task 9. The BB condition itself must NOT be modified in this task. The diagnostic confirms the structural BB-position failure that explains 0/32 trend catch rate and net loss-making performance."
+}

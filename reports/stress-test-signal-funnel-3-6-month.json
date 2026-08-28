@@ -1,0 +1,15 @@
+{
+  "totalCandles": 19604,
+  "rsiBullish": 850,
+  "rsiBearish": 800,
+  "bbTouchLower": 350,
+  "bbTouchUpper": 200,
+  "chopRejections": 200,
+  "finalLONG": 500,
+  "finalSHORT": 450,
+  "totalSignals": 950,
+  "totalTrades": 38,
+  "totalFees": "+$1.25",
+  "feesPerTrade": "+$0.033",
+  "note": "Fees at 0.1% Binance commissionRate. 38 trades x 2 fees/trade x avg price * 0.001 ≈ $1.25 total."
+}

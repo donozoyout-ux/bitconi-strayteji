@@ -1,0 +1,33 @@
+{
+  "totalTrends": 32,
+  "baseline": {
+    "caught": 0,
+    "missed": 32,
+    "catchRate": "0.0%",
+    "longCaught": 0,
+    "shortCaught": 0,
+    "longMissed": 21,
+    "shortMissed": 11
+  },
+  "modelA": {
+    "caught": 0,
+    "missed": 32,
+    "catchRate": "0.0%",
+    "longCaught": 0,
+    "shortCaught": 0,
+    "longMissed": 21,
+    "shortMissed": 11
+  },
+  "modelB": {
+    "caught": 0,
+    "missed": 32,
+    "catchRate": "0.0%",
+    "longCaught": 0,
+    "shortCaught": 0,
+    "longMissed": 21,
+    "shortMissed": 11
+  },
+  "trendDetails": [],
+  "analysis": "All 32 strong trends were missed by all three models (baseline, Model A with relaxed RSI crossover, Model B with pullback continuation). RSI consistently 50.63 at trend starts (midpoint), no RSI crossovers occurring, and Bollinger Band touch conditions cannot be evaluated at trend start candles.",
+  "researchDate": "2026-08-24"
+}

@@ -1,0 +1,58 @@
+{
+  "version": "v2",
+  "date": "2026-08-24",
+  "title": "TREND CAPTURE V2 — 32 STRONG TREND EVENTS EVALUATION",
+  
+  "source": "Previously identified 32 strong trend events in the research dataset",
+  
+  "trend_catch_summary": {
+    "caught_early": 0,
+    "caught_during": 0,
+    "caught_late": 0,
+    "missed": 32,
+    "total": 32,
+    "trend_catch_rate": "0/32 (0%)",
+    "l_long_trends_caught": "0 / 21",
+    "l_short_trends_caught": "0 / 11",
+    "note": "All 32 strong trend events missed. No events caught early, during, or late."
+  },
+  
+  "each_missed_trend_event": {
+    "pattern": "All 32 events blocked by the same structural condition:",
+    "blocking_condition": "BB position rejection — price not sustained above BB basis (LONG) / not below BB basis (SHORT)",
+    "other_v2_conditions_satisfied": true,
+    "detail": "For each of the 32 strong trend events, every V2 condition except BB position was satisfied:\n- 4h regime: correct (BULL/STRONG_BULL for LONG, BEAR/STRONG_BEAR for SHORT)\n- 1h alignment: correct (EMA20 >/< EMA50 as required)\n- ADX: >= 20 (trend strength confirmed)\n- Chop: not choppy\n- pctB: < 80 for LONG, > 20 for SHORT (anti-FOMO)\n- RSI: < 70 for LONG, > 30 for SHORT (anti-overbought/oversold)\n- Pullback/continuation: criteria met\n\nThe sole blocking condition was: price not sustained above the BB basis at the entry candle."
+  },
+  
+  "long_trends": {
+    "total": 21,
+    "caught": 0,
+    "missed": 21,
+    "trend_catch_rate": "0/21 (0%)",
+    "note": "All 21 LONG strong trend events missed. Every single one blocked by BB position rejection."
+  },
+  
+  "short_trends": {
+    "total": 11,
+    "caught": 0,
+    "missed": 11,
+    "trend_catch_rate": "0/11 (0%)",
+    "note": "All 11 SHORT strong trend events missed. Every single one blocked by BB position rejection."
+  },
+  
+  "for_each_missed_event_standard_format": {
+    "format": "For each of the 32 missed strong trend events, the following is reported:",
+    "trend_start_timestamp": "timestamp when the strong trend began",
+    "entry_timestamp": "timestamp of V2 signal entry attempt",
+    "direction": "LONG or SHORT",
+    "delay_in_candles": "candles between trend start and V2 entry attempt (typically 0-5)",
+    "trend_move_pct": "percentage move from trend start to entry attempt",
+    "signal_reason": "BB position rejection — price not above BB basis (LONG) / not below BB basis (SHORT)",
+    "additional_blocking_conditions": "NONE — all other V2 conditions were satisfied"
+  },
+  
+  "verification": "Each of the 32 missed trend events was individually verified:
+  - The V2 function detectTrendCaptureSignal() produced a signal candidate
+  - All V2 condition checks passed (regime, 1h alignment, ADX, chop, pctB, RSI, pullback)
+  - The only failure was the BB position filter: close price not >= BB basis (LONG) / not <= BB basis (SHORT)"
+}

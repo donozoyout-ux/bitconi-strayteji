@@ -1,0 +1,589 @@
+{
+  "trends": [
+    {
+      "startIdx": 1300,
+      "startPrice": "66342.62000000",
+      "endPrice": "66342.62000000",
+      "movePct": 0.0530857840706321,
+      "adx": 29.437743173311766,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1400,
+      "startPrice": "63201.35000000",
+      "endPrice": "66229.81000000",
+      "movePct": 0.047917647328735845,
+      "adx": 36.085666051003194,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1500,
+      "startPrice": "65842.02000000",
+      "endPrice": "69478.55000000",
+      "movePct": 0.05523114266542853,
+      "adx": 27.022296185284837,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1700,
+      "startPrice": "65880.01000000",
+      "endPrice": "65880.01000000",
+      "movePct": 0.04043715233194398,
+      "adx": 37.2712411909705,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1800,
+      "startPrice": "64832.40000000",
+      "endPrice": "68072.53000000",
+      "movePct": 0.04997701766400746,
+      "adx": 29.651707544072025,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1900,
+      "startPrice": "66828.52000000",
+      "endPrice": "69861.03000000",
+      "movePct": 0.0453774825478702,
+      "adx": 29.020149494632545,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2000,
+      "startPrice": "68844.77000000",
+      "endPrice": "68844.77000000",
+      "movePct": 0.034581711871504606,
+      "adx": 37.871161832790065,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2200,
+      "startPrice": "73707.15000000",
+      "endPrice": "73707.15000000",
+      "movePct": 0.0407387885707152,
+      "adx": 49.72127395551144,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2600,
+      "startPrice": "66121.73000000",
+      "endPrice": "69416.37000000",
+      "movePct": 0.04982688746952023,
+      "adx": 27.01157146974365,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2900,
+      "startPrice": "69459.70000000",
+      "endPrice": "71672.39000000",
+      "movePct": 0.03185573793149125,
+      "adx": 31.512848410982095,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3000,
+      "startPrice": "71152.37000000",
+      "endPrice": "73738.52000000",
+      "movePct": 0.03634664593744395,
+      "adx": 20.98833615743147,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3200,
+      "startPrice": "71643.82000000",
+      "endPrice": "74207.49000000",
+      "movePct": 0.03578354699679607,
+      "adx": 35.60328428873149,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3900,
+      "startPrice": "68610.00000000",
+      "endPrice": "71219.99000000",
+      "movePct": 0.03804095612884427,
+      "adx": 34.30597281983504,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 4300,
+      "startPrice": "68918.29000000",
+      "endPrice": "68918.29000000",
+      "movePct": 0.047688211648896056,
+      "adx": 42.50117533205047,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 5200,
+      "startPrice": "67086.71000000",
+      "endPrice": "69312.72000000",
+      "movePct": 0.03318108758053562,
+      "adx": 21.727597508262395,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 5400,
+      "startPrice": "68793.85000000",
+      "endPrice": "72753.27000000",
+      "movePct": 0.05755485410396421,
+      "adx": 25.005976816529795,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 6300,
+      "startPrice": "74664.66000000",
+      "endPrice": "76909.99000000",
+      "movePct": 0.03007219211873464,
+      "adx": 22.214052893053513,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10200,
+      "startPrice": "75764.00000000",
+      "endPrice": "75764.00000000",
+      "movePct": 0.03642363127606787,
+      "adx": 24.767017598996624,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10700,
+      "startPrice": "72756.73000000",
+      "endPrice": "72756.73000000",
+      "movePct": 0.04614872053760512,
+      "adx": 36.21007486164334,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10800,
+      "startPrice": "69490.01000000",
+      "endPrice": "69490.01000000",
+      "movePct": 0.053748733091274564,
+      "adx": 57.17694372446336,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11000,
+      "startPrice": "62237.98000000",
+      "endPrice": "64365.73000000",
+      "movePct": 0.03418732420300273,
+      "adx": 27.586809363687717,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11100,
+      "startPrice": "61974.89000000",
+      "endPrice": "61974.89000000",
+      "movePct": 0.041672361177244516,
+      "adx": 29.76338769295516,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11300,
+      "startPrice": "61996.49000000",
+      "endPrice": "64184.00000000",
+      "movePct": 0.035284416908118545,
+      "adx": 23.207131910303907,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11600,
+      "startPrice": "61747.47000000",
+      "endPrice": "63644.19000000",
+      "movePct": 0.030717371902039083,
+      "adx": 24.019787223555394,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 12000,
+      "startPrice": "65270.67000000",
+      "endPrice": "67292.14000000",
+      "movePct": 0.030970572234052467,
+      "adx": 42.4160936244587,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 13000,
+      "startPrice": "61916.25000000",
+      "endPrice": "61916.25000000",
+      "movePct": 0.058564270284456856,
+      "adx": 43.53537883147652,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 13600,
+      "startPrice": "59020.01000000",
+      "endPrice": "62081.60000000",
+      "movePct": 0.05187376281366263,
+      "adx": 25.43133834661134,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 14800,
+      "startPrice": "62494.11000000",
+      "endPrice": "65043.98000000",
+      "movePct": 0.04080176515834857,
+      "adx": 21.854369264506126,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 15400,
+      "startPrice": "64213.16000000",
+      "endPrice": "66307.72000000",
+      "movePct": 0.032618858813364696,
+      "adx": 31.44236002114172,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 16400,
+      "startPrice": "64949.65000000",
+      "endPrice": "64949.65000000",
+      "movePct": 0.03642282906836298,
+      "adx": 21.884972334333163,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 18300,
+      "startPrice": "64943.45000000",
+      "endPrice": "72154.01000000",
+      "movePct": 0.11102828691731034,
+      "adx": 43.01127974120867,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 18400,
+      "startPrice": "71672.93000000",
+      "endPrice": "79258.03000000",
+      "movePct": 0.10582935565770796,
+      "adx": 31.64703157169146,
+      "direction": "LONG",
+      "durationBars": 100
+    }
+  ],
+  "longTrends": [
+    {
+      "startIdx": 1400,
+      "startPrice": "63201.35000000",
+      "endPrice": "66229.81000000",
+      "movePct": 0.047917647328735845,
+      "adx": 36.085666051003194,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1500,
+      "startPrice": "65842.02000000",
+      "endPrice": "69478.55000000",
+      "movePct": 0.05523114266542853,
+      "adx": 27.022296185284837,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1800,
+      "startPrice": "64832.40000000",
+      "endPrice": "68072.53000000",
+      "movePct": 0.04997701766400746,
+      "adx": 29.651707544072025,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1900,
+      "startPrice": "66828.52000000",
+      "endPrice": "69861.03000000",
+      "movePct": 0.0453774825478702,
+      "adx": 29.020149494632545,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2600,
+      "startPrice": "66121.73000000",
+      "endPrice": "69416.37000000",
+      "movePct": 0.04982688746952023,
+      "adx": 27.01157146974365,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2900,
+      "startPrice": "69459.70000000",
+      "endPrice": "71672.39000000",
+      "movePct": 0.03185573793149125,
+      "adx": 31.512848410982095,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3000,
+      "startPrice": "71152.37000000",
+      "endPrice": "73738.52000000",
+      "movePct": 0.03634664593744395,
+      "adx": 20.98833615743147,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3200,
+      "startPrice": "71643.82000000",
+      "endPrice": "74207.49000000",
+      "movePct": 0.03578354699679607,
+      "adx": 35.60328428873149,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 3900,
+      "startPrice": "68610.00000000",
+      "endPrice": "71219.99000000",
+      "movePct": 0.03804095612884427,
+      "adx": 34.30597281983504,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 5200,
+      "startPrice": "67086.71000000",
+      "endPrice": "69312.72000000",
+      "movePct": 0.03318108758053562,
+      "adx": 21.727597508262395,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 5400,
+      "startPrice": "68793.85000000",
+      "endPrice": "72753.27000000",
+      "movePct": 0.05755485410396421,
+      "adx": 25.005976816529795,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 6300,
+      "startPrice": "74664.66000000",
+      "endPrice": "76909.99000000",
+      "movePct": 0.03007219211873464,
+      "adx": 22.214052893053513,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11000,
+      "startPrice": "62237.98000000",
+      "endPrice": "64365.73000000",
+      "movePct": 0.03418732420300273,
+      "adx": 27.586809363687717,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11300,
+      "startPrice": "61996.49000000",
+      "endPrice": "64184.00000000",
+      "movePct": 0.035284416908118545,
+      "adx": 23.207131910303907,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11600,
+      "startPrice": "61747.47000000",
+      "endPrice": "63644.19000000",
+      "movePct": 0.030717371902039083,
+      "adx": 24.019787223555394,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 12000,
+      "startPrice": "65270.67000000",
+      "endPrice": "67292.14000000",
+      "movePct": 0.030970572234052467,
+      "adx": 42.4160936244587,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 13600,
+      "startPrice": "59020.01000000",
+      "endPrice": "62081.60000000",
+      "movePct": 0.05187376281366263,
+      "adx": 25.43133834661134,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 14800,
+      "startPrice": "62494.11000000",
+      "endPrice": "65043.98000000",
+      "movePct": 0.04080176515834857,
+      "adx": 21.854369264506126,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 15400,
+      "startPrice": "64213.16000000",
+      "endPrice": "66307.72000000",
+      "movePct": 0.032618858813364696,
+      "adx": 31.44236002114172,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 18300,
+      "startPrice": "64943.45000000",
+      "endPrice": "72154.01000000",
+      "movePct": 0.11102828691731034,
+      "adx": 43.01127974120867,
+      "direction": "LONG",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 18400,
+      "startPrice": "71672.93000000",
+      "endPrice": "79258.03000000",
+      "movePct": 0.10582935565770796,
+      "adx": 31.64703157169146,
+      "direction": "LONG",
+      "durationBars": 100
+    }
+  ],
+  "shortTrends": [
+    {
+      "startIdx": 1300,
+      "startPrice": "66342.62000000",
+      "endPrice": "66342.62000000",
+      "movePct": 0.0530857840706321,
+      "adx": 29.437743173311766,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 1700,
+      "startPrice": "65880.01000000",
+      "endPrice": "65880.01000000",
+      "movePct": 0.04043715233194398,
+      "adx": 37.2712411909705,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2000,
+      "startPrice": "68844.77000000",
+      "endPrice": "68844.77000000",
+      "movePct": 0.034581711871504606,
+      "adx": 37.871161832790065,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 2200,
+      "startPrice": "73707.15000000",
+      "endPrice": "73707.15000000",
+      "movePct": 0.0407387885707152,
+      "adx": 49.72127395551144,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 4300,
+      "startPrice": "68918.29000000",
+      "endPrice": "68918.29000000",
+      "movePct": 0.047688211648896056,
+      "adx": 42.50117533205047,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10200,
+      "startPrice": "75764.00000000",
+      "endPrice": "75764.00000000",
+      "movePct": 0.03642363127606787,
+      "adx": 24.767017598996624,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10700,
+      "startPrice": "72756.73000000",
+      "endPrice": "72756.73000000",
+      "movePct": 0.04614872053760512,
+      "adx": 36.21007486164334,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 10800,
+      "startPrice": "69490.01000000",
+      "endPrice": "69490.01000000",
+      "movePct": 0.053748733091274564,
+      "adx": 57.17694372446336,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 11100,
+      "startPrice": "61974.89000000",
+      "endPrice": "61974.89000000",
+      "movePct": 0.041672361177244516,
+      "adx": 29.76338769295516,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 13000,
+      "startPrice": "61916.25000000",
+      "endPrice": "61916.25000000",
+      "movePct": 0.058564270284456856,
+      "adx": 43.53537883147652,
+      "direction": "SHORT",
+      "durationBars": 100
+    },
+    {
+      "startIdx": 16400,
+      "startPrice": "64949.65000000",
+      "endPrice": "64949.65000000",
+      "movePct": 0.03642282906836298,
+      "adx": 21.884972334333163,
+      "direction": "SHORT",
+      "durationBars": 100
+    }
+  ],
+  "datasetInfo": {
+    "candleCount": 18699,
+    "startDate": "2026-02-09T21:30:00.000Z",
+    "endDate": "2026-08-23T16:00:00.000Z"
+  }
+}

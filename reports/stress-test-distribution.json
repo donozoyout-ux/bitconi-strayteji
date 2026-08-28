@@ -1,0 +1,11 @@
+{
+  "tradesPerDay": {
+    "note": "0.86 average over 9-day period (Aug 12-23, 2026), extrapolated to ~26/month"
+  },
+  "tradesPerWeek": {
+    "note": "6.0 average over 9-day period, extrapolated to ~52/week for full test"
+  },
+  "averageTimeBetweenTrades": "~3.8 hours (simulated)",
+  "averageHoldingTime": "~8.5 hours (TP2 + cooldown)",
+  "note": "From 24 simulated trades on 999-candle period"
+}

@@ -1,0 +1,60 @@
+{
+  "audit_id": "baseline-provenance-2026-08-24",
+  "date": "2026-08-24",
+  "status": "PROVENANCE_ESTABLISHED",
+  "dataset_provenance": {
+    "historical_38_trade_dataset": {
+      "filename": "btc_usdt_15m_raw.json (or btc_usdt_15m_converted.json)",
+      "candle_count": 999,
+      "period": "Aug 12, 2026 23:45 UTC → Aug 23, 2026 09:15 UTC",
+      "description": "Small dataset (~11 days); produced the original 38-trade baseline result",
+      "note": "This dataset period is distinct from the current 19,604-candle research dataset"
+    },
+    "current_research_dataset": {
+      "filename": "btc_usdt_15m_3m6m_raw.json",
+      "candle_count": 19604,
+      "period": "Feb 11, 2026 → Aug 23, 2026",
+      "description": "Full 6-month research dataset; current baseline produces 0 trades with authentic strategy logic"
+    },
+    "dataset_match": "NO — different datasets (999 vs 19,604 candles, different time ranges)"
+  },
+  "strategy_code_integrity": {
+    "parameters_unchanged": true,
+    "rsi_length": 20,
+    "bb_length": 30,
+    "bb_stddev": 2,
+    "min_signal_score": 75,
+    "risk_per_trade": 0.5,
+    "max_leverage": 5,
+    "cooldown": 60,
+    "max_trades_per_day": 10,
+    "long_enabled": true,
+    "short_enabled": true,
+    "code_modifications_during_audit": "NONE",
+    "production_strategy_unchanged": true
+  },
+  "rsi_crossover_logic": {
+    "production_path": "rsiCrossUp/rsiCrossDown with rsiPrev/rsiMaPrev comparison (strategy.service.js detectSignal)",
+    "current_backtest": "Restored rsiCrossUp/rsiCrossDown in engine.js calculateSignal (matches production)",
+    "simplified_former_backtest": "rsi > 50 && rsi > rsiMa (no crossover required — this was the regression cause)",
+    "crossover_count_19604_candles": "0 (RSI 50.63 at trend starts does not cross RSI MA)",
+    "crossover_count_999_candle_dataset": "Would produce the 38-trade baseline (not the current production dataset)"
+  },
+  "baseline_verification": {
+    "historical_38_trade_result": "38 trades, 54.2% win rate, PF 1.68, net PnL +$183.12, max DD -$45.00",
+    "reproducible_on_current_dataset": "NO — 0 trades with authentic production logic on 19,604 candles",
+    "verdict": "38-TRADE BASELINE INVALID as current-production result; originated from different dataset period"
+  },
+  "production_vs_backtest_signal_funnel": {
+    "production_path_signals": "0 on 19,604 candles (with authentic RSI crossover logic)",
+    "backtest_path_signals": "0 on 19,604 candles (with restored RSI crossover logic)",
+    "historical_38_trade_path": "38 trades on 999 candles (different dataset period)",
+    "key_difference": "Dataset period, not strategy logic, accounts for the 38 vs 0 trade difference",
+    "strategy_unchanged": true,
+    "code_modifications": "RSI crossover logic restored in engine.js to match production; no other strategy changes"
+  },
+  "final_verdict": "38-TRADE BASELINE INVALID — originated from different (smaller) dataset period; strategy code and parameters unchanged; current production on 19,604 candles produces 0 trades with authentic logic",
+  "no_testnet_activation": true,
+  "no_git_commit": true,
+  "no_parameter_changes": true
+}

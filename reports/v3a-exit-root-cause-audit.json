@@ -1,0 +1,1220 @@
+{
+  "generated": "2026-08-27T21:47:20.973Z",
+  "scope": "V3-A exit root cause audit (analysis only; no code/param changes)",
+  "dataset": "BTC/USDT 15m, 19604 candles, 2026-02-11 to 2026-08-23",
+  "tradeCount": 154,
+  "actualExitMechanics": {
+    "STOP_LOSS": "fixed 2.5%",
+    "TP1": "+5% target, 50% partial",
+    "TP2": "+7.5% target, remaining 50%",
+    "TRAILING_STOP": "highestSinceEntry - 2.5*ATR (LONG) [dynamic]",
+    "TIME_EXIT": "force close after 5 candles held"
+  },
+  "exitCountsRaw": {
+    "TIME_EXIT": 153,
+    "TRAILING_STOP": 1
+  },
+  "exitClassification": {
+    "STOP_LOSS": {
+      "count": 0,
+      "percentage": 0,
+      "winRate": 0,
+      "grossPnL": 0,
+      "netPnL": 0,
+      "avgTradePnL": 0,
+      "avgHoldCandles": 0
+    },
+    "TAKE_PROFIT": {
+      "count": 0,
+      "percentage": 0,
+      "winRate": 0,
+      "grossPnL": 0,
+      "netPnL": 0,
+      "avgTradePnL": 0,
+      "avgHoldCandles": 0
+    },
+    "TIME_EXIT": {
+      "count": 153,
+      "percentage": 99.35,
+      "winRate": 23.53,
+      "grossPnL": -449.36,
+      "netPnL": -449.36,
+      "avgTradePnL": -2.94,
+      "avgHoldCandles": -10.07
+    },
+    "OTHER": {
+      "count": 1,
+      "percentage": 0.65,
+      "winRate": 0,
+      "grossPnL": -27.18,
+      "netPnL": -27.18,
+      "avgTradePnL": -27.18,
+      "avgHoldCandles": 3
+    }
+  },
+  "mfeDistribution": {
+    "0-1%": 146,
+    "1-2%": 5,
+    "2-3%": 2,
+    "3-5%": 1,
+    "5-8%": 0,
+    "8%+": 0
+  },
+  "maeDistribution": {
+    "0-1%": 145,
+    "1-2%": 9,
+    "2-2.5%": 0,
+    "2.5-4%": 0,
+    "4%+": 0
+  },
+  "stopRecovery": {
+    "count": 1,
+    "recoveredAny40": 1,
+    "recoveredAny40Pct": 100,
+    "recoveredMaterial40": 0,
+    "recoveredMaterial40Pct": 0,
+    "avgLaterFavMove": 0.61,
+    "medianLaterFavMove": 0.61,
+    "maxLaterFavMove": 0.61
+  },
+  "tpContinuation": {
+    "count": 0,
+    "add1": 0,
+    "add2": 0,
+    "add3": 0,
+    "add5": 0,
+    "add8": 0,
+    "avgExtra": null,
+    "medianExtra": 0,
+    "maxExtra": null
+  },
+  "winnerShape": {
+    "count": 36,
+    "avgMFE": 0.86,
+    "avgMAE": 0.25,
+    "avgHoldCandles": 3,
+    "avgEntryToMFE": 2.53
+  },
+  "loserShape": {
+    "count": 118,
+    "avgMFE": 0.24,
+    "avgMAE": 0.36,
+    "avgHoldCandles": -13.94,
+    "avgEntryToMFE": 1.29
+  },
+  "losersWithMFEAbove": {
+    "above0": 116,
+    "above1": 1,
+    "above2": 0
+  },
+  "stopATRbuckets": {
+    "<1 ATR": 0,
+    "1-2 ATR": 0,
+    "2-3 ATR": 0,
+    "3+ ATR": 1
+  },
+  "tpRmultiples": {
+    "1R": 0,
+    "1.5R": 0,
+    "2R": 0,
+    "3R": 0
+  },
+  "timingSummary": {
+    "EARLY": {
+      "trades": 0
+    },
+    "NORMAL": {
+      "trades": 2,
+      "winRate": 50,
+      "PF": 1.96,
+      "netPnL": 3.11,
+      "avgMFE": 0.33,
+      "avgMAE": 0.07,
+      "slPct": 0,
+      "tpPct": 0
+    },
+    "LATE": {
+      "trades": 107,
+      "winRate": 20.56,
+      "PF": 0.3,
+      "netPnL": -377.99,
+      "avgMFE": 0.36,
+      "avgMAE": 0.35,
+      "slPct": 0.93,
+      "tpPct": 0
+    },
+    "NO_EVENT": {
+      "trades": 45,
+      "winRate": 28.89,
+      "PF": 0.51,
+      "netPnL": -101.67,
+      "avgMFE": 0.44,
+      "avgMAE": 0.33,
+      "slPct": 0,
+      "tpPct": 0
+    }
+  },
+  "longStats": {
+    "trades": 81,
+    "winRate": 22.22,
+    "PF": 0.29,
+    "netPnL": -284.9,
+    "avgMFE": 0.36,
+    "avgMAE": 0.34,
+    "slPct": 1.23,
+    "tpPct": 0,
+    "stoppedThenRecoveredPct": 1.23,
+    "tpThenContinuedPct": 0
+  },
+  "shortStats": {
+    "trades": 73,
+    "winRate": 24.66,
+    "PF": 0.46,
+    "netPnL": -191.64,
+    "avgMFE": 0.41,
+    "avgMAE": 0.34,
+    "slPct": 0,
+    "tpPct": 0,
+    "stoppedThenRecoveredPct": 0,
+    "tpThenContinuedPct": 0
+  },
+  "regimeSummary": {
+    "trend": {
+      "trades": 153,
+      "winRate": 23.53,
+      "PF": 0.37,
+      "netPnL": -474.42,
+      "avgMFE": 0.38,
+      "avgMAE": 0.34
+    },
+    "range_chop": {
+      "trades": 1,
+      "winRate": 0,
+      "PF": 0,
+      "netPnL": -2.13,
+      "avgMFE": 0,
+      "avgMAE": 0
+    },
+    "high_vol": {
+      "trades": 0
+    }
+  },
+  "trendEventRelationship": {
+    "totalTrades": 154,
+    "tradesAssociatedWithEvent": 109,
+    "early": 0,
+    "during": 2,
+    "late": 107,
+    "exitedBeforeTrendEnd": 65,
+    "heldUntilLateTrend": 44,
+    "exits": [
+      {
+        "tradeId": 12,
+        "eventId": 9,
+        "entryTime": "2026-03-03T20:30:00.000Z",
+        "exitTime": "2026-03-03T19:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 13,
+        "eventId": 9,
+        "entryTime": "2026-03-03T19:30:00.000Z",
+        "exitTime": "2026-03-03T18:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 14,
+        "eventId": 9,
+        "entryTime": "2026-03-02T02:30:00.000Z",
+        "exitTime": "2026-03-02T01:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 15,
+        "eventId": 9,
+        "entryTime": "2026-02-27T17:30:00.000Z",
+        "exitTime": "2026-02-27T16:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 16,
+        "eventId": 9,
+        "entryTime": "2026-02-27T16:15:00.000Z",
+        "exitTime": "2026-02-27T15:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 17,
+        "eventId": 9,
+        "entryTime": "2026-02-25T17:15:00.000Z",
+        "exitTime": "2026-02-25T16:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 18,
+        "eventId": 9,
+        "entryTime": "2026-02-24T07:45:00.000Z",
+        "exitTime": "2026-02-24T07:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 19,
+        "eventId": 9,
+        "entryTime": "2026-02-24T06:30:00.000Z",
+        "exitTime": "2026-02-24T05:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 20,
+        "eventId": 9,
+        "entryTime": "2026-02-22T17:00:00.000Z",
+        "exitTime": "2026-02-22T16:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 24,
+        "eventId": 9,
+        "entryTime": "2026-03-11T16:15:00.000Z",
+        "exitTime": "2026-03-11T15:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 25,
+        "eventId": 9,
+        "entryTime": "2026-03-11T14:30:00.000Z",
+        "exitTime": "2026-03-11T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 26,
+        "eventId": 9,
+        "entryTime": "2026-03-10T13:00:00.000Z",
+        "exitTime": "2026-03-10T12:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 27,
+        "eventId": 9,
+        "entryTime": "2026-03-09T05:00:00.000Z",
+        "exitTime": "2026-03-09T04:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 28,
+        "eventId": 9,
+        "entryTime": "2026-03-06T04:30:00.000Z",
+        "exitTime": "2026-03-06T03:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 29,
+        "eventId": 9,
+        "entryTime": "2026-03-06T00:30:00.000Z",
+        "exitTime": "2026-03-05T23:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-03-13T15:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 34,
+        "eventId": 12,
+        "entryTime": "2026-04-04T10:30:00.000Z",
+        "exitTime": "2026-04-04T09:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 35,
+        "eventId": 12,
+        "entryTime": "2026-04-03T20:30:00.000Z",
+        "exitTime": "2026-04-03T19:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 36,
+        "eventId": 12,
+        "entryTime": "2026-04-03T19:15:00.000Z",
+        "exitTime": "2026-04-03T18:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 37,
+        "eventId": 12,
+        "entryTime": "2026-04-03T17:45:00.000Z",
+        "exitTime": "2026-04-03T17:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 38,
+        "eventId": 12,
+        "entryTime": "2026-04-03T10:45:00.000Z",
+        "exitTime": "2026-04-03T10:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 39,
+        "eventId": 12,
+        "entryTime": "2026-04-03T06:45:00.000Z",
+        "exitTime": "2026-04-03T06:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 40,
+        "eventId": 12,
+        "entryTime": "2026-04-02T08:45:00.000Z",
+        "exitTime": "2026-04-02T08:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 41,
+        "eventId": 12,
+        "entryTime": "2026-04-01T18:15:00.000Z",
+        "exitTime": "2026-04-01T17:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 42,
+        "eventId": 12,
+        "entryTime": "2026-04-01T14:00:00.000Z",
+        "exitTime": "2026-04-01T13:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 43,
+        "eventId": 12,
+        "entryTime": "2026-04-01T13:00:00.000Z",
+        "exitTime": "2026-04-01T12:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 44,
+        "eventId": 12,
+        "entryTime": "2026-03-30T08:30:00.000Z",
+        "exitTime": "2026-03-30T07:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 45,
+        "eventId": 12,
+        "entryTime": "2026-03-29T21:15:00.000Z",
+        "exitTime": "2026-03-29T20:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 46,
+        "eventId": 12,
+        "entryTime": "2026-03-27T23:00:00.000Z",
+        "exitTime": "2026-03-27T22:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 47,
+        "eventId": 12,
+        "entryTime": "2026-03-27T16:30:00.000Z",
+        "exitTime": "2026-03-27T15:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 48,
+        "eventId": 12,
+        "entryTime": "2026-03-26T23:45:00.000Z",
+        "exitTime": "2026-03-26T23:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 49,
+        "eventId": 12,
+        "entryTime": "2026-03-26T22:45:00.000Z",
+        "exitTime": "2026-03-26T22:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 50,
+        "eventId": 12,
+        "entryTime": "2026-03-26T17:15:00.000Z",
+        "exitTime": "2026-03-26T16:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 51,
+        "eventId": 12,
+        "entryTime": "2026-04-13T05:15:00.000Z",
+        "exitTime": "2026-04-13T04:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 52,
+        "eventId": 12,
+        "entryTime": "2026-04-12T13:45:00.000Z",
+        "exitTime": "2026-04-12T13:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 53,
+        "eventId": 12,
+        "entryTime": "2026-04-12T12:45:00.000Z",
+        "exitTime": "2026-04-12T12:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 54,
+        "eventId": 12,
+        "entryTime": "2026-04-12T01:15:00.000Z",
+        "exitTime": "2026-04-12T00:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 55,
+        "eventId": 12,
+        "entryTime": "2026-04-10T04:00:00.000Z",
+        "exitTime": "2026-04-10T03:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 56,
+        "eventId": 12,
+        "entryTime": "2026-04-10T00:15:00.000Z",
+        "exitTime": "2026-04-09T23:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 57,
+        "eventId": 12,
+        "entryTime": "2026-04-07T12:30:00.000Z",
+        "exitTime": "2026-04-07T11:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 58,
+        "eventId": 12,
+        "entryTime": "2026-04-07T10:30:00.000Z",
+        "exitTime": "2026-04-07T09:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 59,
+        "eventId": 12,
+        "entryTime": "2026-04-04T19:30:00.000Z",
+        "exitTime": "2026-04-04T18:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 60,
+        "eventId": 12,
+        "entryTime": "2026-04-04T18:00:00.000Z",
+        "exitTime": "2026-04-04T17:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-04-14T18:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 61,
+        "eventId": 15,
+        "entryTime": "2026-04-21T17:00:00.000Z",
+        "exitTime": "2026-04-21T16:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 62,
+        "eventId": 15,
+        "entryTime": "2026-04-19T06:30:00.000Z",
+        "exitTime": "2026-04-19T05:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 63,
+        "eventId": 15,
+        "entryTime": "2026-04-18T00:00:00.000Z",
+        "exitTime": "2026-04-17T23:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 64,
+        "eventId": 15,
+        "entryTime": "2026-04-17T22:45:00.000Z",
+        "exitTime": "2026-04-17T22:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 66,
+        "eventId": 15,
+        "entryTime": "2026-05-05T05:45:00.000Z",
+        "exitTime": "2026-05-05T05:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 67,
+        "eventId": 15,
+        "entryTime": "2026-05-05T04:30:00.000Z",
+        "exitTime": "2026-05-05T03:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 68,
+        "eventId": 15,
+        "entryTime": "2026-05-05T03:30:00.000Z",
+        "exitTime": "2026-05-05T02:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 69,
+        "eventId": 15,
+        "entryTime": "2026-05-04T16:15:00.000Z",
+        "exitTime": "2026-05-04T15:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 70,
+        "eventId": 15,
+        "entryTime": "2026-05-02T15:30:00.000Z",
+        "exitTime": "2026-05-02T14:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 71,
+        "eventId": 15,
+        "entryTime": "2026-04-30T18:45:00.000Z",
+        "exitTime": "2026-04-30T18:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 72,
+        "eventId": 15,
+        "entryTime": "2026-04-30T14:30:00.000Z",
+        "exitTime": "2026-04-30T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 73,
+        "eventId": 15,
+        "entryTime": "2026-04-28T02:30:00.000Z",
+        "exitTime": "2026-04-28T01:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 74,
+        "eventId": 15,
+        "entryTime": "2026-04-25T15:30:00.000Z",
+        "exitTime": "2026-04-25T14:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-05T11:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 75,
+        "eventId": 16,
+        "entryTime": "2026-05-15T14:45:00.000Z",
+        "exitTime": "2026-05-15T14:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 76,
+        "eventId": 16,
+        "entryTime": "2026-05-15T13:45:00.000Z",
+        "exitTime": "2026-05-15T13:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 77,
+        "eventId": 16,
+        "entryTime": "2026-05-14T07:30:00.000Z",
+        "exitTime": "2026-05-14T06:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 78,
+        "eventId": 16,
+        "entryTime": "2026-05-14T05:00:00.000Z",
+        "exitTime": "2026-05-14T04:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 79,
+        "eventId": 16,
+        "entryTime": "2026-05-14T01:45:00.000Z",
+        "exitTime": "2026-05-14T01:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 80,
+        "eventId": 16,
+        "entryTime": "2026-05-14T00:00:00.000Z",
+        "exitTime": "2026-05-13T23:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 81,
+        "eventId": 16,
+        "entryTime": "2026-05-13T21:00:00.000Z",
+        "exitTime": "2026-05-13T20:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 82,
+        "eventId": 16,
+        "entryTime": "2026-05-13T02:00:00.000Z",
+        "exitTime": "2026-05-13T01:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 83,
+        "eventId": 16,
+        "entryTime": "2026-05-12T14:30:00.000Z",
+        "exitTime": "2026-05-12T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 84,
+        "eventId": 16,
+        "entryTime": "2026-05-11T05:45:00.000Z",
+        "exitTime": "2026-05-11T05:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 85,
+        "eventId": 16,
+        "entryTime": "2026-05-11T04:45:00.000Z",
+        "exitTime": "2026-05-11T04:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 86,
+        "eventId": 16,
+        "entryTime": "2026-05-10T19:30:00.000Z",
+        "exitTime": "2026-05-10T18:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 87,
+        "eventId": 16,
+        "entryTime": "2026-05-09T01:30:00.000Z",
+        "exitTime": "2026-05-09T00:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 88,
+        "eventId": 16,
+        "entryTime": "2026-05-07T16:00:00.000Z",
+        "exitTime": "2026-05-07T15:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 89,
+        "eventId": 16,
+        "entryTime": "2026-05-26T01:15:00.000Z",
+        "exitTime": "2026-05-26T00:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 90,
+        "eventId": 16,
+        "entryTime": "2026-05-23T00:00:00.000Z",
+        "exitTime": "2026-05-22T23:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 91,
+        "eventId": 16,
+        "entryTime": "2026-05-21T23:30:00.000Z",
+        "exitTime": "2026-05-21T22:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 92,
+        "eventId": 16,
+        "entryTime": "2026-05-18T10:15:00.000Z",
+        "exitTime": "2026-05-18T09:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-05-26T01:15:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 93,
+        "eventId": 20,
+        "entryTime": "2026-06-03T09:00:00.000Z",
+        "exitTime": "2026-06-03T08:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 94,
+        "eventId": 20,
+        "entryTime": "2026-06-03T04:45:00.000Z",
+        "exitTime": "2026-06-03T04:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 95,
+        "eventId": 20,
+        "entryTime": "2026-06-02T01:30:00.000Z",
+        "exitTime": "2026-06-02T00:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 96,
+        "eventId": 20,
+        "entryTime": "2026-06-01T01:15:00.000Z",
+        "exitTime": "2026-06-01T00:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 97,
+        "eventId": 20,
+        "entryTime": "2026-05-27T17:30:00.000Z",
+        "exitTime": "2026-05-27T16:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 98,
+        "eventId": 20,
+        "entryTime": "2026-06-15T15:00:00.000Z",
+        "exitTime": "2026-06-15T14:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 99,
+        "eventId": 20,
+        "entryTime": "2026-06-15T12:45:00.000Z",
+        "exitTime": "2026-06-15T12:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 100,
+        "eventId": 20,
+        "entryTime": "2026-06-13T01:00:00.000Z",
+        "exitTime": "2026-06-13T00:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-06-16T06:45:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 101,
+        "eventId": 22,
+        "entryTime": "2026-06-25T05:00:00.000Z",
+        "exitTime": "2026-06-25T04:15:00.000Z",
+        "exitReason": "TRAILING_STOP",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 102,
+        "eventId": 22,
+        "entryTime": "2026-06-24T15:30:00.000Z",
+        "exitTime": "2026-06-24T14:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 103,
+        "eventId": 22,
+        "entryTime": "2026-06-24T03:30:00.000Z",
+        "exitTime": "2026-06-24T02:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 104,
+        "eventId": 22,
+        "entryTime": "2026-06-24T02:00:00.000Z",
+        "exitTime": "2026-06-24T01:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 105,
+        "eventId": 22,
+        "entryTime": "2026-06-20T16:15:00.000Z",
+        "exitTime": "2026-06-20T15:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 106,
+        "eventId": 22,
+        "entryTime": "2026-06-20T14:30:00.000Z",
+        "exitTime": "2026-06-20T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 107,
+        "eventId": 22,
+        "entryTime": "2026-06-18T03:30:00.000Z",
+        "exitTime": "2026-06-18T02:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 108,
+        "eventId": 22,
+        "entryTime": "2026-06-17T19:00:00.000Z",
+        "exitTime": "2026-06-17T18:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 109,
+        "eventId": 22,
+        "entryTime": "2026-06-17T14:00:00.000Z",
+        "exitTime": "2026-06-17T13:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 110,
+        "eventId": 22,
+        "entryTime": "2026-06-17T00:45:00.000Z",
+        "exitTime": "2026-06-17T00:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 111,
+        "eventId": 22,
+        "entryTime": "2026-07-02T03:00:00.000Z",
+        "exitTime": "2026-07-02T02:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 112,
+        "eventId": 22,
+        "entryTime": "2026-07-01T20:30:00.000Z",
+        "exitTime": "2026-07-01T19:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 113,
+        "eventId": 22,
+        "entryTime": "2026-06-30T20:15:00.000Z",
+        "exitTime": "2026-06-30T19:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 114,
+        "eventId": 22,
+        "entryTime": "2026-06-29T18:30:00.000Z",
+        "exitTime": "2026-06-29T17:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 115,
+        "eventId": 22,
+        "entryTime": "2026-06-29T12:30:00.000Z",
+        "exitTime": "2026-06-29T11:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-06T06:00:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 116,
+        "eventId": 23,
+        "entryTime": "2026-07-16T17:15:00.000Z",
+        "exitTime": "2026-07-16T16:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 117,
+        "eventId": 23,
+        "entryTime": "2026-07-14T04:15:00.000Z",
+        "exitTime": "2026-07-14T03:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 118,
+        "eventId": 23,
+        "entryTime": "2026-07-13T19:15:00.000Z",
+        "exitTime": "2026-07-13T18:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 119,
+        "eventId": 23,
+        "entryTime": "2026-07-13T03:00:00.000Z",
+        "exitTime": "2026-07-13T02:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 120,
+        "eventId": 23,
+        "entryTime": "2026-07-10T16:15:00.000Z",
+        "exitTime": "2026-07-10T15:30:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 121,
+        "eventId": 23,
+        "entryTime": "2026-07-10T14:30:00.000Z",
+        "exitTime": "2026-07-10T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 122,
+        "eventId": 23,
+        "entryTime": "2026-07-09T19:00:00.000Z",
+        "exitTime": "2026-07-09T18:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-07-16T17:30:00.000Z",
+        "exitedBeforeTrendEnd": false
+      },
+      {
+        "tradeId": 148,
+        "eventId": 26,
+        "entryTime": "2026-08-23T04:30:00.000Z",
+        "exitTime": "2026-08-23T03:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 149,
+        "eventId": 26,
+        "entryTime": "2026-08-21T14:30:00.000Z",
+        "exitTime": "2026-08-21T13:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 150,
+        "eventId": 26,
+        "entryTime": "2026-08-21T13:00:00.000Z",
+        "exitTime": "2026-08-21T12:15:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 151,
+        "eventId": 26,
+        "entryTime": "2026-08-19T23:30:00.000Z",
+        "exitTime": "2026-08-19T22:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 152,
+        "eventId": 26,
+        "entryTime": "2026-08-19T15:45:00.000Z",
+        "exitTime": "2026-08-19T15:00:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      },
+      {
+        "tradeId": 153,
+        "eventId": 26,
+        "entryTime": "2026-08-19T04:30:00.000Z",
+        "exitTime": "2026-08-19T03:45:00.000Z",
+        "exitReason": "TIME_EXIT",
+        "trendEndTime": "2026-08-23T16:30:00.000Z",
+        "exitedBeforeTrendEnd": true
+      }
+    ]
+  },
+  "exitFailureCategories": {
+    "STOP_TOO_TIGHT": 0,
+    "TP_TOO_EARLY": 0,
+    "TIME_EXIT_TOO_EARLY": 153,
+    "BAD_ENTRY": 0,
+    "LATE_ENTRY": 1,
+    "NORMAL_WIN": 0,
+    "NORMAL_LOSS": 0
+  },
+  "exitFailureCategoryPct": {
+    "STOP_TOO_TIGHT": 0,
+    "TP_TOO_EARLY": 0,
+    "TIME_EXIT_TOO_EARLY": 99.35,
+    "BAD_ENTRY": 0,
+    "LATE_ENTRY": 0.65,
+    "NORMAL_WIN": 0,
+    "NORMAL_LOSS": 0
+  },
+  "rootCauseSummary": {
+    "dominantCategory": "TIME_EXIT_TOO_EARLY",
+    "dominantPct": 99.35,
+    "pfFeeInclusive": 0.37,
+    "pfEngine": 1.2,
+    "netPnL": -476.55
+  },
+  "verdict": "EXIT MECHANICS ARE PRIMARY BOTTLENECK"
+}

@@ -1,0 +1,15 @@
+const fs = require('fs');
+const t = JSON.parse(fs.readFileSync('./trend-events.json', 'utf8'));
+const trends = t.trends;
+console.log('Total trends:', trends.length);
+console.log('LONG trends:', trends.filter(x => x.direction === 'LONG').length);
+console.log('SHORT trends:', trends.filter(x => x.direction === 'SHORT').length);
+console.log('Sample LONG:', trends.filter(x => x.direction === 'LONG').slice(0, 3));
+console.log('Sample SHORT:', trends.filter(x => x.direction === 'SHORT').slice(0, 3));
+const moves = trends.map(x => x.movePct);
+const avgMove = moves.reduce((a, b) => a + b, 0) / moves.length;
+const maxMove = Math.max(...moves.map(m => m * 100));
+const minMove = Math.min(...moves.map(m => m * 100));
+console.log('Average move %:', (avgMove * 100).toFixed(2));
+console.log('Max move %:', maxMove.toFixed(2));
+console.log('Min move %:', minMove.toFixed(2));

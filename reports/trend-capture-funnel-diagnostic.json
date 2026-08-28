@@ -1,0 +1,63 @@
+{
+  "signalFunnelSteps": {
+    "DATA": {
+      "status": "PASS",
+      "candleCount": 19604,
+      "timeframe": "15m",
+      "startDate": "2026-02-11T00:00:00.000Z",
+      "endDate": "2026-08-23T23:59:59.999Z",
+      "details": "19,604 15-minute BTC/USDT candles available from Feb 11 to Aug 23, 2026"
+    },
+    "RSI": {
+      "status": "PARTIAL",
+      "rsiAtTrendStarts": "50.63 (all 32 trends, consistently at midpoint)",
+      "rsiAbove50Count": 0,
+      "rsiBelow50Count": 0,
+      "rsiCrossovers": 0,
+      "details": "RSI consistently 50.63 at trend start candles; neither clearly above nor below 50 with conviction; no crossovers occurring"
+    },
+    "RSI_MA": {
+      "status": "PARTIAL",
+      "rsiMaAtTrendStarts": "undefined (cannot compute without valid RSI crossover)",
+      "details": "No RSI crossover occurring; RSI MA calculation depends on prior RSI values which are also at 50.63"
+    },
+    "BB": {
+      "status": "FAIL (wrong dataset), PASS (correct dataset)",
+      "evidence": "Wrong dataset: basis=NaN, upper=NaN, lower=NaN; Correct dataset: valid basis/upper/lower values",
+      "details": "BB calculation with string prices produces NaN; with numeric dataset, valid values produced but touch conditions not met"
+    },
+    "BB_TOUCH": {
+      "status": "FAIL",
+      "priceTouchLowerCount": 0,
+      "priceTouchUpperCount": 0,
+      "details": "priceTouchLower and priceTouchUpper both false/undefined across all 32 trend start candles; RSI 50.63 places close near BB middle band, making touch impossible",
+      "detailsExtended": "When close is near BB middle band (as with RSI 50.63), neither close < lower nor close > upper conditions are met; the 0.5% threshold ((close - bbLower) / bbBasis < -0.005 or (close - bbUpper) / bbBasis > 0.005) is also not satisfied"
+    },
+    "REGIME": {
+      "status": "FAIL",
+      "regimeAtTrendStarts": "BEAR (predominant), with some BULL and STRONG_BEAR",
+      "details": "4h timeframe regime filter blocks LONG entries when regime is BEAR; 78.1% of missed trends affected by regime filter",
+      "detailsExtended": "Regime filter status: BEAR = LONG blocked, BULL = LONG allowed, STRONG_BEAR = LONG blocked with extra penalty, STRONG_BULL = LONG allowed with extra penalty. Predominant BEAR regime means most LONG attempts are blocked."
+    },
+    "CHOP": {
+      "status": "PASS",
+      "chopCount": 0,
+      "details": "Chop filter not activated in trending conditions; EMA crossovers < 35 over 30-period window not exceeded"
+    },
+    "SCORE": {
+      "status": "FAIL",
+      "details": "Cannot compute valid score without valid BB values and touch conditions; score formula requires RSI distance, pctB, regime, trend, and chop contributions; all contribations fail at different stages",
+      "maxPossibleScore": "undefined (depends on prior stages passing)",
+      "actualScore": "null across all 32 trends"
+    },
+    "FINAL_SIGNAL": {
+      "status": "FAIL",
+      "signals": "null (0 of 32 trends)",
+      "details": "detectSignal returns null for all 32 strong trend start candles; no configurations (baseline, Model A, Model B) generate a signal",
+      "detailsExtended": "Baseline: null signals; Model A (relaxed RSI crossover): null signals; Model B (pullback continuation): null signals. Problem is systemic across all configurations."
+    }
+  },
+  "funnelResult": "OVERALL: FAIL - 0 of 32 trends caught across all configurations",
+  "funnelFailurePoint": "BB TOUCH (primary), RSI conditions (secondary), REGIME FILTER (tertiary)",
+  "diagnosticDate": "2026-08-24"
+}

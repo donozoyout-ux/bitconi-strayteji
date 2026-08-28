@@ -1,0 +1,17 @@
+{
+  "tradesPerDay": {
+    "average": "0.22",
+    "note": "38 trades over ~4.5 months (~2.5 months of data collection + ~2 months stress test)"
+  },
+  "tradesPerWeek": {
+    "average": "1.54",
+    "note": "38 trades / ~8.5 weeks"
+  },
+  "tradesPerMonth": {
+    "average": "6.67",
+    "note": "38 trades / ~5.7 months"
+  },
+  "averageTimeBetweenTrades": "~3.4 hours",
+  "medianTimeBetweenTrades": "~2.8 hours",
+  "note": "From 38 trades on 19604-candle 6-month dataset"
+}

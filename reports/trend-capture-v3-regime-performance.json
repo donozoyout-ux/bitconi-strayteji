@@ -1,0 +1,97 @@
+{
+  "generated": "2026-08-27",
+  "regimes": {
+    "V2": {
+      "trending": {
+        "trades": 886,
+        "winRate": 18.17155756207675,
+        "pnl": -2896.79,
+        "pf": 0,
+        "dd": 0
+      },
+      "range_chop": {
+        "trades": 1,
+        "winRate": 0,
+        "pnl": -56.19,
+        "pf": 0,
+        "dd": 0
+      },
+      "high_vol": {
+        "trades": 219,
+        "winRate": 34.24657534246575,
+        "pnl": -828.7,
+        "pf": 0,
+        "dd": 0
+      }
+    },
+    "V3-A": {
+      "trending": {
+        "trades": 118,
+        "winRate": 22.88135593220339,
+        "pnl": -377.1,
+        "pf": 0,
+        "dd": 0
+      },
+      "range_chop": {
+        "trades": 0,
+        "winRate": 0,
+        "pnl": 0,
+        "pf": 0,
+        "dd": 0
+      },
+      "high_vol": {
+        "trades": 36,
+        "winRate": 25,
+        "pnl": -99.45,
+        "pf": 0,
+        "dd": 0
+      }
+    },
+    "V3-B": {
+      "trending": {
+        "trades": 537,
+        "winRate": 20.297951582867785,
+        "pnl": -1817.78,
+        "pf": 0,
+        "dd": 0
+      },
+      "range_chop": {
+        "trades": 0,
+        "winRate": 0,
+        "pnl": 0,
+        "pf": 0,
+        "dd": 0
+      },
+      "high_vol": {
+        "trades": 143,
+        "winRate": 37.06293706293706,
+        "pnl": -477.95,
+        "pf": 0,
+        "dd": 0
+      }
+    },
+    "V3-C": {
+      "trending": {
+        "trades": 359,
+        "winRate": 12.256267409470752,
+        "pnl": -1589.03,
+        "pf": 0,
+        "dd": 0
+      },
+      "range_chop": {
+        "trades": 1,
+        "winRate": 0,
+        "pnl": -34.48,
+        "pf": 0,
+        "dd": 0
+      },
+      "high_vol": {
+        "trades": 80,
+        "winRate": 23.75,
+        "pnl": -639.1,
+        "pf": 0,
+        "dd": 0
+      }
+    }
+  }
+}

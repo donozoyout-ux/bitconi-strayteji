@@ -1,0 +1,86 @@
+BUG FIX REPORT: Daily PnL Date Filter
+
+FILE MODIFIED: src/services/trading.engine.js (lines 557-573)
+
+THE BUG:
+dailyPnL calculated PnL from ALL historical trades instead of only today's trades.
+- A trade from 3 days ago (-4301 USDT) was included in dailyPnL
+- Max daily loss limit: 2% of 500 USDT = 10 USDT
+- -4301 <= -10 → TRUE → trading completely blocked
+- dailyTrades correctly showed 0 (no trades today), but dailyPnL was wrong
+
+THE FIX:
+Replaced the dailyPnL calculation to use the same date filtering as dailyTrades,
+ensuring only trades closed on the current calendar day (year/month/day) are included.
+
+Before:
+  const dailyTrades = (state.trades || []).filter(
+    t => new Date(t.closedAt || t.timestamp).getDate() === new Date().getDate()
+  ).length;
+  const dailyPnL = (state.trades || []).reduce(
+    (s, t) => s + (t.pnl || 0), 0
+  );
+
+After:
+  const now = new Date();
+  const isToday = (timestamp) => {
+    if (!timestamp) return false;
+    const date = new Date(timestamp);
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
+  };
+  const todayTrades = (state.trades || []).filter(t => isToday(t.closedAt || t.timestamp));
+  const dailyTrades = todayTrades.length;
+  const dailyPnL = todayTrades.reduce(
+    (sum, t) => sum + Number(t.pnl || 0),
+    0
+  );
+
+KEY IMPROVEMENTS:
+1. Uses full date comparison (year/month/day) instead of just getDate() - avoids month/year boundary issues
+2. dailyPnL only includes trades from today (same filter as dailyTrades)
+3. Uses Number() for consistent type coercion
+
+VERIFICATION RESULTS:
+
+TEST 1 - Historical trade, no today's trades:
+- Trade from Aug 22: -4301.08 USDT
+- Today: 0 trades
+- dailyTrades: 0 ✓
+- dailyPnL: 0 ✓ (was -4301.08 before fix)
+- riskCheck.allowed: true ✓ (was false before fix)
+- Trading no longer blocked by historical losses
+
+TEST 2 - Today's trades:
+- 3 trades today: +500, -500, -300 USDT
+- dailyTrades: 3
+- dailyPnL: -300.00 USDT
+- riskCheck correctly blocks when daily loss exceeds 2% limit
+
+TEST 3 - After fix, analyzeOnly():
+- Before: signal: null (risk engine blocked before strategy could generate signal)
+- After: signal: BUY (risk check passes, strategy can generate signals)
+
+STRATEGY UNCHANGED:
+- RSI length = 20 ✓
+- Bollinger length = 30 ✓
+- Bolligan stddev = 2 ✓
+- execution timeframe = 15m ✓
+- higher timeframe = 1h ✓
+- regime timeframe = 4h ✓
+- minSignalScore = 75 ✓
+- riskPerTrade = 0.5 ✓
+- maxLeverage = 5 ✓
+- cooldown = 60 ✓
+- maxTradesPerDay = 10 ✓
+- longEnabled = true ✓
+- shortEnabled = true ✓
+- emergencyStop = false ✓
+
+ROOT CAUSE CONFIRMED:
+"AL/SAT yapılmamasının gerçek root cause'u: Risk engine'in günlük kayıp limit kontrolü, tarih filtresiz tüm tarihsel işlemleri içerdiği için günlük PnL'in -4301.08 USDT olduğu (3 gün önceki zararlı işlem) ve botsun bu limitin (2% = 10 USDT) aşıldığı gibi algıladığı için tüm tradingı engelliyor. Bu, strateji hatası DEĞİL; risk hesaplama bugidir."
+
+Fix confirmed: Trading engine now correctly calculates daily PnL from only today's trades, and no longer blocks trading due to historical losses.

@@ -1,0 +1,86 @@
+LIVE SYSTEM STATUS
+
+DATA:
+PASS - Binance TESTNET data pipeline working
+- Symbol: BTC/USDT
+- Last candle timestamp: 1787643900000
+- Last candle close: 80421.12
+- OHLCV types: number (normalized)
+- Candle count: 220
+- Closed candle: yes
+- Data update: yes
+- 15m candle: 15 dakikalik doğrulandı
+
+15m:
+PASS - 220 15m candles fetched from Binance TESTNET
+- Interval confirmed: 15 minutes
+- Data normalized: Number() applied
+
+1h:
+PASS - Higher timeframe analysis available
+- 1h data derivable from 15m candles (220 × 15m = 55h > 4h)
+
+4h:
+PASS - Regime timeframe analysis available
+- 220 × 15m = ~55h sufficient for 4h regime
+
+RSI:
+PASS - RSI(20) calculated correctly
+- Current RSI: 57.38 (above 50, below MA 61.76)
+- RSI crossover: NOT triggered (no cross of RSI over RSI MA)
+- Price vs BB: 80421.12 vs basis 80345.7 (above basis)
+
+BB:
+PASS - Bollinger Bands(30,2) calculated correctly
+- Basis: 80345.7, Lower: 79329.9, Upper: 81361.5
+- Price touch lower: no
+- Price touch upper: no
+
+SIGNAL ENGINE:
+PASS - Strategy (RSI+BB) working correctly
+- Signal: null (market conditions do not trigger LONG/SHORT)
+- No RSI crossover + no BB band touch in current price action
+
+TRADING ENGINE:
+PASS - Engine running correctly
+- Fetches data, runs analysis, checks risk limits
+- Structure correct, would place orders if risk check passes
+
+RISK ENGINE:
+FAIL - Daily loss limit check bug
+- dailyPnL: -4301.08 USDT (INCORRECT: includes historical trades)
+- Max daily loss: 2% (of 500 USDT = 10 USDT)
+- Bug: dailyPnL calc includes trade from Aug 22 (3 days ago)
+- Filter checks current date but dailyPnL reduces ALL trades
+- Result: -4301.08 <= -2 → TRUE → trading blocked
+
+COOLDOWN:
+PASS - Cooldown expired, not active
+
+EMERGENCY STOP:
+PASS - emergencyStop = false
+
+DUPLICATE PROTECTION:
+PASS - Not triggered (no orders attempted)
+
+BINANCE TESTNET:
+PASS - USE_TESTNET=true, API keys configured
+- Exchange initialized with demo.binance.com endpoints
+- fetchOHLCV, fetchTicker, fetchBalance functional
+
+ORDER PIPELINE:
+PASS - Pipeline structured correctly
+- signal → analyzer → trading.engine → risk engine → order.service → Binance
+- Blocked at risk engine stage, pipeline not reached
+
+==================================================
+FINAL:
+
+1. SIGNAL YOK (risk engine blocks before signal matters)
+2. SIGNAL VAR AMA ORDER YOK (not reached - blocked at risk)
+3. ORDER VAR AMA EXCHANGE FILL YOK (N/A)
+4. HER ŞEY ÇALIŞIYOR (HİÇBİRİ ÇALIŞMIYOR - risk blocker)
+
+SON OLARAK:
+
+"AL/SAT yapılmamasının gerçek root cause'u: Risk engine'in günlük kayıp limit kontrolü, tarih filtresiz tüm tarihsel işlemleri içerdiği için günlük PnL'in -4301.08 USDT olduğu (3 gün önceki zararlı işlem) ve botsun bu limitin (2% = 10 USDT) aşıldığı gibi algıladığı için tüm tradingı engelliyor. Bu, strateji hatası DEĞİL; risk hesaplama bugidir."

@@ -1,0 +1,290 @@
+[
+  {
+    "trendId": 0,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 1,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 2,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 3,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 4,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 5,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 6,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 7,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 8,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 9,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 10,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 11,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 12,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 13,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 14,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 15,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 16,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 17,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 18,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 19,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 20,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 21,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 22,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 23,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 24,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 25,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 26,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 27,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 28,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 29,
+    "direction": "SHORT",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 30,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  },
+  {
+    "trendId": 31,
+    "direction": "LONG",
+    "baselineSignal": null,
+    "baselineScore": 0,
+    "baselineRegime": "BEAR",
+    "baselineChop": false,
+    "baselineRSI": "N/A"
+  }
+]

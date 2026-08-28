@@ -1,0 +1,1118 @@
+{
+  "EXIT-V0": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -0.07,
+        "captureRatio": -0.01
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.49,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.16,
+        "captureRatio": 0.02
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.14,
+        "captureRatio": 0.03
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 0.1,
+        "captureRatio": 0.36
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -0.89,
+        "captureRatio": 0.21
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.21,
+        "captureRatio": 0.03
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.14,
+        "captureRatio": 0.18
+      }
+    ]
+  },
+  "EXIT-A10": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": 0.25,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.97,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.18,
+        "captureRatio": 0.02
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.11,
+        "captureRatio": 0.03
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 0.27,
+        "captureRatio": 0.99
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -1.08,
+        "captureRatio": 0.26
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.42,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.22,
+        "captureRatio": 0.28
+      }
+    ]
+  },
+  "EXIT-A20": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -0.58,
+        "captureRatio": -0.11
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 1.22,
+        "captureRatio": 0.13
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.37,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.64,
+        "captureRatio": 0.16
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 0.23,
+        "captureRatio": 0.87
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": -0.92,
+        "captureRatio": -0.14
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.3,
+        "captureRatio": 0.39
+      }
+    ]
+  },
+  "EXIT-A40": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -1.39,
+        "captureRatio": -0.27
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.68,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.16,
+        "captureRatio": 0.02
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.4,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.33,
+        "captureRatio": 4.94
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": -1.37,
+        "captureRatio": -0.21
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.26,
+        "captureRatio": 0.34
+      }
+    ]
+  },
+  "EXIT-A80": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.96,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.49,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.54,
+        "captureRatio": 0.14
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.41,
+        "captureRatio": 5.24
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": -0.69,
+        "captureRatio": -0.11
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.53,
+        "captureRatio": 0.69
+      }
+    ]
+  },
+  "EXIT-A96": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 1.13,
+        "captureRatio": 0.12
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.2,
+        "captureRatio": 0.03
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.5,
+        "captureRatio": 0.13
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.35,
+        "captureRatio": 5
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": -0.34,
+        "captureRatio": -0.05
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.75,
+        "captureRatio": 0.97
+      }
+    ]
+  },
+  "EXIT-ANONE": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 10.04,
+        "realized": -2.5,
+        "captureRatio": -0.25
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.39,
+        "realized": -2.5,
+        "captureRatio": -0.27
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 4.72,
+        "realized": -2.5,
+        "captureRatio": -0.53
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": -2.5,
+        "captureRatio": -0.64
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 7.5,
+        "captureRatio": 27.87
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": -0.11,
+        "realized": -2.5,
+        "captureRatio": 22.18
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": -2.5,
+        "captureRatio": -3.24
+      }
+    ]
+  },
+  "EXIT-B1.5": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.95,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.88,
+        "captureRatio": 0.12
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.79,
+        "captureRatio": 0.2
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.2,
+        "captureRatio": 4.45
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.63,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.54,
+        "captureRatio": 0.71
+      }
+    ]
+  },
+  "EXIT-B2": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.71,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.75,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.6,
+        "captureRatio": 0.15
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.04,
+        "captureRatio": 3.86
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.51,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 1.04,
+        "captureRatio": 1.35
+      }
+    ]
+  },
+  "EXIT-B2.5": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.43,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 2.43,
+        "captureRatio": 0.33
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.44,
+        "captureRatio": 0.11
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.62,
+        "captureRatio": 13.47
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.35,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.73,
+        "captureRatio": 0.94
+      }
+    ]
+  },
+  "EXIT-B3": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.18,
+        "captureRatio": 0.02
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 1.82,
+        "captureRatio": 0.25
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.32,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.5,
+        "captureRatio": 13
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.25,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.87,
+        "captureRatio": 1.12
+      }
+    ]
+  },
+  "EXIT-C2": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.71,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.75,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.6,
+        "captureRatio": 0.15
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.04,
+        "captureRatio": 3.86
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.51,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0,
+        "captureRatio": 0
+      }
+    ]
+  },
+  "EXIT-C2.5": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0,
+        "captureRatio": 0
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 2.43,
+        "captureRatio": 0.33
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.44,
+        "captureRatio": 0.11
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.62,
+        "captureRatio": 13.47
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.35,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0,
+        "captureRatio": 0
+      }
+    ]
+  },
+  "EXIT-C3": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0,
+        "captureRatio": 0
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 1.82,
+        "captureRatio": 0.25
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.32,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.5,
+        "captureRatio": 13
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.25,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0,
+        "captureRatio": 0
+      }
+    ]
+  },
+  "EXIT-D2": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.71,
+        "captureRatio": 0.07
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.75,
+        "captureRatio": 0.1
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.6,
+        "captureRatio": 0.15
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.04,
+        "captureRatio": 3.86
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.51,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 1.04,
+        "captureRatio": 1.35
+      }
+    ]
+  },
+  "EXIT-D2.5": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.43,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 2.43,
+        "captureRatio": 0.33
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.44,
+        "captureRatio": 0.11
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.62,
+        "captureRatio": 13.47
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.35,
+        "captureRatio": 0.05
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.73,
+        "captureRatio": 0.94
+      }
+    ]
+  },
+  "EXIT-D3": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -2.5,
+        "captureRatio": -0.49
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.18,
+        "captureRatio": 0.02
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 1.82,
+        "captureRatio": 0.25
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.32,
+        "captureRatio": 0.08
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 3.5,
+        "captureRatio": 13
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -2.5,
+        "captureRatio": 0.6
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": 0.25,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.87,
+        "captureRatio": 1.12
+      }
+    ]
+  },
+  "EXIT-E": {
+    "trendCatch": 8,
+    "trendCatchPct": 30.77,
+    "caughtDetail": [
+      {
+        "eventId": 9,
+        "timing": -1968559,
+        "trendMove": 5.11,
+        "realized": -0.58,
+        "captureRatio": -0.11
+      },
+      {
+        "eventId": 12,
+        "timing": -1971641,
+        "trendMove": 9.67,
+        "realized": 0.85,
+        "captureRatio": 0.09
+      },
+      {
+        "eventId": 15,
+        "timing": -1973630,
+        "trendMove": 7.33,
+        "realized": 0.32,
+        "captureRatio": 0.04
+      },
+      {
+        "eventId": 16,
+        "timing": -1975606,
+        "trendMove": 3.9,
+        "realized": 0.34,
+        "captureRatio": 0.09
+      },
+      {
+        "eventId": 20,
+        "timing": -1977644,
+        "trendMove": 0.27,
+        "realized": 1.2,
+        "captureRatio": 4.45
+      },
+      {
+        "eventId": 22,
+        "timing": -1979561,
+        "trendMove": -4.2,
+        "realized": -1.08,
+        "captureRatio": 0.26
+      },
+      {
+        "eventId": 23,
+        "timing": -1980567,
+        "trendMove": 6.4,
+        "realized": -1.71,
+        "captureRatio": -0.27
+      },
+      {
+        "eventId": 26,
+        "timing": -1985636,
+        "trendMove": 0.77,
+        "realized": 0.24,
+        "captureRatio": 0.31
+      }
+    ]
+  }
+}

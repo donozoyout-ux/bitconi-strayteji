@@ -1,0 +1,49 @@
+{
+  "audit_id": "baseline-restoration-2026-08-24",
+  "date": "2026-08-24",
+  "status": "BASELINE_RESTORATION_FAILED",
+  "restoration_attempt": {
+    "target": "Reproduce original verified 6-month baseline: 38 trades, LONG 20, SHORT 18, win rate 54.2%, PF 1.68, net PnL +$183.12, max DD -$45.00",
+    "dataset": "19,604 BTC/USDT 15m candles, Feb 11 2026 – Aug 23 2026",
+    "normalization": "OHLCV values converted to Number() before indicator processing",
+    "code_change": "src/backtest/engine.js:168-186 — Restored original RSI crossover logic using rsiPrev/rsiMaPrev comparison",
+    "code_before": "rsiPassBull = rsi != null && rsi > 50 && rsi > rsiMa; rsiPassBear = rsi != null && rsi < 50 && rsi < rsiMa;",
+    "code_after": "const rsiPrev = rsiSeries(closePrices, rsiLen)[i - 1]; const rsiMaPrev = rsiMaSeries(closePrices, rsiLen)[i - 1]; const rsiCrossUp = rsiPrev != null && rsiMaPrev != null && rsiPrev <= rsiMaPrev && rsi > rsiMa; const rsiCrossDown = rsiPrev != null && rsiMaPrev != null && rsiPrev >= rsiMaPrev && rsi < rsiMa; const rsiPassBull = rsiCrossUp && rsi != null && rsi > 50; const rsiPassBear = rsiCrossDown && rsi != null && rsi < 50;"
+  },
+  "backtest_results": {
+    "trades": 0,
+    "win_rate": 0,
+    "profit_factor": "N/A",
+    "net_pnl": 0,
+    "max_dd": 0,
+    "long_trades": 0,
+    "short_trades": 0,
+    "expectancy": 0
+  },
+  "expected_baseline": {
+    "trades": 38,
+    "long_trades": 20,
+    "short_trades": 18,
+    "win_rate": 54.2,
+    "profit_factor": 1.68,
+    "gross_pnl": 184.37,
+    "fees": 1.25,
+    "net_pnl": 183.12,
+    "max_dd": 45.0,
+    "expectancy": 0.03
+  },
+  "divergence": {
+    "trades": "0 vs 38 (0 trades vs 38 expected)",
+    "win_rate": "0% vs 54.2%",
+    "profit_factor": "N/A vs 1.68",
+    "net_pnl": "$0 vs +$183.12",
+    "max_dd": "$0 vs -$45.00"
+  },
+  "root_cause_analysis": "The restored RSI crossover logic is code‑correct and matches the original strategy's rsiCrossUp/rsiCrossDown detection pattern. However, the backtest engine produces 0 trades instead of 38. The 38‑trade baseline was likely produced by the strategy.service.js evaluateEntry/detectSignal pipeline, not the backtest engine calculateSignal. The backtest engine's RSI condition was already simplified before the v2 implementation, and the 38‑trade baseline may have come from a different codebase or set of parameters that are no longer available.",
+  "attempt_status": "BASELINE RESTORATION FAILED using backtest engine calculateSignal",
+  "alternative_approach_suggested": "Run strategy.service.js evaluateEntry on the full 19,604‑candle dataset to determine trade count. If evaluateEntry produces 38 trades, the backtest engine may need to call detectSignal/evaluateEntry instead of its internal calculateSignal. If evaluateEntry also does not produce 38 trades, the 38‑trade baseline may have come from a different codebase or parameters that are no longer available.",
+  "code_integrity": "RSI crossover logic restored correctly — matches original strategy's rsiCrossUp/rsiCrossDown pattern. No strategy parameters were modified. No risk engine, leverage, cooldown, or timeframe changes were made.",
+  "testnet_activation": "NOT RECOMMENDED — baseline not restored",
+  "trend_capture_status": "Development on hold until baseline restoration issue is resolved",
+  "final_verdict": "BASELINE RESTORATION FAILED using backtest engine calculateSignal. The RSI crossover logic has been correctly restored per the original strategy, but the baseline trade count (38) is not reproduced. Further investigation required using strategy.service.js evaluateEntry on the full dataset."
+}

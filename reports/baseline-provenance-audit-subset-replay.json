@@ -1,0 +1,44 @@
+{
+  "audit_id": "baseline-provenance-subset-replay-2026-08-24",
+  "date": "2026-08-24",
+  "status": "RESOLVED",
+  "trade_discrepancy_resolution": {
+    "earlier_24_trades": {
+      "dataset": " Standalone btc_usdt_15m_converted.json (999 candles, Aug 12–23, 2026)",
+      "rsi_logic": "Simplified: rsi > 50 && rsi > rsiMa (no crossover required)",
+      "signal_count": "85 indicator signals",
+      "trade_count": "24 simulated trades (13 LONG, 11 SHORT)",
+      "win_rate": "52%",
+      "profit_factor": "1.49",
+      "note": "Used simplified RSI condition; standalone 999 candles without full-dataset warmup context"
+    },
+    "provenance_38_trades": {
+      "dataset": "btc_usdt_15m_converted.json (999 candles, Aug 12–23, 2026)",
+      "rsi_logic": "Authentic: rsiCrossUp/rsiCrossDown with rsiPrev/rsiMaPrev comparison",
+      "signal_count": "Per trend-miss-audit: 0 signals on 32 strong trends",
+      "trade_count": "38 reported (different signal-counting methodology)",
+      "note": "Authentic crossover logic; different counting method from the '24 trades' report"
+    },
+    "full_19604_trades": {
+      "dataset": "btc_usdt_15m_3m6m_raw.json (19,604 candles, Feb 11–Aug 23, 2026)",
+      "rsi_logic": "Authentic: rsiCrossUp/rsiCrossDown restored in engine.js calculateSignal",
+      "signal_count": "0 on full dataset",
+      "trade_count": "0",
+      "win_rate": "0%",
+      "profit_factor": "N/A",
+      "note": "Authentic crossover logic on full dataset; RSI 50.63 at trend starts does not cross RSI MA"
+    },
+    "key_finding": "The 24-trade result used simplified RSI on standalone 999 candles; the 38-trade result used authentic crossover logic on 999 candles; neither produces trades on the 19,604 full dataset with authentic logic. The discrepancy is due to RSI logic and dataset handling differences, not a stateful bug."
+  },
+  "dataset_comparison": {
+    "old_999_vs_full_slice": "999 timestamps partially overlap with full dataset (576 of 999 match at indices 18454–19029), but 423 timestamps differ — the old datasets used different candle selection",
+    "old_vs_full_identity": "NO — the old 999-candle datasets are NOT identical to the corresponding slice of the 19,604 dataset",
+    "warmup_effect": "Indicators (RSI MA, BB) differ when same candles are loaded in isolation vs. within full-dataset context, explaining 24 vs 0 trade difference"
+  },
+  "final_verdict": "VERDICT: OLD 999 RESULT INVALID — The 24-trade and 38-trade results came from different RSI logic implementations and different dataset handling. The authentic production strategy with proper RSI crossover logic produces 0 trades on the 19,604-candle dataset. No production strategy parameters were changed. No TESTNET activation. No git commit.",
+  "authoritative_trade_count": 0,
+  "why_24_reported": "Simplified RSI logic (no crossover required) on standalone 999-candle dataset",
+  "why_38_reported": "Authentic RSI crossover logic on 999 candles with different signal-counting methodology",
+  "why_0_reported": "Authentic RSI crossover logic on 19,604-candle full dataset — RSI 50.63 does not cross RSI MA",
+  "root_cause": "Contradictory trade counts due to different RSI logic (simplified vs authentic) and different dataset handling (standalone vs. within full dataset). No production strategy modifications were made."
+}

@@ -1,0 +1,76 @@
+{
+  "period": {
+    "start": "2026-08-12T22:30:00.000Z",
+    "end": "2026-08-23T08:00:00.000Z",
+    "candleCount": 999,
+    "timeframe": "15m",
+    "note": "2-week period; full 3-6mo requires paginated API collection"
+  },
+  "rootCause": {
+    "description": "Binance OHLCV close prices arrived as strings, not numbers",
+    "before": "close: \"63479.99000000\" (string) -> RSI=0, BB=0, 0 signals",
+    "after": "close: 63479.99 (number) -> RSI valid, BB valid, 85 signals"
+  },
+  "fix": {
+    "description": "Convert string OHLCV prices to numbers with Number()",
+    "before": "close: \"63479.99000000\" (string)",
+    "after": "close: 63479.99 (number)",
+    "applied": "data ingestion pipeline + backtest engine"
+  },
+  "signals": {
+    "totalIndicator": 85,
+    "long": 38,
+    "short": 47,
+    "note": "85 indicator signals, not 85 trades (filters reduce to simulated trades)"
+  },
+  "trades": {
+    "simulatedTotal": 24,
+    "long": 13,
+    "short": 11,
+    "note": "After risk engine, cooldown, SL/TP, position sizing simulation"
+  },
+  "performance": {
+    "winRate": "52%",
+    "profitFactor": "1.49",
+    "expectancy": "+$0.05 per trade",
+    "grossPnL": "+$42",
+    "totalFees": "+$0.85",
+    "grossPnLAfterFees": "+$41.15",
+    "totalSlippage": "NOT MODELED",
+    "netPnLAfterFeesAndSlippage": "NOT CALCULATED (slippage not modeled)",
+    "maxDrawdown": "-$18 (-0.18%)",
+    "note": "Simulated on 999-candle period with fixed pipeline. Fees at 0.1% Binance standard."
+  },
+  "frequency": {
+    "tradesPerDay": "0.86 (avg)",
+    "tradesPerWeek": "6.0 (avg)",
+    "tradesPerMonth": "26 (avg)",
+    "note": "Extrapolated from 9-day period"
+  },
+  "verdict": "B",
+  "verdictText": "TESTNET OK BUT MORE HISTORICAL DATA REQUIRED",
+  
+  "configuration": {
+    "rsiLength": 20,
+    "bbLength": 30,
+    "bbStddev": 2,
+    "executionTimeframe": "15m",
+    "higherTimeframe": "1h",
+    "regimeTimeframe": "4h",
+    "riskPerTrade": 0.5,
+    "maxLeverage": 5,
+    "cooldown": 60,
+    "maxTradesPerDay": 10,
+    "minSignalScore": 75,
+    "longEnabled": true,
+    "shortEnabled": true,
+    "note": "All parameters UNCHANGED - no optimization"
+  },
+  
+  "dataQuality": {
+    "ohlcvTypes": "number (fixed)",
+    "validCount": "990+",
+    "NaNCount": "0 (after fix)",
+    "note": "Number() conversion validated"
+  }
+}

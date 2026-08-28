@@ -1,0 +1,69 @@
+{
+  "generated": "2026-08-27",
+  "funnel": {
+    "V2": {
+      "functionCalls": 19565,
+      "validContexts": 19565,
+      "longCandidates": 4461,
+      "shortCandidates": 4455,
+      "rejectedBy4hRegime": 10522,
+      "rejectedBy1hAlignment": 127,
+      "rejectedByADX": 0,
+      "rejectedByChop": 0,
+      "rejectedByAntiFomo": 8916,
+      "rejectedByBBPosition": 0,
+      "rejectedByPullback": 0,
+      "actualLongSignals": 1532,
+      "actualShortSignals": 1516,
+      "finalSignals": 3048
+    },
+    "V3-A": {
+      "functionCalls": 19565,
+      "validContexts": 19565,
+      "longCandidates": 4461,
+      "shortCandidates": 4455,
+      "rejectedBy4hRegime": 10522,
+      "rejectedBy1hAlignment": 127,
+      "rejectedByADX": 0,
+      "rejectedByChop": 0,
+      "rejectedByAntiFomo": 4226,
+      "rejectedByBBPosition": 4518,
+      "rejectedByPullback": 0,
+      "actualLongSignals": 88,
+      "actualShortSignals": 84,
+      "finalSignals": 172
+    },
+    "V3-B": {
+      "functionCalls": 19565,
+      "validContexts": 19565,
+      "longCandidates": 4461,
+      "shortCandidates": 4455,
+      "rejectedBy4hRegime": 10522,
+      "rejectedBy1hAlignment": 127,
+      "rejectedByADX": 0,
+      "rejectedByChop": 0,
+      "rejectedByAntiFomo": 4226,
+      "rejectedByBBPosition": 3115,
+      "rejectedByPullback": 1575,
+      "actualLongSignals": 775,
+      "actualShortSignals": 800,
+      "finalSignals": 1575
+    },
+    "V3-C": {
+      "functionCalls": 19565,
+      "validContexts": 19565,
+      "longCandidates": 4461,
+      "shortCandidates": 4455,
+      "rejectedBy4hRegime": 10522,
+      "rejectedBy1hAlignment": 127,
+      "rejectedByADX": 0,
+      "rejectedByChop": 0,
+      "rejectedByAntiFomo": 4226,
+      "rejectedByBBPosition": 0,
+      "rejectedByPullback": 3769,
+      "actualLongSignals": 312,
+      "actualShortSignals": 297,
+      "finalSignals": 609
+    }
+  }
+}

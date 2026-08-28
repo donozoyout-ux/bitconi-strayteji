@@ -1,0 +1,45 @@
+{
+  "catchRate": 0,
+  "missRate": 100,
+  "longCatchRate": 0,
+  "shortCatchRate": 0,
+  "averageMoveMissed": 4.61,
+  "medianMoveMissed": 4.48,
+  "largestMissedMove": 11.1,
+  "smallestMissedMove": 3.01,
+  "breakdown": {
+    "NO RSI CROSSOVER": {
+      "count": 28,
+      "percentage": 87.5
+    },
+    "NO BB TOUCH": {
+      "count": 22,
+      "percentage": 68.8
+    },
+    "SCORE < 75": {
+      "count": 32,
+      "percentage": 100
+    },
+    "REGIME FILTER": {
+      "count": 25,
+      "percentage": 78.1
+    },
+    "CHOP FILTER": {
+      "count": 12,
+      "percentage": 37.5
+    },
+    "OTHER": {
+      "count": 5,
+      "percentage": 15.6
+    }
+  },
+  "timing": {
+    "0-2 candles": 0,
+    "3-5 candles": 0,
+    "6-10 candles": 0,
+    "11-20 candles": 0,
+    "20+ candles": 0,
+    "Never": 32
+  },
+  "analysisDate": "2026-08-25T14:25:14.160Z"
+}

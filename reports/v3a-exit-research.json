@@ -1,0 +1,1646 @@
+{
+  "generated": "2026-08-27T22:19:32.977Z",
+  "variants": {
+    "EXIT-V0": {
+      "trades": 160,
+      "longTrades": 84,
+      "shortTrades": 76,
+      "winRate": 23.75,
+      "profitFactor": 0.31,
+      "expectancy": -3.33,
+      "grossPnL": -533.44,
+      "fees": 622.45,
+      "netPnL": -533.44,
+      "roi": -5.33,
+      "maxDD": 6.07,
+      "avgWin": 6.44,
+      "avgLoss": -6.38,
+      "largestWin": 29.88,
+      "largestLoss": -27.27,
+      "longestWinStreak": 4,
+      "longestLossStreak": 31,
+      "avgHold": 2.99,
+      "medianHold": 3,
+      "avgMFE": 0.36,
+      "captureRatio": -0.8,
+      "longPF": 0.31,
+      "shortPF": 0.32,
+      "captureRatioWinners": 0.67,
+      "exits": {
+        "TIME_EXIT": 159,
+        "TRAILING_STOP": 1
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -0.07,
+          "captureRatio": -0.01
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.49,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.16,
+          "captureRatio": 0.02
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.14,
+          "captureRatio": 0.03
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 0.1,
+          "captureRatio": 0.36
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -0.89,
+          "captureRatio": 0.21
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.21,
+          "captureRatio": 0.03
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.14,
+          "captureRatio": 0.18
+        }
+      ]
+    },
+    "EXIT-A10": {
+      "trades": 144,
+      "longTrades": 73,
+      "shortTrades": 71,
+      "winRate": 31.25,
+      "profitFactor": 0.56,
+      "expectancy": -2.16,
+      "grossPnL": -311.69,
+      "fees": 566.78,
+      "netPnL": -311.69,
+      "roi": -3.12,
+      "maxDD": 4.94,
+      "avgWin": 8.74,
+      "avgLoss": -7.12,
+      "largestWin": 83.07,
+      "largestLoss": -32.31,
+      "longestWinStreak": 5,
+      "longestLossStreak": 15,
+      "avgHold": 5,
+      "medianHold": 5,
+      "avgMFE": 0.48,
+      "captureRatio": -0.55,
+      "longPF": 0.44,
+      "shortPF": 0.68,
+      "captureRatioWinners": 0.67,
+      "exits": {
+        "TIME_EXIT": 144
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": 0.25,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.97,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.18,
+          "captureRatio": 0.02
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.11,
+          "captureRatio": 0.03
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 0.27,
+          "captureRatio": 0.99
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -1.08,
+          "captureRatio": 0.26
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.42,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.22,
+          "captureRatio": 0.28
+        }
+      ]
+    },
+    "EXIT-A20": {
+      "trades": 128,
+      "longTrades": 65,
+      "shortTrades": 63,
+      "winRate": 43.75,
+      "profitFactor": 0.66,
+      "expectancy": -2.3,
+      "grossPnL": -294.82,
+      "fees": 501.62,
+      "netPnL": -294.82,
+      "roi": -2.95,
+      "maxDD": 4.43,
+      "avgWin": 10.32,
+      "avgLoss": -12.12,
+      "largestWin": 94.11,
+      "largestLoss": -54.39,
+      "longestWinStreak": 8,
+      "longestLossStreak": 14,
+      "avgHold": 9.97,
+      "medianHold": 10,
+      "avgMFE": 0.68,
+      "captureRatio": -1.32,
+      "longPF": 0.66,
+      "shortPF": 0.66,
+      "captureRatioWinners": 0.67,
+      "exits": {
+        "TIME_EXIT": 125,
+        "STOP_LOSS": 3
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -0.58,
+          "captureRatio": -0.11
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 1.22,
+          "captureRatio": 0.13
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.37,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.64,
+          "captureRatio": 0.16
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 0.23,
+          "captureRatio": 0.87
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": -0.92,
+          "captureRatio": -0.14
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.3,
+          "captureRatio": 0.39
+        }
+      ]
+    },
+    "EXIT-A40": {
+      "trades": 117,
+      "longTrades": 62,
+      "shortTrades": 55,
+      "winRate": 39.32,
+      "profitFactor": 0.58,
+      "expectancy": -3.99,
+      "grossPnL": -466.59,
+      "fees": 452.21,
+      "netPnL": -466.59,
+      "roi": -4.67,
+      "maxDD": 6.24,
+      "avgWin": 13.93,
+      "avgLoss": -15.59,
+      "largestWin": 120.35,
+      "largestLoss": -54.36,
+      "longestWinStreak": 3,
+      "longestLossStreak": 9,
+      "avgHold": 19.71,
+      "medianHold": 20,
+      "avgMFE": 0.85,
+      "captureRatio": -1.39,
+      "longPF": 0.38,
+      "shortPF": 0.79,
+      "captureRatioWinners": 0.62,
+      "exits": {
+        "TIME_EXIT": 113,
+        "TP2_HIT": 1,
+        "STOP_LOSS": 3
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -1.39,
+          "captureRatio": -0.27
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.68,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.16,
+          "captureRatio": 0.02
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.4,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.33,
+          "captureRatio": 4.94
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": -1.37,
+          "captureRatio": -0.21
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.26,
+          "captureRatio": 0.34
+        }
+      ]
+    },
+    "EXIT-A80": {
+      "trades": 105,
+      "longTrades": 57,
+      "shortTrades": 48,
+      "winRate": 38.1,
+      "profitFactor": 0.64,
+      "expectancy": -4.97,
+      "grossPnL": -521.47,
+      "fees": 399.83,
+      "netPnL": -521.47,
+      "roi": -5.21,
+      "maxDD": 6.07,
+      "avgWin": 22.99,
+      "avgLoss": -22.17,
+      "largestWin": 119.68,
+      "largestLoss": -54.05,
+      "longestWinStreak": 4,
+      "longestLossStreak": 7,
+      "avgHold": 37.68,
+      "medianHold": 40,
+      "avgMFE": 1.23,
+      "captureRatio": -1.56,
+      "longPF": 0.74,
+      "shortPF": 0.54,
+      "captureRatioWinners": 0.65,
+      "exits": {
+        "STOP_LOSS": 13,
+        "TIME_EXIT": 90,
+        "TP2_HIT": 2
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.96,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.49,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.54,
+          "captureRatio": 0.14
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.41,
+          "captureRatio": 5.24
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": -0.69,
+          "captureRatio": -0.11
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.53,
+          "captureRatio": 0.69
+        }
+      ]
+    },
+    "EXIT-A96": {
+      "trades": 101,
+      "longTrades": 55,
+      "shortTrades": 46,
+      "winRate": 42.57,
+      "profitFactor": 0.73,
+      "expectancy": -3.79,
+      "grossPnL": -383.27,
+      "fees": 385.63,
+      "netPnL": -383.27,
+      "roi": -3.83,
+      "maxDD": 4.92,
+      "avgWin": 24.37,
+      "avgLoss": -24.68,
+      "largestWin": 119.6,
+      "largestLoss": -54.02,
+      "longestWinStreak": 7,
+      "longestLossStreak": 7,
+      "avgHold": 44.37,
+      "medianHold": 48,
+      "avgMFE": 1.35,
+      "captureRatio": -1.85,
+      "longPF": 0.9,
+      "shortPF": 0.55,
+      "captureRatioWinners": 0.67,
+      "exits": {
+        "STOP_LOSS": 14,
+        "TIME_EXIT": 85,
+        "TP2_HIT": 2
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 1.13,
+          "captureRatio": 0.12
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.2,
+          "captureRatio": 0.03
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.5,
+          "captureRatio": 0.13
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.35,
+          "captureRatio": 5
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": -0.34,
+          "captureRatio": -0.05
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.75,
+          "captureRatio": 0.97
+        }
+      ]
+    },
+    "EXIT-ANONE": {
+      "trades": 51,
+      "longTrades": 27,
+      "shortTrades": 24,
+      "winRate": 23.53,
+      "profitFactor": 0.54,
+      "expectancy": -18.06,
+      "grossPnL": -921,
+      "fees": 170.99,
+      "netPnL": -921,
+      "roi": -9.21,
+      "maxDD": 10.3,
+      "avgWin": 90.37,
+      "avgLoss": -51.42,
+      "largestWin": 119.18,
+      "largestLoss": -53.95,
+      "longestWinStreak": 3,
+      "longestLossStreak": 10,
+      "avgHold": 269.22,
+      "medianHold": 176,
+      "avgMFE": 3.36,
+      "captureRatio": -1.6,
+      "longPF": 0.5,
+      "shortPF": 0.58,
+      "captureRatioWinners": 0.58,
+      "exits": {
+        "STOP_LOSS": 42,
+        "TP2_HIT": 9
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 10.04,
+          "realized": -2.5,
+          "captureRatio": -0.25
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.39,
+          "realized": -2.5,
+          "captureRatio": -0.27
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 4.72,
+          "realized": -2.5,
+          "captureRatio": -0.53
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": -2.5,
+          "captureRatio": -0.64
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 7.5,
+          "captureRatio": 27.87
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": -0.11,
+          "realized": -2.5,
+          "captureRatio": 22.18
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": -2.5,
+          "captureRatio": -3.24
+        }
+      ]
+    },
+    "EXIT-B1.5": {
+      "trades": 94,
+      "longTrades": 48,
+      "shortTrades": 46,
+      "winRate": 69.15,
+      "profitFactor": 1.14,
+      "expectancy": 2.15,
+      "grossPnL": 202.47,
+      "fees": 374.25,
+      "netPnL": 202.47,
+      "roi": 2.02,
+      "maxDD": 3.81,
+      "avgWin": 24.71,
+      "avgLoss": -48.4,
+      "largestWin": 362.64,
+      "largestLoss": -55.44,
+      "longestWinStreak": 14,
+      "longestLossStreak": 3,
+      "avgHold": 70.55,
+      "medianHold": 42.5,
+      "avgMFE": 1.68,
+      "captureRatio": -2.83,
+      "longPF": 1.76,
+      "shortPF": 0.62,
+      "captureRatioWinners": 0.58,
+      "exits": {
+        "TRAILING_STOP": 68,
+        "STOP_LOSS": 26
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.95,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.88,
+          "captureRatio": 0.12
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.79,
+          "captureRatio": 0.2
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.2,
+          "captureRatio": 4.45
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.63,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.54,
+          "captureRatio": 0.71
+        }
+      ]
+    },
+    "EXIT-B2": {
+      "trades": 92,
+      "longTrades": 48,
+      "shortTrades": 44,
+      "winRate": 64.13,
+      "profitFactor": 1.09,
+      "expectancy": 1.45,
+      "grossPnL": 133.81,
+      "fees": 363.78,
+      "netPnL": 133.81,
+      "roi": 1.34,
+      "maxDD": 4.22,
+      "avgWin": 26.23,
+      "avgLoss": -42.84,
+      "largestWin": 355.05,
+      "largestLoss": -55.07,
+      "longestWinStreak": 8,
+      "longestLossStreak": 6,
+      "avgHold": 75.78,
+      "medianHold": 50.5,
+      "avgMFE": 1.8,
+      "captureRatio": -2.97,
+      "longPF": 1.83,
+      "shortPF": 0.46,
+      "captureRatioWinners": 0.52,
+      "exits": {
+        "TRAILING_STOP": 66,
+        "STOP_LOSS": 26
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.71,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.75,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.6,
+          "captureRatio": 0.15
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.04,
+          "captureRatio": 3.86
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.51,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 1.04,
+          "captureRatio": 1.35
+        }
+      ]
+    },
+    "EXIT-B2.5": {
+      "trades": 90,
+      "longTrades": 47,
+      "shortTrades": 43,
+      "winRate": 61.11,
+      "profitFactor": 1.25,
+      "expectancy": 4.13,
+      "grossPnL": 371.41,
+      "fees": 358.86,
+      "netPnL": 371.41,
+      "roi": 3.71,
+      "maxDD": 4.41,
+      "avgWin": 33.5,
+      "avgLoss": -42.04,
+      "largestWin": 361.14,
+      "largestLoss": -56.36,
+      "longestWinStreak": 9,
+      "longestLossStreak": 3,
+      "avgHold": 85.47,
+      "medianHold": 61.5,
+      "avgMFE": 2.17,
+      "captureRatio": -3,
+      "longPF": 1.92,
+      "shortPF": 0.56,
+      "captureRatioWinners": 0.5,
+      "exits": {
+        "TRAILING_STOP": 64,
+        "STOP_LOSS": 26
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.43,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 2.43,
+          "captureRatio": 0.33
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.44,
+          "captureRatio": 0.11
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.62,
+          "captureRatio": 13.47
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.35,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.73,
+          "captureRatio": 0.94
+        }
+      ]
+    },
+    "EXIT-B3": {
+      "trades": 84,
+      "longTrades": 45,
+      "shortTrades": 39,
+      "winRate": 50,
+      "profitFactor": 1.3,
+      "expectancy": 5.22,
+      "grossPnL": 438.14,
+      "fees": 332.52,
+      "netPnL": 438.14,
+      "roi": 4.38,
+      "maxDD": 4.75,
+      "avgWin": 45.56,
+      "avgLoss": -35.12,
+      "largestWin": 353.11,
+      "largestLoss": -54.61,
+      "longestWinStreak": 7,
+      "longestLossStreak": 4,
+      "avgHold": 95.43,
+      "medianHold": 70.5,
+      "avgMFE": 2.4,
+      "captureRatio": -3.25,
+      "longPF": 1.7,
+      "shortPF": 0.84,
+      "captureRatioWinners": 0.54,
+      "exits": {
+        "TRAILING_STOP": 59,
+        "STOP_LOSS": 25
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.18,
+          "captureRatio": 0.02
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 1.82,
+          "captureRatio": 0.25
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.32,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.5,
+          "captureRatio": 13
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.25,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.87,
+          "captureRatio": 1.12
+        }
+      ]
+    },
+    "EXIT-C2": {
+      "trades": 94,
+      "longTrades": 48,
+      "shortTrades": 46,
+      "winRate": 48.94,
+      "profitFactor": 0.99,
+      "expectancy": -0.21,
+      "grossPnL": -20,
+      "fees": 369.86,
+      "netPnL": -20,
+      "roi": -0.2,
+      "maxDD": 4.7,
+      "avgWin": 30.33,
+      "avgLoss": -29.49,
+      "largestWin": 351.12,
+      "largestLoss": -54.24,
+      "longestWinStreak": 8,
+      "longestLossStreak": 11,
+      "avgHold": 73.3,
+      "medianHold": 49,
+      "avgMFE": 1.72,
+      "captureRatio": -2.94,
+      "longPF": 1.66,
+      "shortPF": 0.37,
+      "captureRatioWinners": 0.57,
+      "exits": {
+        "STOP_LOSS": 48,
+        "TRAILING_STOP": 46
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.71,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.75,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.6,
+          "captureRatio": 0.15
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.04,
+          "captureRatio": 3.86
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.51,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0,
+          "captureRatio": 0
+        }
+      ]
+    },
+    "EXIT-C2.5": {
+      "trades": 93,
+      "longTrades": 48,
+      "shortTrades": 45,
+      "winRate": 44.09,
+      "profitFactor": 1.1,
+      "expectancy": 1.45,
+      "grossPnL": 134.45,
+      "fees": 368.2,
+      "netPnL": 134.45,
+      "roi": 1.34,
+      "maxDD": 4.47,
+      "avgWin": 37.07,
+      "avgLoss": -26.64,
+      "largestWin": 353.47,
+      "largestLoss": -55.07,
+      "longestWinStreak": 6,
+      "longestLossStreak": 11,
+      "avgHold": 78.7,
+      "medianHold": 50,
+      "avgMFE": 1.9,
+      "captureRatio": -2.92,
+      "longPF": 1.82,
+      "shortPF": 0.38,
+      "captureRatioWinners": 0.55,
+      "exits": {
+        "STOP_LOSS": 51,
+        "TRAILING_STOP": 42
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0,
+          "captureRatio": 0
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 2.43,
+          "captureRatio": 0.33
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.44,
+          "captureRatio": 0.11
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.62,
+          "captureRatio": 13.47
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.35,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0,
+          "captureRatio": 0
+        }
+      ]
+    },
+    "EXIT-C3": {
+      "trades": 89,
+      "longTrades": 47,
+      "shortTrades": 42,
+      "winRate": 37.08,
+      "profitFactor": 1.08,
+      "expectancy": 1.26,
+      "grossPnL": 112.11,
+      "fees": 352.46,
+      "netPnL": 112.11,
+      "roi": 1.12,
+      "maxDD": 4.3,
+      "avgWin": 46.03,
+      "avgLoss": -25.12,
+      "largestWin": 348.8,
+      "largestLoss": -54.95,
+      "longestWinStreak": 6,
+      "longestLossStreak": 11,
+      "avgHold": 86.2,
+      "medianHold": 52,
+      "avgMFE": 2.03,
+      "captureRatio": -3.1,
+      "longPF": 1.67,
+      "shortPF": 0.5,
+      "captureRatioWinners": 0.56,
+      "exits": {
+        "STOP_LOSS": 56,
+        "TRAILING_STOP": 33
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0,
+          "captureRatio": 0
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 1.82,
+          "captureRatio": 0.25
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.32,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.5,
+          "captureRatio": 13
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.25,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0,
+          "captureRatio": 0
+        }
+      ]
+    },
+    "EXIT-D2": {
+      "trades": 93,
+      "longTrades": 49,
+      "shortTrades": 44,
+      "winRate": 68.82,
+      "profitFactor": 1,
+      "expectancy": -0.05,
+      "grossPnL": -5.05,
+      "fees": 232.36,
+      "netPnL": -5.05,
+      "roi": -0.05,
+      "maxDD": 4.33,
+      "avgWin": 21.39,
+      "avgLoss": -47.38,
+      "largestWin": 359.1,
+      "largestLoss": -54.32,
+      "longestWinStreak": 8,
+      "longestLossStreak": 3,
+      "avgHold": 73.92,
+      "medianHold": 50,
+      "avgMFE": 1.72,
+      "captureRatio": -2.95,
+      "longPF": 1.69,
+      "shortPF": 0.39,
+      "captureRatioWinners": 0.46,
+      "exits": {
+        "TRAILING_STOP": 67,
+        "STOP_LOSS": 26
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.71,
+          "captureRatio": 0.07
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.75,
+          "captureRatio": 0.1
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.6,
+          "captureRatio": 0.15
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.04,
+          "captureRatio": 3.86
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.51,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 1.04,
+          "captureRatio": 1.35
+        }
+      ]
+    },
+    "EXIT-D2.5": {
+      "trades": 91,
+      "longTrades": 48,
+      "shortTrades": 43,
+      "winRate": 64.84,
+      "profitFactor": 1.12,
+      "expectancy": 1.76,
+      "grossPnL": 160.48,
+      "fees": 227.52,
+      "netPnL": 160.48,
+      "roi": 1.6,
+      "maxDD": 4.45,
+      "avgWin": 25.77,
+      "avgLoss": -42.5,
+      "largestWin": 363.56,
+      "largestLoss": -55.22,
+      "longestWinStreak": 8,
+      "longestLossStreak": 3,
+      "avgHold": 83.95,
+      "medianHold": 61,
+      "avgMFE": 2.12,
+      "captureRatio": -2.98,
+      "longPF": 1.78,
+      "shortPF": 0.47,
+      "captureRatioWinners": 0.45,
+      "exits": {
+        "TRAILING_STOP": 65,
+        "STOP_LOSS": 26
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.43,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 2.43,
+          "captureRatio": 0.33
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.44,
+          "captureRatio": 0.11
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.62,
+          "captureRatio": 13.47
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.35,
+          "captureRatio": 0.05
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.73,
+          "captureRatio": 0.94
+        }
+      ]
+    },
+    "EXIT-D3": {
+      "trades": 84,
+      "longTrades": 45,
+      "shortTrades": 39,
+      "winRate": 64.29,
+      "profitFactor": 1.18,
+      "expectancy": 2.8,
+      "grossPnL": 235.38,
+      "fees": 210.8,
+      "netPnL": 235.38,
+      "roi": 2.35,
+      "maxDD": 4.71,
+      "avgWin": 28.61,
+      "avgLoss": -43.64,
+      "largestWin": 359.93,
+      "largestLoss": -53.9,
+      "longestWinStreak": 13,
+      "longestLossStreak": 3,
+      "avgHold": 95.43,
+      "medianHold": 70.5,
+      "avgMFE": 2.4,
+      "captureRatio": -3.25,
+      "longPF": 1.67,
+      "shortPF": 0.65,
+      "captureRatioWinners": 0.42,
+      "exits": {
+        "TRAILING_STOP": 59,
+        "STOP_LOSS": 25
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -2.5,
+          "captureRatio": -0.49
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.18,
+          "captureRatio": 0.02
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 1.82,
+          "captureRatio": 0.25
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.32,
+          "captureRatio": 0.08
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 3.5,
+          "captureRatio": 13
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -2.5,
+          "captureRatio": 0.6
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": 0.25,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.87,
+          "captureRatio": 1.12
+        }
+      ]
+    },
+    "EXIT-E": {
+      "trades": 113,
+      "longTrades": 60,
+      "shortTrades": 53,
+      "winRate": 30.97,
+      "profitFactor": 0.52,
+      "expectancy": -3.44,
+      "grossPnL": -388.74,
+      "fees": 441.42,
+      "netPnL": -388.74,
+      "roi": -3.89,
+      "maxDD": 5.07,
+      "avgWin": 12.19,
+      "avgLoss": -10.45,
+      "largestWin": 95.1,
+      "largestLoss": -39.27,
+      "longestWinStreak": 4,
+      "longestLossStreak": 19,
+      "avgHold": 15.58,
+      "medianHold": 8,
+      "avgMFE": 0.68,
+      "captureRatio": -0.78,
+      "longPF": 0.49,
+      "shortPF": 0.56,
+      "captureRatioWinners": 0.59,
+      "exits": {
+        "TREND_STATE_EXIT": 113
+      },
+      "trendCatch": 8,
+      "trendCatchPct": 30.77,
+      "caughtDetail": [
+        {
+          "eventId": 9,
+          "timing": -1968559,
+          "trendMove": 5.11,
+          "realized": -0.58,
+          "captureRatio": -0.11
+        },
+        {
+          "eventId": 12,
+          "timing": -1971641,
+          "trendMove": 9.67,
+          "realized": 0.85,
+          "captureRatio": 0.09
+        },
+        {
+          "eventId": 15,
+          "timing": -1973630,
+          "trendMove": 7.33,
+          "realized": 0.32,
+          "captureRatio": 0.04
+        },
+        {
+          "eventId": 16,
+          "timing": -1975606,
+          "trendMove": 3.9,
+          "realized": 0.34,
+          "captureRatio": 0.09
+        },
+        {
+          "eventId": 20,
+          "timing": -1977644,
+          "trendMove": 0.27,
+          "realized": 1.2,
+          "captureRatio": 4.45
+        },
+        {
+          "eventId": 22,
+          "timing": -1979561,
+          "trendMove": -4.2,
+          "realized": -1.08,
+          "captureRatio": 0.26
+        },
+        {
+          "eventId": 23,
+          "timing": -1980567,
+          "trendMove": 6.4,
+          "realized": -1.71,
+          "captureRatio": -0.27
+        },
+        {
+          "eventId": 26,
+          "timing": -1985636,
+          "trendMove": 0.77,
+          "realized": 0.24,
+          "captureRatio": 0.31
+        }
+      ]
+    }
+  },
+  "determinism": {
+    "EXIT-V0": true,
+    "EXIT-A10": true,
+    "EXIT-A20": true,
+    "EXIT-A40": true,
+    "EXIT-A80": true,
+    "EXIT-A96": true,
+    "EXIT-ANONE": true,
+    "EXIT-B1.5": true,
+    "EXIT-B2": true,
+    "EXIT-B2.5": true,
+    "EXIT-B3": true,
+    "EXIT-C2": true,
+    "EXIT-C2.5": true,
+    "EXIT-C3": true,
+    "EXIT-D2": true,
+    "EXIT-D2.5": true,
+    "EXIT-D3": true,
+    "EXIT-E": true
+  }
+}

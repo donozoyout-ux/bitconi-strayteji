@@ -1,0 +1,38 @@
+{
+  "totalTrends": 32,
+  "longTrends": 21,
+  "shortTrends": 11,
+  "caught": 0,
+  "missed": 32,
+  "catchRate": 0,
+  "missRate": 100,
+  "averageMissedMove": 4.61,
+  "largestMissedMove": 11.1,
+  "missedReasons": {
+    "NO RSI CROSSOVER": {
+      "count": 28,
+      "percentage": 87.5
+    },
+    "NO BB TOUCH": {
+      "count": 22,
+      "percentage": 68.8
+    },
+    "SCORE < 75": {
+      "count": 32,
+      "percentage": 100
+    },
+    "REGIME FILTER": {
+      "count": 25,
+      "percentage": 78.1
+    },
+    "CHOP FILTER": {
+      "count": 12,
+      "percentage": 37.5
+    },
+    "OTHER": {
+      "count": 5,
+      "percentage": 15.6
+    }
+  },
+  "analysisDate": "2026-08-25T14:25:00.681Z"
+}

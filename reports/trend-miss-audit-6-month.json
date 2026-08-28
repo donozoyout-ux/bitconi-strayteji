@@ -1,0 +1,55 @@
+{
+  "dataset": {
+    "candleCount": 19604,
+    "timeframe": "15m",
+    "startDate": "2026-02-10T21:30:00.000Z",
+    "endDate": "2026-08-23T16:00:00.000Z",
+    "note": "19604 candles from btc_usdt_15m_3m6m_raw.json, converted to array format"
+  },
+  "baseline": {
+    "totalTrades": 3978,
+    "winRate": 48.76,
+    "profitFactor": 0.95,
+    "netPnL": -8108.93,
+    "maxDrawdown": 58.97,
+    "totalFees": 7772.6,
+    "longTrades": 0,
+    "shortTrades": 3978
+  },
+  "strongTrends": {
+    "total": 32,
+    "long": 21,
+    "short": 11
+  },
+  "caughtVsMissed": {
+    "caught": 0,
+    "missed": 32,
+    "catchRate": 0,
+    "missRate": 100
+  },
+  "missedReasons": {
+    "NO RSI CROSSOVER": 87.5,
+    "NO BB TOUCH": 68.8,
+    "SCORE < 75": 100,
+    "REGIME FILTER": 78.1,
+    "CHOP FILTER": 37.5,
+    "OTHER": 15.6
+  },
+  "trendTiming": {
+    "neverCaught": 32,
+    "0-2 candles": 0,
+    "3-5 candles": 0,
+    "6-10 candles": 0,
+    "11-20 candles": 0,
+    "20+ candles": 0
+  },
+  "importantFinding": "No strong trends were caught by the RSI + Bollinger Bands strategy in the 6-month dataset",
+  "hypothesis": "RSI threshold adjustment, breakout entry, higher timeframe trend alignment could improve catch rate",
+  "strategyModified": false,
+  "parametersModified": false,
+  "productionCodeModified": false,
+  "lookaheadBias": "PASS",
+  "baselinePreserved": "PARTIAL (different dataset used for original baseline)",
+  "finalVerdict": "Trend capture problem quantified. No strategy changes made.",
+  "analysisDate": "2026-08-25T14:25:38.008Z"
+}

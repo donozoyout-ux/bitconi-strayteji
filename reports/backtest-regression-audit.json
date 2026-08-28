@@ -1,0 +1,81 @@
+{
+  "audit_id": "backtest-regression-2026-08-24",
+  "date": "2026-08-24",
+  "status": "CRITICAL_REGRESSION_CONFIRMED",
+  "baseline_comparison": {
+    "original_verified": {
+      "trades": 38,
+      "win_rate": 54.2,
+      "profit_factor": 1.68,
+      "gross_pnl": 184.37,
+      "fees": 1.25,
+      "net_pnl": 183.12,
+      "max_dd": 45.0,
+      "long_trades": 20,
+      "short_trades": 18,
+      "period": "Feb 11 2026 - Aug 23 2026",
+      "candle_count": 19604
+    },
+    "current_after_v2": {
+      "trades": 3978,
+      "win_rate": 48.76,
+      "profit_factor": 0.95,
+      "net_pnl": -8108.93,
+      "max_dd": 58.97,
+      "long_trades": 1961,
+      "short_trades": 2017,
+      "period": "Feb 11 2026 - Aug 23 2026",
+      "candle_count": 19604
+    },
+    "change": {
+      "trades": "+3940 (103.7x increase)",
+      "win_rate": "-5.52 percentage points",
+      "profit_factor": "-0.73 (from 1.68 to 0.95)",
+      "net_pnl": "-$8,292.06 (from +$183.12 to -$8,108.93)",
+      "max_dd": "+$13.97 (from -$45.00 to +58.97, i.e. deterioration)",
+      "signal_change": "0 -> 3,978 signals generated"
+    }
+  },
+  "root_cause": {
+    "primary": "RSI crossover condition simplified in backtest engine",
+    "file": "src/backtest/engine.js",
+    "line": 168-169,
+    "change_description": "Original detectSignal required rsiCrossUp/rsiCrossDown (previous candle RSI vs MA comparison). Backtest engine calculateSignal simplified to rsi > 50 && rsi > rsiMa (no crossover required).",
+    "original_logic": "rsiCrossUp = rsiPrev <= rsiMa && rsi > rsiMa; rsiCrossDown = rsiPrev >= rsiMa && rsi < rsiMa; rsiPassBull = rsiCrossUp && rsi > 50; rsiPassBear = rsiCrossDown && rsi < 50",
+    "current_logic": "rsiPassBull = rsi != null && rsi > 50 && rsi > rsiMa; rsiPassBear = rsi != null && rsi < 50 && rsi < rsiMa",
+    "impact": "Simplified RSI condition triggers on many more candles where RSI is merely on the right side of 50, without requiring an actual crossover event. This causes 38 -> 3,978 trade explosion.",
+    "verification": "Backtest engine produces 3,978 trades with simplified RSI; original strategy logic would produce ~38 trades with crossover requirement"
+  },
+  "checks_performed": {
+    "check_1_baseline_isolation": "passed - baseline calculated by backtest engine calculateSignal only",
+    "check_2_signal_frequency": "passed - identified RSI condition difference as cause",
+    "check_3_normalization_regression": "passed - normalization not cause of regression",
+    "check_4_candle_dataset": "passed - same 19,604 candles used",
+    "check_5_rsi_regression": "passed - ROOT CAUSE identified",
+    "check_6_bollinger_regression": "passed - no changes to BB calculation",
+    "check_7_lookback_index_regression": "passed - no lookback changes causing explosion",
+    "check_8_signal_score_regression": "passed - minSignalScore 75 preserved in evaluateEntry",
+    "check_9_regime_chop_regression": "passed - original filters intact",
+    "check_10_backtest_execution": "passed - trade simulator intact, signal generation is the issue",
+    "check_11_trade_duplication": "passed - no duplicate trades",
+    "check_12_fees_analysis": "passed - fees secondary to signal explosion"
+  },
+  "acceptance_criteria": {
+    "original_baseline_reproduced": "NO - 3,978 trades vs required 38",
+    "trend_capture_can_continue": "NO - baseline not restored",
+    "testnet_activation_recommended": "NO - critical regression unresolved"
+  },
+  "recommendations": [
+    "Restore RSI crossover logic in backtest engine calculateSignal to match original strategy",
+    "Add back rsiPrev comparison and rsiCrossUp/rsiCrossDown detection",
+    "Re-run backtest to verify 38-trade baseline reproduction",
+    "Only then proceed with trend-capture v2 development and TESTNET activation",
+    "DO NOT activate TESTNET until baseline is reproduced"
+  ],
+  "deliverables": [
+    "reports/backtest-regression-audit.md - full audit report",
+    "reports/backtest-regression-audit.json - this JSON audit",
+    "reports/baseline-old-vs-current.json - old vs current baseline comparison",
+    "reports/baseline-signal-funnel-comparison.json - signal funnel comparison"
+  ]
+}

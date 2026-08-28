@@ -1,0 +1,75 @@
+{
+  "comparison": "signal_funnel_comparison_original_vs_current",
+  "date": "2026-08-24",
+  "candle_count": 19604,
+  "period": "Feb 11 2026 - Aug 23 2026",
+  
+  "original_strategy_signal_funnel": {
+    "step_1_data": "19,604 candles available, RSI & BB values computed",
+    "step_2_rsi_crossover": {
+      "description": "Detect rsiCrossUp (prev RSI <= MA and now > MA) or rsiCrossDown (prev RSI >= MA and now < MA)",
+      "condition_met_count": "rare - only on actual crossover events",
+      "result": "0-2 crossover signals per 19,604 candles typical",
+      "detail": "RSI 50.63 at trend starts stays at midpoint, no crossover occurring (87.5% of missed trends have no crossover)"
+    },
+    "step_3_rsi_gt_50": "rsi > 50 (additional filter, still rare without crossover)",
+    "step_4_bb_confirmation": "priceTouchLower OR (priceAboveBasis && rsi > rsiMa)",
+    "step_5_regime_filter": "4h regime filter (BEAR blocks LONG)",
+    "step_6_chop_filter": "EMA crossovers < 35 over 30-period window",
+    "step_7_final_signal": "null across all 32 strong trends (0/32 catch rate)",
+    "total_final_signals": 38,
+    "win_rate": 54.2,
+    "profit_factor": 1.68
+  },
+  
+  "current_backtest_signal_funnel": {
+    "step_1_data": "19,604 candles available, normalization applied",
+    "step_2_rsi_condition": {
+      "description": "rsi > 50 && rsi > rsiMa (NO crossover required)",
+      "condition_met_count": "very many - triggers on any candle where RSI is above 50 and above its MA",
+      "result": "~3,978 signals generated across 19,604 candles",
+      "detail": "RSI 50.63 with RSI MA 50.63 triggers condition because 50.63 > 50 is true and 50.63 > 50.63 is... false (equal). But RSI 51 with MA 50 triggers: 51 > 50 && 51 > 50 = true",
+      "affected_range": "Any candle where RSI is meaningfully above 50 and above the MA"
+    },
+    "step_3_bb_confirmation": "priceTouchLower OR (priceAboveBasis && rsi > rsiMa)",
+    "step_4_regime_filter": "4h regime filter (BEAR blocks LONG, but 78.1% of trends affected)",
+    "step_5_chop_filter": "EMA crossovers < 35 over 30-period window",
+    "step_6_final_signal": "3,978 trades executed",
+    "total_final_signals": 3978,
+    "win_rate": 48.76,
+    "profit_factor": 0.95
+  },
+  
+  "key_difference": {
+    "critical_change": "RSI crossover requirement removed",
+    "original": "Signal only on actual crossover event (momentum change detection)",
+    "current": "Signal on RSI position state (RSI merely above/below 50 and above/below MA)",
+    "trade_count_impact": "38 -> 3,978 (104x increase)",
+    "signal_type_change": "event-driven -> state-driven",
+    "crossover_formula_original": "rsiCrossUp = rsiPrev <= rsiMa && rsi > rsiMa\\nrsiCrossDown = rsiPrev >= rsiMa && rsi < rsiMa",
+    "simplified_formula_current": "rsiPassBull = rsi > 50 && rsi > rsiMa\\nrsiPassBear = rsi < 50 && rsi < rsiMa",
+    "why_this_matters": "A crossover represents a momentum change event - price moving from one RSI regime to another. Without the crossover requirement, any candle with RSI simply in the 'right' position generates a signal, including candles where RSI has been above 50 for many periods consecutively.",
+  
+  "funnel_step_comparison_table": {
+    "step": | original_strategy | current_backtest | change,
+    "1_data" | 19,604 candles | 19,604 candles | none,
+    "2_rsi_filter" | rsiCrossUp/crosdown (crossover required) | rsi > 50 && rsi > rsiMa (no crossover) | "critical - removed crossover req",
+    "3_bb_confirmation" | priceTouchLower / (priceAboveBasis && rsi > rsiMa) | priceTouchLower / (priceAboveBasis && rsi > rsiMa) | none,
+    "4_regime_filter" | 4h ADX-based regime | 4h ADX-based regime | none,
+    "5_chop_filter" | EMA crossovers < 35 (30-period) | EMA crossovers < 35 (30-period) | none,
+    "6_final_signal" | 38 trades, 0/32 trends caught | 3,978 trades | "104x increase",
+    "win_rate" | 54.2% | 48.76% | -5.44 pp,
+    "profit_factor" | 1.68 | 0.95 | -0.73
+  },
+  
+  "root_cause_visual": {
+    "original_code_path": "strategy.service.js detectSignal -> rsiCrossUp/rsiCrossDown -> rsiPassBull/rsiPassBear -> signal on crossover",
+    "current_code_path": "backtest.engine.js calculateSignal -> rsi > 50 && rsi > rsiMa -> signal on position",
+    "line_of_change": "src/backtest/engine.js:168-169",
+    "change_summary": "Removed rsiPrev comparison and crossover detection. Simplified RSI pass conditions from crossover-required to position-based."
+  },
+  
+  "recommendation": "Restore original RSI crossover logic in backtest engine to reproduce 38-trade baseline. Without this, trend-capture v2 should not proceed to TESTNET activation.",
+  
+  "verification_status": "original_baseline_reproduced: NO | trend_capture_continue: NO | testnet_activation: NO"
+}

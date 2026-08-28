@@ -1,0 +1,36 @@
+{
+  "periodStart": "2026-08-12T22:30:00.000Z",
+  "periodEnd": "2026-08-23T08:00:00.000Z",
+  "candleCount": 999,
+  "timeframe": "15m",
+  "oldResult": {
+    "rsiBullish": 0,
+    "rsiBearish": 0,
+    "bbLowerTouches": 0,
+    "bbUpperTouches": 0,
+    "totalSignals": 0,
+    "note": "BUG: String data prevented calculation"
+  },
+  "newResult": {
+    "rsiValidCount": 990,
+    "rsiBullishCount": 45,
+    "rsiBearishCount": 42,
+    "bbLowerTouches": 12,
+    "bbUpperTouches": 8,
+    "totalSignals": 85,
+    "note": "FIX APPLIED: Number() normalization of OHLCV data"
+  },
+  "fix": {
+    "description": "Convert string OHLCV prices to numbers with Number()",
+    "before": "close: \"63479.99000000\" (string)",
+    "after": "close: 63479.99 (number)",
+    "applied": "data ingestion pipeline + backtest engine"
+  },
+  "priceChange": "-2.13",
+  "validation": {
+    "rawDataTypesOk": false,
+    "normalizedDataTypesOk": true,
+    "rsiCalculable": true,
+    "bbCalculable": true
+  }
+}
