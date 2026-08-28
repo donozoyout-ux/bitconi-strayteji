@@ -17,6 +17,7 @@ env.binanceSecret = process.env.BINANCE_SECRET_KEY || process.env.BINANCE_TESTNE
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 env.adminApiToken = process.env.ADMIN_API_TOKEN || '';
+env.webhookSecret = process.env.WEBHOOK_SECRET || '';
 
 // Trading control flags
 env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
@@ -58,6 +59,10 @@ if (!env.telegramBotToken || !env.telegramChatId) {
 
 if (env.environment === 'production' && !env.adminApiToken) {
   console.warn('[WARN] ADMIN_API_TOKEN is not configured. Mutating admin API endpoints will remain locked.');
+}
+
+if (env.environment === 'production' && !env.webhookSecret) {
+  console.warn('[WARN] WEBHOOK_SECRET is not configured. Trading webhook will remain locked.');
 }
 
 if (!useTestnet && env.tradingEnabled && !env.dryRun) {
