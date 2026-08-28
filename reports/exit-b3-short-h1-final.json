@@ -1,0 +1,112 @@
+{
+  "profile": {
+    "name": "EXIT_B3_SHORT_H1_ADX25",
+    "immutable": true,
+    "strategy": "trend_capture_v3_a",
+    "entry_primaryTf": "15m",
+    "entry_stratTf": "1h",
+    "entry_regimeTf": "4h",
+    "short_filter": "V3-A AND ADX >= 25 (shortAdxFloor=25)",
+    "long_logic": "100% identical to EXIT-B3",
+    "exit_architecture": "trend",
+    "exit_noTP": true,
+    "exit_noTimeExit": true,
+    "exit_atrTrailingMult": 3,
+    "exit_hardSL_percent": 2.5,
+    "exit_trailingActivation": "after MFE >= 1%",
+    "risk_per_trade_percent": 0.5,
+    "max_leverage": 5,
+    "entry_fee_rate": 0.001,
+    "exit_fee_rate": 0.001,
+    "round_trip_fee": 0.002,
+    "fee_model": "commissionRate 0.001 per side (engine default); 0.04% in earlier report was IGNORED (not an engine key)",
+    "risk_model": "riskPerTrade 0.5% (engine default); 1.0% in earlier report was IGNORED (not an engine key)",
+    "starting_equity": 10000,
+    "tpPercent": 5,
+    "adxFloor_config": 25,
+    "trendTrailingAtrMult_config": 3,
+    "strategyVersionTag": "EXIT_B3_M3_SHORT_H1_ADX25"
+  },
+  "dataset": "reports/btc_usdt_15m_3m6m_raw.json",
+  "period": {
+    "start": 1770803100000,
+    "end": 1787502600000,
+    "candles": 19604
+  },
+  "configConsistency": {
+    "reported_risk_in_prior_report": "1.0% (WRONG — engine key riskPercent ignored)",
+    "actual_risk_used": "riskPerTrade 0.5%",
+    "reported_fee_in_prior_report": "0.04% (WRONG — engine key feePercent ignored)",
+    "actual_fee_used": "commissionRate 0.001 = 0.1% per side (0.2% round-trip)",
+    "positionSizing": "positionSize = capital * (riskPerTrade/100) / (slPercent/100 * entryPrice), capped at capital*maxLeverage notional",
+    "note": "64-trade PF 1.74 run already used the canonical 0.5% / 0.1%-per-side values; only the report labels were wrong."
+  },
+  "trendDefinitions": {
+    "event": "15m candle i with ADX>=25 and directional move >=5% over next 96 candles (direction by EMA20 vs EMA50)",
+    "catch": "a trade of matching side whose entryTime falls within [event.startTs, event.endTs]",
+    "originalMetric_denominator": "deduped runs of overlapping qualifying windows",
+    "expandedMetric_denominator": "every qualifying start index (overlapping windows allowed)"
+  },
+  "result": {
+    "total": {
+      "trades": 64,
+      "grossWins": 1798.6,
+      "grossLosses": -1033.07,
+      "netPnl": 765.53,
+      "profitFactor": 1.74,
+      "expectancy": 11.96,
+      "winRate": 57.8,
+      "fees": 260.14,
+      "maxDD": 2.95,
+      "longestLosingStreak": 4
+    },
+    "LONG": {
+      "trades": 44,
+      "grossWins": 1427.22,
+      "grossLosses": -726.65,
+      "netPnl": 700.57,
+      "profitFactor": 1.96,
+      "expectancy": 15.92,
+      "winRate": 54.5,
+      "fees": 179.23,
+      "maxDD": null,
+      "longestLosingStreak": 6
+    },
+    "SHORT": {
+      "trades": 20,
+      "grossWins": 371.37,
+      "grossLosses": -306.41,
+      "netPnl": 64.96,
+      "profitFactor": 1.21,
+      "expectancy": 3.25,
+      "winRate": 65,
+      "fees": 80.91,
+      "maxDD": null,
+      "longestLosingStreak": 3
+    },
+    "exitReasonDistribution": {
+      "TRAILING_STOP": 48,
+      "STOP_LOSS": 16
+    },
+    "originalTrendCatch": {
+      "total": 4,
+      "long": 3,
+      "short": 1
+    },
+    "originalTrendEvents": 10,
+    "expandedTrendCatch": {
+      "total": 22,
+      "long": 17,
+      "short": 5
+    },
+    "expandedTrendEvents": 197
+  },
+  "reproducibility": {
+    "tradeCount": true,
+    "entryTimestamps": true,
+    "exitTimestamps": true,
+    "pnl": true,
+    "pf": true,
+    "dd": true
+  }
+}

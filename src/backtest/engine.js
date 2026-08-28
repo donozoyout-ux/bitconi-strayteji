@@ -1,6 +1,25 @@
-const { rsiSeries, rsiMaSeries, bollinger, stochRsi, emaSeries, adxSeries, atrSeries } = require('../services/strategy.service');
+const { rsiSeries, rsiMaSeries, bollinger, stochRsi, emaSeries, adxSeries, atrSeries, detectTrendCaptureSignal, detectTrendCaptureV3A, detectTrendCaptureV3B, detectTrendCaptureV3C, evaluateTrendCaptureEntry, precomputeIndicators } = require('../services/strategy.service');
+
+function normalizeCandle(c) {
+  if (!c) return c;
+  if (Array.isArray(c)) return c; // already normalized or array format
+  return [
+    Number(c.timestamp),
+    Number(c.open),
+    Number(c.high),
+    Number(c.low),
+    Number(c.close),
+    Number(c.volume),
+  ];
+}
+
+function normalizeCandles(candles) {
+  if (!Array.isArray(candles)) return candles;
+  return candles.map(normalizeCandle);
+}
 
 function backtest(strategy, candles, initialCapital = 10000, config = {}) {
+  const normalized = normalizeCandles(candles);
   const {
     riskPerTrade = 0.5,
     maxLeverage = 5,
@@ -8,9 +27,23 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
     slPercent = 2.5,
     tpPercent = 5,
     useRsi2 = false,
+    // Exit strategy: 'scalp' (default: TP partial + trailing 2.5*ATR + 5-candle time exit)
+    //               'trend' (EXIT-B: ATR trailing at trendTrailingAtrMult, no time exit, no TP, hard SL backstop)
+    exitStrategy = 'scalp',
+    trendTrailingAtrMult = 2.5,
+    trendUseTP = false,
+    trendTimeExitCandles = null,
+    shortAdxFloor = 0,
   } = config;
 
-  const n = candles.length;
+  // Immutable strategy identity for observability / TESTNET auditing. Derived from the
+  // active exit + entry configuration so every recorded trade carries the exact variant.
+  const strategyVersion = 'EXIT_B3'
+    + (exitStrategy === 'trend' ? '' : '_' + exitStrategy.toUpperCase())
+    + (exitStrategy === 'trend' && trendTrailingAtrMult !== 2.5 ? '_M' + trendTrailingAtrMult : '')
+    + (shortAdxFloor > 0 ? '_SHORT_H1_ADX' + shortAdxFloor : '');
+
+  const n = normalized.length;
   if (n < 60) {
     throw new Error('Not enough candle data for backtest');
   }
@@ -27,25 +60,27 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
   let lossTrades = 0;
   let totalWins = 0;
   let totalLosses = 0;
+  let grossWin = 0;
+  let grossLoss = 0;
   let longTrades = 0;
   let shortTrades = 0;
   let signalScores = [];
 
   // Helper: get current close price
   function getClose(i) {
-    return candles[i][4]; // close price
+    return normalized[i][4]; // close price
   }
   function getOpen(i) {
-    return candles[i][1]; // open price
+    return normalized[i][1]; // open price
   }
   function getHigh(i) {
-    return candles[i][2]; // high price
+    return normalized[i][2]; // high price
   }
   function getLow(i) {
-    return candles[i][3]; // low price
+    return normalized[i][3]; // low price
   }
   function getTimestamp(i) {
-    return candles[i][0];
+    return normalized[i][0];
   }
 
   // Helper: calculate signal for candle at index i
@@ -61,9 +96,9 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
     const lows = [];
 
     for (let j = 1; j <= lookback; j++) {
-      closePrices.push(candles[lookback - j][4]);
-      highs.push(candles[lookback - j][2]);
-      lows.push(candles[lookback - j][3]);
+      closePrices.push(normalized[lookback - j][4]);
+      highs.push(normalized[lookback - j][2]);
+      lows.push(normalized[lookback - j][3]);
     }
 
     // Reverse so oldest first, then current is last
@@ -95,11 +130,11 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
 
     // Determine regime
     const adxLen = 14;
-    const adxResult = adxSeries(candles, adxLen);
-    const adxVal = adxResult.adx.adx[adxResult.adx.length - 1];
+    const adxResult = adxSeries(normalized, adxLen);
+    const adxVal = adxResult.adx[adxResult.adx.length - 1];
     const plusDI = adxResult.plusDI[adxResult.plusDI.length - 1];
     const minusDI = adxResult.minusDI[adxResult.minusDI.length - 1];
-    const atrResult = atrSeries(candles, 14);
+    const atrResult = atrSeries(normalized, 14);
     const atrVal = atrResult[atrResult.length - 1];
 
     const ema20SeriesResult = emaSeries(closePrices, 20);
@@ -109,11 +144,11 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
 
     let regime = 'UNKNOWN';
     let chop = true;
+    const trendUp = ema20v > ema50v;
 
     if (adxVal != null) {
       const adxStrong = adxVal > 25;
       const adxModerate = adxVal > 20;
-      const trendUp = ema20v > ema50v;
 
       if (adxStrong && trendUp) regime = 'STRONG_BULL';
       else if (adxStrong && !trendUp) regime = 'STRONG_BEAR';
@@ -144,10 +179,32 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
     let side = null;
     let score = 0;
 
-    // RSI crossover detection (using previous RSI values would need more data,
-    // so we use current RSI vs MA and price position)
-    const rsiPassBull = rsi != null && rsi > 50 && rsi > rsiMa;
-    const rsiPassBear = rsi != null && rsi < 50 && rsi < rsiMa;
+    // RSI crossover detection
+    // Use previous candle's RSI vs MA comparison (same as original strategy)
+    const rsiPrev = rsiSeries(closePrices, rsiLen)[i - 1];
+    const rsiMaPrev = rsiMaSeries(closePrices, rsiLen)[i - 1];
+
+    const rsiCrossUp =
+      rsiPrev != null &&
+      rsiMaPrev != null &&
+      rsiPrev <= rsiMaPrev &&
+      rsi > rsiMa;
+
+    const rsiCrossDown =
+      rsiPrev != null &&
+      rsiMaPrev != null &&
+      rsiPrev >= rsiMaPrev &&
+      rsi < rsiMa;
+
+    const rsiPassBull =
+      rsiCrossUp &&
+      rsi != null &&
+      rsi > 50;
+
+    const rsiPassBear =
+      rsiCrossDown &&
+      rsi != null &&
+      rsi < 50;
 
     const priceAboveBasis = currentClose >= bbBasis;
     const priceBelowBasis = currentClose <= bbBasis;
@@ -252,10 +309,123 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
     };
   }
 
+const v2Opts = {
+    rsiLen: 20,
+    bbLength: 30,
+    bbMult: 2,
+    executionTimeframe: '15m',
+    higherTimeframe: '1h',
+    regimeTimeframe: '4h',
+    chopThreshold: 35,
+  };
+
+  // Initialize per-variant diagnostics (V2 + V3 research variants)
+  const tcVariants = ['trend_capture_v2', 'trend_capture_v3_a', 'trend_capture_v3_b', 'trend_capture_v3_c'];
+  function makeDiag() {
+    return {
+      functionCalls: 0,
+      validContexts: 0,
+      longCandidates: 0,
+      shortCandidates: 0,
+      rejectedBy4hRegime: 0,
+      rejectedBy1hAlignment: 0,
+      rejectedByADX: 0,
+      rejectedByChop: 0,
+      rejectedByBBPosition: 0,
+      rejectedByPctB: 0,
+      rejectedByRSI: 0,
+      rejectedByPullback: 0,
+      rejectedByResumption: 0,
+      rejectedByAntiFomo: 0,
+      finalSignals: 0,
+      trades: 0,
+    };
+  }
+  const tcDiag = {};
+  tcVariants.forEach((v) => { tcDiag[v] = makeDiag(); });
+
+  function selectTCFn(strategy) {
+    if (strategy.indexOf('trend_capture_v2') !== -1) return detectTrendCaptureSignal;
+    if (strategy.indexOf('trend_capture_v3_a') !== -1) return detectTrendCaptureV3A;
+    if (strategy.indexOf('trend_capture_v3_b') !== -1) return detectTrendCaptureV3B;
+    if (strategy.indexOf('trend_capture_v3_c') !== -1) return detectTrendCaptureV3C;
+    return null;
+  }
+
+  // Raw candles for V2 (detectTrendCaptureSignal internally normalizes them)
+  // We must pass the original raw candles, not the backtest's normalized arrays,
+  // because detectTrendCaptureSignal's normalizeCandle expects objects with
+  // named keys (timestamp, open, etc.), not numeric arrays.
+  const rawCandles = candles;
+
+  // Precompute full-series indicators ONCE for trend-capture variants to avoid
+  // the O(n^2) per-candle recompute that previously caused OOM. The detector's
+  // resolveTrendIndicators uses opts.precomputed at index opts.precomputedIndex.
+  const isTCStrategy = /trend_capture_(v2|v3)/.test(strategy);
+  const tcPrecomputed = isTCStrategy ? precomputeIndicators(rawCandles, v2Opts) : null;
+
   // Main backtest loop - candle by candle, no look-ahead
   for (let i = 35; i < n; i++) {
-    const result = calculateSignal(i);
-    signalScores.push(result.score);
+    let result;
+
+// Strategy mode: use V2 / V3 variants or baseline
+    const tcFn = selectTCFn(strategy);
+    if (tcFn && i >= 39) {
+      // Start from i=39 to ensure RSI MA is valid (rsiMa first non-null at index 39)
+      // Pass candles up to and including i: rawCandles.slice(0, i+1).
+      // Strategy function internally normalizes, and evaluates candle at index i.
+      const tcCandles = rawCandles; // precomputed path ignores the slice; pass full set
+      if (rawCandles.length >= 39) {
+        const d = tcDiag[strategy];
+        d.functionCalls++;
+        const tcResult = tcFn(tcCandles, Object.assign({}, v2Opts, { precomputed: tcPrecomputed, precomputedIndex: i }));
+        d.functionCalls++;
+
+        const tcRegime = tcResult.regime;
+        const tcAdx = tcResult.reasons.adx;
+        const tcTrendUp = tcResult.reasons.trendUp;
+        const tcPctB = tcResult.reasons.pctB;
+        const tcRsi = tcResult.reasons.rsi;
+        const tcRsiMa = tcResult.reasons.rsiMa;
+
+        const validContext =
+          tcRegime != null &&
+          tcAdx != null &&
+          tcTrendUp != null &&
+          tcPctB != null &&
+          tcRsi != null &&
+          tcRsiMa != null;
+
+        if (validContext) {
+          d.validContexts++;
+          if (tcResult.signal === 'LONG') {
+            d.longCandidates++;
+            d.finalSignals++;
+          } else if (tcResult.signal === 'SHORT') {
+            d.shortCandidates++;
+            d.finalSignals++;
+          }
+        }
+        result = {
+          signal: tcResult.signal,
+          side: tcResult.signal === 'LONG' ? 'LONG' : tcResult.signal === 'SHORT' ? 'SHORT' : null,
+          score: tcResult.score,
+          regime: tcResult.regime,
+          chop: tcResult.chop,
+        };
+        // Research-only SHORT quality filter (H1): require ADX >= shortAdxFloor.
+        // LONG untouched. Default 0 = disabled (EXIT-B3 unchanged).
+        if (shortAdxFloor > 0 && result.signal === 'SHORT' && (tcAdx == null || tcAdx < shortAdxFloor)) {
+          result = { signal: null, side: null, score: 0, regime: result.regime, chop: result.chop };
+        }
+      } else {
+        result = { signal: null, side: null, score: 0, regime: 'UNKNOWN', chop: true };
+      }
+    } else {
+      // === BASELINE_V1 MODE (default) ===
+      result = calculateSignal(i);
+      signalScores.push(result.score);
+    }
 
     const close = getClose(i);
     const timestamp = getTimestamp(i);
@@ -303,7 +473,23 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
         tp1Done: false,
         highestSinceEntry: entryPrice,
         lowestSinceEntry: entryPrice,
+        extHigh: getHigh(i),
+        extLow: getLow(i),
+        barsHeld: 1,
+        mfe: 0,
+        mae: 0,
+        trailActive: false,
+        entryAdx: (tcPrecomputed && tcPrecomputed.adx) ? tcPrecomputed.adx.adx[i] : null,
+        entryRsi: (tcPrecomputed && tcPrecomputed.rsi) ? tcPrecomputed.rsi[i] : null,
+        regime: result.regime,
+        entryReason: 'V3A_' + side,
+        strategyVersion: strategyVersion,
       };
+
+      // Track trades for trend_capture variants (V2 + V3)
+      if (tcDiag[strategy]) {
+        tcDiag[strategy].trades++;
+      }
 
       signalScores.push(result.score);
     }
@@ -318,6 +504,8 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
         if (close < position.lowestSinceEntry) {
           position.lowestSinceEntry = close;
         }
+        if (getHigh(i) > position.extHigh) position.extHigh = getHigh(i);
+        if (getLow(i) < position.extLow) position.extLow = getLow(i);
       } else {
         if (close < position.lowestSinceEntry) {
           position.lowestSinceEntry = close;
@@ -325,15 +513,17 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
         if (close > position.highestSinceEntry) {
           position.highestSinceEntry = close;
         }
+        if (getLow(i) < position.extLow) position.extLow = getLow(i);
+        if (getHigh(i) > position.extHigh) position.extHigh = getHigh(i);
       }
 
-      // Check TP1 hit (partial)
+      // Check TP1 hit (partial) — only in scalp mode or when trend TP enabled
       let exited = false;
       let exitPrice = null;
       let exitReason = null;
       let sellFraction = 1;
 
-      if (!position.tp1Done) {
+      if ((exitStrategy === 'scalp' || trendUseTP) && !position.tp1Done) {
         if (position.side === 'LONG' && close >= position.tp1) {
           exitPrice = position.tp1;
           exitReason = 'TP1_HIT';
@@ -362,15 +552,30 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
         }
       }
 
+      // Track max favorable excursion (MFE, in %) for trend mode so the trailing
+      // stop only activates after the trade is at least +1% in profit (matches
+      // research harness EXIT-B behaviour: trailing engages at +1R).
+      if (exitStrategy === 'trend') {
+        if (position.side === 'LONG') position.mfe = Math.max(position.mfe, (position.extHigh - position.entryPrice) / position.entryPrice * 100);
+        else position.mfe = Math.max(position.mfe, (position.entryPrice - position.extLow) / position.entryPrice * 100);
+        if (position.side === 'LONG') position.mae = Math.max(position.mae, (position.entryPrice - position.extLow) / position.entryPrice * 100);
+        else position.mae = Math.max(position.mae, (position.extHigh - position.entryPrice) / position.entryPrice * 100);
+        if (!position.trailActive && position.mfe >= 1) position.trailActive = true;
+      }
+
       // Check trailing stop
-      if (!exited) {
-        const atr = atrSeries(candles, 14)[i] || 0;
+      if (!exited && (exitStrategy !== 'trend' || position.trailActive)) {
+        const atr = (tcPrecomputed && tcPrecomputed.atr) ? tcPrecomputed.atr[i] : (atrSeries(normalized, 14)[i] || 0);
+        const trailMult = (exitStrategy === 'trend') ? trendTrailingAtrMult : 2.5;
+        // In trend mode use extreme high/low (matches research harness); scalp keeps close-based extreme
+        const extHi = (exitStrategy === 'trend') ? position.extHigh : position.highestSinceEntry;
+        const extLo = (exitStrategy === 'trend') ? position.extLow : position.lowestSinceEntry;
         let trailingStop;
         if (position.side === 'LONG') {
           // Trailing stop: highest since entry - ATR * trailMult
-          trailingStop = position.highestSinceEntry - 2.5 * atr;
+          trailingStop = extHi - trailMult * atr;
         } else {
-          trailingStop = position.lowestSinceEntry + 2.5 * atr;
+          trailingStop = extLo + trailMult * atr;
         }
 
         if (position.side === 'LONG' && close <= trailingStop) {
@@ -384,13 +589,16 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
         }
       }
 
-      // Check time exit (5 candles held)
-      if (!exited && position.barsHeld != null) {
-        position.barsHeld = (position.barsHeld || 0) + 1;
-        if (position.barsHeld >= 5) {
-          exitPrice = close;
-          exitReason = 'TIME_EXIT';
-          exited = true;
+      // Check time exit (scalp: 5 candles; trend: configurable or disabled)
+      if (!exited) {
+        const timeExitCandles = (exitStrategy === 'trend') ? trendTimeExitCandles : 5;
+        if (timeExitCandles && position.barsHeld != null) {
+          position.barsHeld = (position.barsHeld || 0) + 1;
+          if (position.barsHeld >= timeExitCandles) {
+            exitPrice = close;
+            exitReason = 'TIME_EXIT';
+            exited = true;
+          }
         }
       }
 
@@ -428,8 +636,8 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
 
         // Update capital
         capital += pnl - fees;
-        totalWins += pnl > 0 ? sellFraction : 0;
-        totalLosses += pnl < 0 ? sellFraction : 0;
+        const netP = pnl - fees;
+        if (netP > 0) grossWin += netP; else grossLoss += Math.abs(netP);
         winTrades += pnl > 0 ? sellFraction : 0;
         lossTrades += pnl < 0 ? sellFraction : 0;
         consecutiveLosses += pnl < 0 ? sellFraction : 0;
@@ -447,8 +655,14 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
           pnlPercent: ((exitPrice - position.entryPrice) / position.entryPrice) * 100 * (position.side === 'LONG' ? 1 : -1),
           fee: fees,
           exitReason,
+          entryReason: position.entryReason,
           regime: result.regime,
           signalScore: result.score,
+          adx: position.entryAdx,
+          rsi: position.entryRsi,
+          mfe: position.mfe,
+          mae: position.mae,
+          strategyVersion: position.strategyVersion,
           maxDrawdown,
         };
 
@@ -470,7 +684,7 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
   // Calculate final metrics
   const totalTrades = trades.length;
   const winRate = totalTrades > 0 ? (winTrades / totalTrades) * 100 : 0;
-  const profitFactor = totalTrades > 0 && totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? Infinity : 1;
+  const profitFactor = grossLoss > 0 ? Math.round((grossWin / grossLoss) * 100) / 100 : (grossWin > 0 ? Infinity : 1);
   const netPnL = capital - initialCapital;
   const expectancy = totalTrades > 0 ? (winRate / 100) * profitFactor * (profitFactor > 0 ? profitFactor : 1) - (1 - winRate / 100) : 0;
   const avgWin = winTrades > 0 ? totalWins / winTrades : 0;
@@ -511,6 +725,11 @@ function backtest(strategy, candles, initialCapital = 10000, config = {}) {
       tpPercent,
       useRsi2,
     },
+    // Per-variant diagnostics (V2 + V3 research variants)
+    trendCaptureDiagnostics: tcVariants.reduce((acc, v) => {
+      acc[v] = tcDiag[v];
+      return acc;
+    }, {}),
   };
 }
 

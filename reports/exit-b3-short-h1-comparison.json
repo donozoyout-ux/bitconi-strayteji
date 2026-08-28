@@ -1,0 +1,68 @@
+{
+  "canonical": {
+    "total": {
+      "trades": 64,
+      "grossWins": 1798.6,
+      "grossLosses": -1033.07,
+      "netPnl": 765.53,
+      "profitFactor": 1.74,
+      "expectancy": 11.96,
+      "winRate": 57.8,
+      "fees": 260.14,
+      "maxDD": null,
+      "longestLosingStreak": 4
+    },
+    "LONG": {
+      "trades": 44,
+      "grossWins": 1427.22,
+      "grossLosses": -726.65,
+      "netPnl": 700.57,
+      "profitFactor": 1.96,
+      "expectancy": 15.92,
+      "winRate": 54.5,
+      "fees": 179.23,
+      "maxDD": null,
+      "longestLosingStreak": 6
+    },
+    "SHORT": {
+      "trades": 20,
+      "grossWins": 371.37,
+      "grossLosses": -306.41,
+      "netPnl": 64.96,
+      "profitFactor": 1.21,
+      "expectancy": 3.25,
+      "winRate": 65,
+      "fees": 80.91,
+      "maxDD": null,
+      "longestLosingStreak": 3
+    },
+    "originalTrendCatch": {
+      "total": 4,
+      "long": 3,
+      "short": 1
+    },
+    "expandedTrendCatch": {
+      "total": 22,
+      "long": 17,
+      "short": 5
+    }
+  },
+  "config": {
+    "strategy": "trend_capture_v3_a",
+    "primaryTf": "15m",
+    "stratTf": "1h",
+    "regimeTf": "4h",
+    "exitStrategy": "trend",
+    "trendTrailingAtrMult": 3,
+    "trendUseTP": false,
+    "trendTimeExitCandles": null,
+    "shortAdxFloor": 25,
+    "riskPerTrade": 0.5,
+    "maxLeverage": 5,
+    "commissionRate": 0.001,
+    "slPercent": 2.5,
+    "tpPercent": 5,
+    "initialCapital": 10000,
+    "useVol": true
+  }
+}

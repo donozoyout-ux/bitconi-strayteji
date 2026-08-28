@@ -6,8 +6,27 @@ const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
 const DEFAULT_SETTINGS = {
   // Strategy
-  strategy: 'rsi-bollinger',
-  strategyVersion: '1.0.0',
+  strategy: 'trend_capture_v3_a',
+  strategyVersion: 'EXIT_B3_M3_SHORT_H1_ADX25',
+
+  // Candidate / TESTNET forward-test config (EXIT_B3_SHORT_H1_ADX25)
+  // Entry: V3-A unchanged; LONG unchanged; SHORT requires ADX >= 25.
+  // Exit:  trend mode, ATR trailing mult 3.0, no TP, no time exit, hard SL 2.5%,
+  //        trailing activates only after MFE >= 1%.
+  exitStrategy: 'trend',
+  trendTrailingAtrMult: 3.0,
+  trendUseTP: false,
+  trendTimeExitCandles: null,
+  shortAdxFloor: 25,
+  useTestnet: true,
+  forwardTest: {
+    enabled: true,
+    candidate: 'EXIT_B3_SHORT_H1_ADX25',
+    minTrades: 20,
+    preferredTrades: 30,
+    logging: true,
+    allowTuning: false,
+  },
 
   // RSI
   rsiLength: 20,

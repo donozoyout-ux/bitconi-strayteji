@@ -9,6 +9,8 @@ const riskEngine = require('./risk-engine');
 const newsService = require('./news.service');
 const settingsService = require('./settings.service');
 const db = require('../db');
+const fs = require('fs');
+const path = require('path');
 
 let timer = null;
 let stopped = false;
@@ -428,11 +430,129 @@ async function buildStrategy(symbol) {
   };
 }
 
+// ---- EXIT_B3_SHORT_H1_ADX25 candidate (TESTNET forward test) ----
+// These delegate to the SAME research entry/exit logic used by the backtest engine
+// (strategy.service.detectTrendCaptureV3A + shortAdxFloor + EXIT-B ATR trailing) so the
+// live path is a true parity copy. Gated behind settings.strategy === 'trend_capture_v3_a'.
+
+const CANDIDATE_OPTS = {
+  primaryTf: '15m', stratTf: '1h', regimeTf: '4h',
+  bbPeriod: 20, bbStdDev: 2, rsiPeriod: 14, adxPeriod: 14, emaFast: 20, emaSlow: 50, atrPeriod: 14,
+  confidence: 0.5, rsiEmaPeriod: 14, rsiMaPeriod: 50, adxFloor: 25, adxMin: 22, adxStrong: 30,
+  regimeTf: '4h', stratTf: '1h', tpSlSource: 'atr', atrPeriod: 14, tpMult: 2.5, slMult: 2.5,
+  bbFrac: 0.02, volFrac: 1.3, rsiMin: 50, rsiMax: 78, severeChopAdx: 20, useVol: true, minQuietAdx: 18,
+};
+
+async function researchEntryDecision(symbol, settings, candles) {
+  const c = candles || await analyzer.fetchCandles(symbol, settings.executionTimeframe || '15m', 320);
+  const tc = strategyEngine.detectTrendCaptureV3A(c, CANDIDATE_OPTS);
+  let signal = tc.signal;
+  let side = signal === 'LONG' ? 'LONG' : signal === 'SHORT' ? 'SHORT' : null;
+  const close = c[c.length - 1][4];
+  const ts = c[c.length - 1][0];
+  // H1 SHORT filter: ADX >= shortAdxFloor (LONG untouched)
+  if (side === 'SHORT' && (tc.reasons.adx == null || tc.reasons.adx < settings.shortAdxFloor)) {
+    signal = null; side = null;
+  }
+  const slPercent = parseFloat(env.slPercent || '2.5');
+  const stopPrice = side === 'LONG' ? close * (1 - slPercent / 100) : close * (1 + slPercent / 100);
+  return {
+    signal, side, score: tc.score, regime: tc.regime,
+    reasons: {
+      adx: tc.reasons.adx, rsi: tc.reasons.rsi, rsiMa: tc.reasons.rsiMa,
+      atr: tc.reasons.atr, bbBasis: tc.reasons.bbBasis, bbLower: tc.reasons.bbLower, bbUpper: tc.reasons.bbUpper,
+      pctB: tc.reasons.pctB, trendUp: tc.reasons.trendUp, chop: tc.reasons.chop,
+      close, ts, stopPrice, slPercent,
+      strategyVersion: settings.strategyVersion,
+      entryReason: side ? ('V3A_' + side) : null,
+    },
+  };
+}
+
+function researchExitDecision(pos, candles, livePrice, settings) {
+  const last = candles[candles.length - 1];
+  const hi = last[2], lo = last[3];
+  const extHigh = Math.max(pos.extHigh != null ? pos.extHigh : pos.entryPrice, hi);
+  const extLow = Math.min(pos.extLow != null ? pos.extLow : pos.entryPrice, lo);
+  const atrArr = strategyEngine.atrSeries ? strategyEngine.atrSeries(candles, 14) : null;
+  const atr = atrArr ? atrArr[atrArr.length - 1] : (pos.atr || 0);
+  const mult = settings.trendTrailingAtrMult || 3.0;
+  const slPercent = parseFloat(env.slPercent || '2.5');
+  const hardSL = pos.side === 'LONG' ? pos.entryPrice * (1 - slPercent / 100) : pos.entryPrice * (1 + slPercent / 100);
+  let mfe = pos.mfe || 0;
+  mfe = pos.side === 'LONG'
+    ? Math.max(mfe, (extHigh - pos.entryPrice) / pos.entryPrice * 100)
+    : Math.max(mfe, (pos.entryPrice - extLow) / pos.entryPrice * 100);
+  let trailActive = pos.trailActive || false;
+  if (!trailActive && mfe >= 1) trailActive = true;
+  let trailingStop = null;
+  if (trailActive && atr) trailingStop = pos.side === 'LONG' ? extHigh - mult * atr : extLow + mult * atr;
+
+  let action = null, reason = null, exitPrice = null;
+  if (pos.side === 'LONG' && livePrice <= hardSL) { action = 'SELL_ALL'; reason = 'STOP_LOSS'; exitPrice = hardSL; }
+  else if (pos.side === 'SHORT' && livePrice >= hardSL) { action = 'SELL_ALL'; reason = 'STOP_LOSS'; exitPrice = hardSL; }
+  if (!action && trailingStop != null) {
+    if (pos.side === 'LONG' && livePrice <= trailingStop) { action = 'SELL_ALL'; reason = 'TRAILING_STOP'; exitPrice = trailingStop; }
+    else if (pos.side === 'SHORT' && livePrice >= trailingStop) { action = 'SELL_ALL'; reason = 'TRAILING_STOP'; exitPrice = trailingStop; }
+  }
+  return { action, reason, exitPrice, extHigh, extLow, mfe, trailActive, trailingStop, hardSL, atr };
+}
+
+// Pre-trade safety/startup guard (section 7). Returns { ok, reasons }.
+async function preTradeChecks(settings) {
+  const reasons = [];
+  if (!env.useTestnet) reasons.push('USE_TESTNET=false (live endpoint would be used)');
+  if (!env.isTestnet) reasons.push('isTestnet=false');
+  if (env.emergencyStop) reasons.push('EMERGENCY_STOP active');
+  if (!settings.useTestnet) reasons.push('settings.useTestnet=false');
+  // DB healthy
+  try { await db.query('SELECT 1'); } catch (e) { reasons.push('DB unreachable: ' + e.message); }
+  // Fresh 15m candle
+  try {
+    const c = await analyzer.fetchCandles(env.tradingSymbol || 'BTC/USDT', settings.executionTimeframe || '15m', 2);
+    const lastTs = c[c.length - 1][0];
+    const ageMin = (Date.now() - lastTs) / 60000;
+    if (ageMin > 25) reasons.push('stale 15m candle (age ' + ageMin.toFixed(1) + ' min)');
+  } catch (e) { reasons.push('candle freshness check failed: ' + e.message); }
+  // No orphan position / duplicate open order (best-effort)
+  try {
+    const st = stateService.get();
+    if (st.position && st.position.symbol) {
+      const openOrders = await exchange.fetchOpenOrders(env.tradingSymbol || 'BTC/USDT');
+      const hasOpen = openOrders.some(o => o.symbol === (env.tradingSymbol || 'BTC/USDT'));
+      if (hasOpen) reasons.push('open order already exists for symbol');
+    }
+  } catch (e) { reasons.push('order reconciliation check failed: ' + e.message); }
+  return { ok: reasons.length === 0, reasons };
+}
+
+// Forward-test journal (section 6): append-only JSONL for every evaluated signal + closed trade,
+// capturing the full research/audit field set. Avoids DB schema coupling.
+const FORWARD_JOURNAL = path.join(__dirname, '..', '..', 'data', 'forward-test-journal.jsonl');
+function appendForwardJournal(rec) {
+  try {
+    if (!fs.existsSync(path.dirname(FORWARD_JOURNAL))) fs.mkdirSync(path.dirname(FORWARD_JOURNAL), { recursive: true });
+    fs.appendFileSync(FORWARD_JOURNAL, JSON.stringify(rec) + '\n');
+  } catch (e) {
+    logger.warn('[FORWARD-JOURNAL] write failed: ' + e.message);
+  }
+}
+
 async function analyzeOnly() {
   const symbol = env.tradingSymbol || 'BTC/USDT';
-  const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
-  const analysis = analyzer.detectSignal(candles, env);
-  const entryEval = strategyEngine.evaluateEntry(candles, env);
+  const settings = settingsService.get();
+  const isCandidate = settings.strategy === 'trend_capture_v3_a';
+
+  let candles, analysis, entryEval;
+  if (isCandidate) {
+    candles = await analyzer.fetchCandles(symbol, settings.executionTimeframe || '15m', 320);
+    entryEval = await researchEntryDecision(symbol, settings, candles);
+    analysis = { ts: entryEval.reasons.ts, close: entryEval.reasons.close, signal: entryEval.signal, reasons: entryEval.reasons };
+  } else {
+    candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
+    analysis = analyzer.detectSignal(candles, env);
+    entryEval = strategyEngine.evaluateEntry(candles, env);
+  }
 
   let price = null;
   try {
@@ -480,8 +600,32 @@ async function runCycle() {
 
   try {
     const symbol = env.tradingSymbol || 'BTC/USDT';
-    const candles = await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
-    const analysis = analyzer.detectSignal(candles, env);
+    const settings = settingsService.get();
+    const isCandidate = settings.strategy === 'trend_capture_v3_a';
+
+    // Pre-trade safety / startup guard (section 7). NO TRADE if any check fails.
+    if (isCandidate) {
+      const guard = await preTradeChecks(settings);
+      if (!guard.ok) {
+        logger.error('[GUARD] Pre-trade checks failed -> NO TRADE: ' + guard.reasons.join('; '));
+        stateService.update({ busy: false, lastError: 'PRE_TRADE_GUARD:' + guard.reasons.join('; ') });
+        return;
+      }
+    }
+
+    const candles = isCandidate
+      ? await analyzer.fetchCandles(symbol, settings.executionTimeframe || '15m', 320)
+      : await analyzer.fetchCandles(symbol, env.analysisTimeframe, 220);
+
+    let entryEval, analysis;
+    if (isCandidate) {
+      entryEval = await researchEntryDecision(symbol, settings, candles);
+      analysis = { ts: entryEval.reasons.ts, close: entryEval.reasons.close, signal: entryEval.signal, reasons: entryEval.reasons };
+    } else {
+      analysis = analyzer.detectSignal(candles, env);
+      entryEval = strategyEngine.evaluateEntry(candles, env);
+    }
+
     const price = await fetchLivePrice(symbol);
 
     const strategy = await buildStrategy(symbol);
@@ -507,7 +651,25 @@ async function runCycle() {
       stateService.update({ dryRun: { USDT: realUsdt, BTC: realBtc } });
     }
 
-    const entryEval = strategyEngine.evaluateEntry(candles, env);
+    if (isCandidate) {
+      appendForwardJournal({
+        type: 'ENTRY_EVAL',
+        ts: Date.now(),
+        strategyVersion: settings.strategyVersion,
+        symbol,
+        signal: entryEval.signal,
+        side: entryEval.side,
+        score: entryEval.score,
+        adx: entryEval.reasons.adx,
+        rsi: entryEval.reasons.rsi,
+        regime: entryEval.reasons.regime,
+        adxAboveFloor: entryEval.reasons.adxAboveFloor,
+        stopPrice: entryEval.reasons.stopPrice,
+        atr: entryEval.reasons.atr,
+        entryReason: entryEval.reasons.entryReason,
+        reasons: entryEval.reasons,
+      });
+    }
 
     // Apply market regime filter
     const regime = entryEval.reasons.regime;
@@ -632,7 +794,19 @@ async function runCycle() {
 
     // Size position using risk engine
     let positionSize = null;
-    if (entryEval.signal && entryEval.reasons.bbLower != null && entryEval.reasons.bbUpper != null) {
+    if (entryEval.signal && isCandidate && entryEval.reasons.stopPrice != null && entryEval.reasons.close != null) {
+      // EXIT_B3 candidate: risk is measured to the hard SL (2.5%)
+      const stopDistance = Math.abs(entryEval.reasons.stopPrice - entryEval.reasons.close);
+      if (stopDistance > 0) {
+        const riskResult = riskEngine.calculatePositionSize(
+          realUsdt,
+          settings.riskPerTrade || env.riskPerTrade || 0.5,
+          stopDistance,
+          settings.maxLeverage || env.maxLeverage || 5
+        );
+        if (riskResult.success) positionSize = riskResult.positionSize;
+      }
+    } else if (entryEval.signal && entryEval.reasons.bbLower != null && entryEval.reasons.bbUpper != null) {
       const close = entryEval.reasons.rsi != null ? entryEval.reasons.rsi * 100 : 100; // placeholder
       // Calculate stop distance from entry to BB lower/upper based on side
       let stopDistance;
@@ -725,6 +899,9 @@ async function runCycle() {
 async function handleEntry(entryEval, symbol, livePrice, positionSize = null) {
   if (!entryEval.signal) return;
 
+  const settings = settingsService.get();
+  const isCandidate = settings.strategy === 'trend_capture_v3_a';
+
   const state = stateService.get();
   const candleTs = entryEval.reasons && entryEval.reasons.ts
     ? entryEval.reasons.ts
@@ -746,15 +923,36 @@ async function handleEntry(entryEval, symbol, livePrice, positionSize = null) {
 
   logger.info('[STRATEJI] %s sinyali tespit edildi -> %s', entryEval.side, entryEval.signal);
   try {
+    const action = entryEval.side === 'SHORT' || entryEval.side === 'SELL' ? 'SELL' : 'BUY';
     const result = await orderService.placeOrder(
-      entryEval.side,
+      action,
       symbol,
       null,
-      entryEval.side === 'LONG' ? budget : null
+      entryEval.side === 'LONG' || entryEval.side === 'BUY' ? budget : null
     );
 
     const pos = stateService.get().position;
-    if (pos && env.strategyMode === 'trend') {
+    if (pos && isCandidate) {
+      // EXIT_B3 candidate: store research metadata + trailing state on the position
+      stateService.update({
+        position: {
+          ...pos,
+          entryTs: Date.parse(result.timestamp),
+          strategyVersion: entryEval.reasons.strategyVersion,
+          entryReason: entryEval.reasons.entryReason,
+          entryAdx: entryEval.reasons.adx,
+          entryRsi: entryEval.reasons.rsi,
+          atr: entryEval.reasons.atr,
+          stopPrice: entryEval.reasons.stopPrice,
+          tp1: null,
+          tp2: null,
+          extHigh: result.averagePrice || pos.entryPrice,
+          extLow: result.averagePrice || pos.entryPrice,
+          mfe: 0,
+          trailActive: false,
+        },
+      });
+    } else if (pos && env.strategyMode === 'trend') {
       stateService.update({
         position: {
           ...pos,
@@ -786,7 +984,86 @@ async function handleExit(price, symbol, candles) {
   const pos = state.position;
   if (!pos) return;
 
+  const settings = settingsService.get();
+  const isCandidate = settings.strategy === 'trend_capture_v3_a' && settings.exitStrategy === 'trend';
   const livePrice = await fetchLivePrice(symbol);
+
+  if (isCandidate) {
+    const dec = researchExitDecision(pos, candles, livePrice, settings);
+    // persist trailing state each cycle
+    stateService.update({
+      position: { ...pos, extHigh: dec.extHigh, extLow: dec.extLow, mfe: dec.mfe, trailActive: dec.trailActive },
+    });
+
+    if (!dec.action) {
+      // still log the evaluated signal each cycle (section 6: every signal)
+      appendForwardJournal({
+        type: 'EXIT_EVAL',
+        ts: Date.now(),
+        strategyVersion: settings.strategyVersion,
+        symbol,
+        side: pos.side,
+        entryPrice: pos.entryPrice,
+        livePrice,
+        extHigh: dec.extHigh,
+        extLow: dec.extLow,
+        mfe: dec.mfe,
+        trailActive: dec.trailActive,
+        hardSL: dec.hardSL,
+        trailingStop: dec.trailingStop,
+        atr: dec.atr,
+        reason: dec.reason,
+      });
+      return;
+    }
+
+    logger.info(`[STRATEJI][${settings.strategyVersion}] ${dec.reason} tetiklendi -> ${symbol}`, {
+      entry: pos.entryPrice,
+      stop: dec.hardSL,
+      trailing: dec.trailingStop,
+      mfe: dec.mfe,
+    });
+
+    try {
+      const result = await orderService.placeOrder('SELL', symbol, pos.quantity, null, {
+        partial: false,
+        tradeDetails: {
+          strategyVersion: pos.strategyVersion,
+          entryReason: pos.entryReason,
+          exitReason: dec.reason,
+          adx: pos.entryAdx,
+          rsi: pos.entryRsi,
+          mfe: dec.mfe,
+          mae: pos.mae,
+          atr: dec.atr,
+          hardSL: dec.hardSL,
+          trailingStop: dec.trailingStop,
+        },
+      });
+      appendForwardJournal({
+        type: 'TRADE_CLOSE',
+        ts: Date.now(),
+        strategyVersion: settings.strategyVersion,
+        symbol,
+        side: pos.side,
+        entryPrice: pos.entryPrice,
+        exitPrice: livePrice,
+        quantity: pos.quantity,
+        entryReason: pos.entryReason,
+        exitReason: dec.reason,
+        adx: pos.entryAdx,
+        rsi: pos.entryRsi,
+        mfe: dec.mfe,
+        mae: pos.mae,
+        atr: dec.atr,
+        orderId: result && result.orderId,
+      });
+    } catch (err) {
+      logger.error('[STRATEJI] %s kapanis emri basarisiz -> %s', dec.reason, { error: err.message });
+    }
+    return;
+  }
+
   const exitEval = strategyEngine.evaluateExit(pos, candles, livePrice, env);
 
   if (exitEval.highest && exitEval.highest !== pos.highestSinceEntry) {
