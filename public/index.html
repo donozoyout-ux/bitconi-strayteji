@@ -1360,7 +1360,7 @@
         const tf = e.target.value;
         $('chartTimeframe').textContent = tf.toUpperCase();
         try {
-          const res = await fetchWithTimeout(`/api/chart?limit=1500&timeframe=${tf}`);
+          const res = await fetchWithTimeout(`/api/chart?limit=3000&timeframe=${tf}`);
           if (res && res.success && res.data) {
             candleSeries.setData(res.data);
           }
@@ -1375,7 +1375,7 @@
       try {
         const tf = (timeframeSelect && timeframeSelect.value) || '15m';
         $('chartTimeframe').textContent = tf.toUpperCase();
-        const res = await fetchWithTimeout(`/api/chart?limit=1500&timeframe=${tf}`);
+        const res = await fetchWithTimeout(`/api/chart?limit=3000&timeframe=${tf}`);
         if (!res.success) return;
 
         const mainData = [];
