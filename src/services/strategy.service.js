@@ -633,7 +633,6 @@ function detectTrendCaptureSignal(candles, opts = {}) {
     signal = 'LONG';
     entryType = 'TREND_CAPTURE_LONG';
     // Calculate score based on trend alignment strength
-    let score = 0;
     if (regime === 'STRONG_BULL') score += 30;
     else if (regime === 'BULL') score += 20;
     if (adxVal >= 25) score += 25;  // strong ADX
@@ -646,7 +645,6 @@ function detectTrendCaptureSignal(candles, opts = {}) {
     signal = 'SHORT';
     entryType = 'TREND_CAPTURE_SHORT';
     // Calculate score based on trend alignment strength
-    let score = 0;
     if (regime === 'STRONG_BEAR') score += 30;
     else if (regime === 'BEAR') score += 20;
     if (adxVal >= 25) score += 25;
@@ -655,6 +653,10 @@ function detectTrendCaptureSignal(candles, opts = {}) {
     if (pctB != null && pctB > 30 && pctB < 70) score += 15;
     if (rsi != null && rsi < 50 && rsi > 40) score += 10;
     score = Math.min(100, score);
+  } else {
+    // No trade signal yet: report the continuous market-alignment strength so
+    // the dashboard gauge tracks live conditions instead of staying at 0.
+    score = setupStrengthScore({ regime, adxVal, rsi, pctB, trendUp, chop });
   }
 
   return {
@@ -684,6 +686,33 @@ function detectTrendCaptureSignal(candles, opts = {}) {
       continuationOpportunityShort,
     },
   };
+}
+
+// Continuous 0-100 "how aligned is the market right now" score, independent of
+// whether a trade signal fired. Used to drive the dashboard gauge so the score
+// reflects live conditions instead of being pinned at 0 between trades.
+function setupStrengthScore({ regime, adxVal, rsi, pctB, trendUp, chop }) {
+  let s = 0;
+  if (regime === 'STRONG_BULL' || regime === 'STRONG_BEAR') s += 30;
+  else if (regime === 'BULL' || regime === 'BEAR') s += 20;
+  else if (regime === 'HIGH_VOLATILITY') s += 10;
+  if (adxVal != null) {
+    if (adxVal >= 25) s += 25;
+    else if (adxVal >= 20) s += 15;
+    else if (adxVal >= 18) s += 8;
+  }
+  if (trendUp === true) s += 20;
+  else if (trendUp === false) s += 10;
+  if (pctB != null) {
+    if (pctB > 30 && pctB < 70) s += 15;
+    else if (pctB >= 20 && pctB <= 80) s += 8;
+  }
+  if (rsi != null) {
+    if (rsi > 50 && rsi < 65) s += 10;
+    else if (rsi >= 40 && rsi <= 60) s += 6;
+  }
+  if (chop) s -= 30;
+  return Math.max(0, Math.min(100, Math.round(s)));
 }
 
 // =====================================================================
@@ -773,6 +802,10 @@ function detectTrendCaptureV3A(candles, opts = {}) {
     if (pctB != null && pctB > 30 && pctB < 70) score += 15;
     if (rsi != null && rsi < 50 && rsi > 40) score += 10;
     score = Math.min(100, score);
+  } else {
+    // No trade signal yet: report the continuous market-alignment strength so
+    // the dashboard gauge tracks live conditions instead of staying at 0.
+    score = setupStrengthScore({ regime, adxVal, rsi, pctB, trendUp, chop });
   }
 
   return {

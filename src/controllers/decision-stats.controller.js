@@ -129,7 +129,9 @@ async function getStats(req, res) {
     });
   } catch (err) {
     logger.warn('[DECISION-STATS] sorgu basarisiz:', err.message);
-    res.status(200).json(empty());
+    const e = empty();
+    e.error = err.message;
+    res.status(200).json(e);
   }
 }
 

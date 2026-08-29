@@ -47,6 +47,31 @@ async function close() {
   }
 }
 
+// Idempotent schema bootstrap. Executes the migration SQL only when the core
+// tables are missing, so it is safe to call on every startup. No-op when
+// DATABASE_URL is unset or tables already exist.
+async function runMigrations() {
+  if (!process.env.DATABASE_URL) return { ok: false, reason: 'DATABASE_URL yok' };
+  const fs = require('fs');
+  const path = require('path');
+  let client;
+  try {
+    const p = getPool();
+    client = await p.connect();
+    const r = await client.query("SELECT to_regclass('public.strategy_decisions') AS t");
+    const exists = !!(r.rows[0] && r.rows[0].t);
+    if (exists) return { ok: true, applied: false, reason: 'tablolar mevcut' };
+    const file = path.join(__dirname, 'migrations', '001-create-tables.sql');
+    const sql = fs.readFileSync(file, 'utf8');
+    await client.query(sql);
+    return { ok: true, applied: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  } finally {
+    if (client) client.release();
+  }
+}
+
 // Harmless read/write health check used by the startup gate. Verifies DATABASE_URL,
 // connectivity, required tables, settings/bot_state readability, and a throwaway
 // write to a journal-style table. Returns { ok, details } without throwing.
@@ -97,4 +122,4 @@ async function healthCheck() {
   return { ok, details };
 }
 
-module.exports = { query, initialize, close, healthCheck };
+module.exports = { query, initialize, close, healthCheck, runMigrations };

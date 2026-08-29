@@ -157,6 +157,15 @@ async function start() {
 
   // 9. Startup config-parity + DB health gate (deterministic TESTNET deployment)
   try {
+    const mig = await db.runMigrations();
+    if (mig.applied) logger.info('[SYSTEM] DB migration calistirildi (tablolar olusturuldu).');
+    else if (mig.ok) logger.info('[SYSTEM] DB migration kontrolu: ' + mig.reason);
+    else logger.warn('[SYSTEM] DB migration yapilamadi: ' + (mig.error || mig.reason));
+  } catch (err) {
+    logger.error('[SYSTEM] Migration hatasi:', err.message);
+  }
+
+  try {
     await startup.runStartupChecks();
   } catch (err) {
     logger.error('[SYSTEM] Startup checks failed:', err.message);

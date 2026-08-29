@@ -1683,6 +1683,9 @@
         if (!res.success) return;
 
         $('decisionError').style.display = res.dbConnected ? 'none' : 'block';
+        if (!res.dbConnected) {
+          $('decisionError').textContent = 'Veritabanı bağlantısı yok: ' + (res.error || 'bilinmiyor');
+        }
 
         $('daDecisions').textContent = res.decisions.total;
         const tr = res.trades;
