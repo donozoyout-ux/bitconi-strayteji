@@ -164,6 +164,10 @@ async function start() {
 
   stopped = false;
   stateService.update({ busy: false, lastError: null });
+
+  // Periodic audit retention: drop strategy_decisions older than 30 days.
+  trimStrategyDecisions().catch(() => {});
+
   logger.info(
     `Otonom analiz motoru baslatildi -> zaman: ${env.analysisTimeframe}, siklik: ${env.checkIntervalMin} dk, mod: ${env.dryRun ? 'DRY-RUN' : 'GERCEK TESTNET'}`
   );
@@ -551,6 +555,42 @@ function appendForwardJournal(rec) {
   }
 }
 
+// ---- Strategy decision journal (audit / history) ----
+// Every analysis cycle is persisted so the dashboard, backtests and audits can
+// reconstruct what the bot "saw" (indicators + score + decision + reason) at any
+// point in time. Errors are swallowed so logging never breaks the trading loop.
+async function recordStrategyDecision(rec) {
+  const { decision, score, regime, chop, reasons, symbol, price, ts } = rec || {};
+  try {
+    await db.query(
+      `INSERT INTO strategy_decisions (decision, reasons, signal_score, regime, chop, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        decision,
+        JSON.stringify({ ...(reasons || {}), symbol, price }),
+        score == null || Number.isNaN(Number(score)) ? null : Math.round(Number(score)),
+        regime || null,
+        chop ? true : false,
+        ts ? new Date(ts) : new Date(),
+      ]
+    );
+  } catch (err) {
+    logger.warn('[DECISION-LOG] strategy_decisions yazimi basarisiz:', err.message);
+  }
+}
+
+// Keep strategy_decisions from growing without bound (default: keep 30 days).
+async function trimStrategyDecisions(retentionDays = 30) {
+  try {
+    await db.query(
+      `DELETE FROM strategy_decisions WHERE timestamp < NOW() - ($1 || ' days')::interval`,
+      [String(retentionDays)]
+    );
+  } catch (err) {
+    logger.warn('[DECISION-LOG] eski kayit temizligi basarisiz:', err.message);
+  }
+}
+
 async function analyzeOnly() {
   const symbol = env.tradingSymbol || 'BTC/USDT';
   const settings = settingsService.get();
@@ -585,6 +625,30 @@ async function analyzeOnly() {
     signal: analysis.signal,
     reasons: analysis.reasons,
     trendEntry: { signal: entryEval.signal, type: entryEval.type, score: entryEval.score, reasons: entryEval.reasons },
+
+    // Persist this analysis to the decision journal. When the autonomous engine is
+    // enabled it already logs every cycle in runCycle(), so we only log here in
+    // dashboard-only mode to avoid duplicate rows per candle. Throttled by candle ts.
+    ...(env.tradingEnabled
+      ? {}
+      : (() => {
+          const logTs = analysis.ts;
+          const lastLogTs = stateService.get().lastDecisionLogTs;
+          if (logTs && logTs !== lastLogTs) {
+            stateService.update({ lastDecisionLogTs: logTs });
+            recordStrategyDecision({
+              decision: entryEval.signal || 'WAIT',
+              score: entryEval.score,
+              regime: entryEval.reasons && entryEval.reasons.regime,
+              chop: entryEval.reasons && entryEval.reasons.chop,
+              reasons: entryEval.reasons,
+              symbol,
+              price,
+              ts: logTs,
+            }).catch(() => {});
+          }
+          return {};
+        })()),
     strategy,
     verdict: strategy.verdict,
     position: state.position,
@@ -711,6 +775,7 @@ async function runCycle() {
           price,
         },
       });
+      await recordStrategyDecision({ decision: 'NO_TRADE', score: entryEval.score, regime, chop: true, reasons: { reason: 'CHOPPY', ...entryEval.reasons }, symbol, price, ts: analysis.ts });
       return;
     }
 
@@ -733,6 +798,7 @@ async function runCycle() {
           price,
         },
       });
+      await recordStrategyDecision({ decision: 'NO_TRADE', score: entryEval.score, regime, chop: true, reasons: { reason: 'COOLDOWN', ...entryEval.reasons }, symbol, price, ts: analysis.ts });
       return;
     }
 
@@ -773,14 +839,16 @@ async function runCycle() {
       if (riskCheck.consecutiveLossesLimit > 0) decisionReasons.push('CONSECUTIVE_LOSSES');
       if (dailyTrades >= (parseInt(env.MAX_TRADES_PER_DAY || '10'))) decisionReasons.push('MAX_TRADES_PER_DAY');
 
-      try {
-        await db.query(
-          `INSERT INTO strategy_decisions (decision, reasons, signal_score, regime, chop) VALUES ($1, $2, $3, $4, $5)`,
-          ['NO_TRADE', decisionReasons, entryEval.score, regime, true]
-        );
-      } catch (err) {
-        logger.warn('[WHY-NO-TRADE] Could not record decision in DB:', err.message);
-      }
+      await recordStrategyDecision({
+        decision: 'NO_TRADE',
+        score: entryEval.score,
+        regime,
+        chop: riskCheck.consecutiveLossesLimit > 0,
+        reasons: { filters: decisionReasons, ...entryEval.reasons },
+        symbol,
+        price,
+        ts: analysis.ts,
+      });
 
       stateService.update({
         busy: false,
@@ -798,19 +866,6 @@ async function runCycle() {
         },
       });
       return;
-    }
-
-    // Record why no trade decision - no signal case
-    if (!entryEval.signal) {
-      const decisionReasons = ['NO_RSI_CROSS'];
-      try {
-        await db.query(
-          `INSERT INTO strategy_decisions (decision, reasons, signal_score, regime, chop) VALUES ($1, $2, $3, $4, $5)`,
-          ['NO_TRADE', decisionReasons, entryEval.score, regime, entryEval.reasons.chop]
-        );
-      } catch (err) {
-        logger.warn('[WHY-NO-TRADE] Could not record decision in DB:', err.message);
-      }
     }
 
     // Size position using risk engine
@@ -875,6 +930,19 @@ async function runCycle() {
     } else if (entryEval.signal) {
       await handleEntry(entryEval, symbol, price, positionSize);
     }
+
+    // Journal this cycle's decision (LONG/SHORT when a signal fired, else WAIT).
+    const finalDecision = entryEval.signal ? entryEval.signal : 'WAIT';
+    await recordStrategyDecision({
+      decision: finalDecision,
+      score: entryEval.score,
+      regime: entryEval.reasons.regime,
+      chop: entryEval.reasons.chop,
+      reasons: entryEval.reasons,
+      symbol,
+      price,
+      ts: analysis.ts,
+    });
 
     stateService.update({
       busy: false,

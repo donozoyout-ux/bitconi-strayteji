@@ -12,6 +12,7 @@ const DEFAULT_STATE = {
   lastCheck: null,
   lastError: null,
   lastAnalysis: null,
+  lastDecisionLogTs: null,
   busy: false,
   trades: [],
   orderLog: [],
