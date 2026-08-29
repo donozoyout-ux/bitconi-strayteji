@@ -1634,11 +1634,12 @@
 
         // 2. Verdict details
         const badge = $('badgeDecision');
+        const type = res.trendEntry ? res.trendEntry.type : null;
         let signal = res.trendEntry ? res.trendEntry.signal : null;
-        if (signal === 'BUY') {
+        if (signal === 'BUY' || signal === 'LONG') {
           badge.className = 'decision-badge long';
           badge.textContent = 'LONG SETUP';
-        } else if (signal === 'SELL') {
+        } else if (signal === 'SELL' || signal === 'SHORT') {
           badge.className = 'decision-badge short';
           badge.textContent = 'SHORT SETUP';
         } else {
@@ -1660,18 +1661,16 @@
 
         // 5. Decision narrative explanation
         const narrative = $('textDecisionReason');
-        if (res.trendEntry && res.trendEntry.type === 'CHOP_FILTERED') {
-          narrative.textContent = 'Karar: WAIT. Choppy/yatay piyasa filtresi aktif. Yeni emirlere izin verilmiyor.';
-        } else if (score < 75) {
-          narrative.textContent = `Karar: WAIT. Sinyal skoru (${score}) minimum alım eşiğinin (75) altında.`;
-        } else if (res.trendEntry && res.trendEntry.type === 'LONG_ONLY_MODE') {
-          narrative.textContent = 'Karar: LONG. Strateji LONG tetikledi, SHORT modu kapalı.';
-        } else if (signal === 'BUY') {
-          narrative.textContent = 'Karar: LONG SETUP. RSI kesişimi ve BB alt bant teması sağlandı. Alım koşulları olumlu.';
-        } else if (signal === 'SELL') {
-          narrative.textContent = 'Karar: SHORT SETUP. RSI aşağı yönlü kesişim ve BB üst bant teması sağlandı. Satım koşulları olumlu.';
+        if (type === 'CHOP_FILTERED' || reasons.chop) {
+          narrative.textContent = 'Karar: WAIT. Choppy/yatay piyasa filtresi aktif (CHOP). Yeni emir engelli.';
+        } else if (signal === 'BUY' || signal === 'LONG') {
+          narrative.textContent = `Karar: LONG SETUP. Güçlü yükseliş uyumu (skor ${score}). Trend yakalama girişi tetiklendi.`;
+        } else if (signal === 'SELL' || signal === 'SHORT') {
+          narrative.textContent = `Karar: SHORT SETUP. Güçlü düşüş uyumu (skor ${score}). Trend yakalama girişi tetiklendi.`;
+        } else if (score >= 75) {
+          narrative.textContent = `Karar: WAIT. Skor yüksek (${score}) ama sıkı giriş deseni (basis reclaim / trend onayı) henüz netleşmedi.`;
         } else {
-          narrative.textContent = 'Karar: WAIT. Bollinger Bantları alt sınır teması veya RSI ortalama kırılımı bekleniyor.';
+          narrative.textContent = `Karar: WAIT. Kurulum skoru (${score}) minimum alım eşiğinin (75) altında.`;
         }
       } catch (err) {
         console.error('Decision fetch error:', err);

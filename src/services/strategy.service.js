@@ -780,9 +780,15 @@ function detectTrendCaptureV3A(candles, opts = {}) {
   const longConditionsMet = regimeBull && trendUp && adxStrong && antiFomoLong && basisReclaimLong && pullbackConfirmedLong;
   const shortConditionsMet = regimeBear && !trendUp && adxStrong && antiFomoShort && basisReclaimShort && pullbackConfirmedShort;
 
+  // Continuous market-alignment strength (0-100). Drives the dashboard gauge AND
+  // acts as the fallback entry trigger when the strict basis-reclaim pattern has
+  // not printed but the trend is clearly aligned.
+  const strength = setupStrengthScore({ regime, adxVal, rsi, pctB, trendUp, chop });
+  const MIN_SCORE = 75;
+
   let signal = null;
   let entryType = null;
-  let score = 0;
+  let score = strength;
 
   if (longConditionsMet) {
     signal = 'LONG';
@@ -802,10 +808,11 @@ function detectTrendCaptureV3A(candles, opts = {}) {
     if (pctB != null && pctB > 30 && pctB < 70) score += 15;
     if (rsi != null && rsi < 50 && rsi > 40) score += 10;
     score = Math.min(100, score);
-  } else {
-    // No trade signal yet: report the continuous market-alignment strength so
-    // the dashboard gauge tracks live conditions instead of staying at 0.
-    score = setupStrengthScore({ regime, adxVal, rsi, pctB, trendUp, chop });
+  } else if (strength >= MIN_SCORE && !chop) {
+    // Strict basis-reclaim pattern not met, but the trend is strongly aligned
+    // (score >= 75) — trade in the regime's direction so the bot is actionable.
+    if (regimeBull && trendUp) { signal = 'LONG'; entryType = 'TREND_CAPTURE_V3A_LONG'; }
+    else if (regimeBear && !trendUp) { signal = 'SHORT'; entryType = 'TREND_CAPTURE_V3A_SHORT'; }
   }
 
   return {
