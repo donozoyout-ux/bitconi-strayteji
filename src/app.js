@@ -7,6 +7,7 @@ const telegramController = require('./controllers/telegram.controller');
 const traderController = require('./controllers/trader.controller');
 const chartController = require('./controllers/chart.controller');
 const analysisController = require('./controllers/analysis.controller');
+const decisionStatsController = require('./controllers/decision-stats.controller');
 const settingsRoutes = require('./routes/settings.routes');
 const logger = require('./utils/logger');
 
@@ -35,6 +36,7 @@ app.post('/api/trader/close', traderController.closePosition);
 app.post('/api/trader/open', traderController.openManual);
 app.get('/api/chart', chartController.getChart);
 app.get('/api/analysis', analysisController.getAnalysis);
+app.get('/api/decisions/stats', decisionStatsController.getStats);
 app.use('/api/settings', settingsRoutes);
 app.use('/webhook', webhookRoutes);
 

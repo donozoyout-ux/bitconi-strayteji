@@ -797,6 +797,31 @@
       margin-bottom: 16px;
       box-shadow: 0 4px 20px rgba(255, 56, 96, 0.3);
     }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 9px; border-radius: 999px; font-size: 12px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .chip b { color: var(--text); font-weight: 600; }
+    .chip.long { border-color: var(--emerald); color: var(--emerald); }
+    .chip.short { border-color: var(--rose); color: var(--rose); }
+    .chip.wait { border-color: #f0a500; color: #f0a500; }
+    .chip.notrade { border-color: var(--border); }
+
+    .mini-table { display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
+    .mini-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 8px;
+      padding: 4px 8px; border-radius: 6px; background: var(--surface-2);
+      border: 1px solid var(--border); align-items: center;
+    }
+    .mini-row .m-label { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mini-row .m-val { color: var(--text); font-weight: 600; text-align: right; }
+    .mini-row .m-sub { color: var(--text-dim); text-align: right; font-size: 11px; }
+    .m-pos { color: var(--emerald); }
+    .m-neg { color: var(--rose); }
   </style>
 </head>
 <body>
@@ -1084,6 +1109,57 @@
               <span class="lbl">Drawdown / Fees</span>
               <span id="perfDrawdown" class="val" style="font-size: 13px;">DD: N/A | Fees: 0.00 USDT</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Strategy Decision Analytics -->
+        <div class="t-card">
+          <div class="t-card-header">
+            <div class="t-card-title">🧮 DECISION ANALYTICS</div>
+            <select id="decisionRange" class="t-btn" style="padding: 4px 10px; font-size: 12px;">
+              <option value="7">7g</option>
+              <option value="30" selected>30g</option>
+              <option value="90">90g</option>
+            </select>
+          </div>
+
+          <div id="decisionError" class="reason-narrative" style="display:none;color:var(--rose);">
+            Veritabanı bağlantısı yok — istatistikler görünmüyor.
+          </div>
+
+          <div class="perf-grid" style="margin-top: 4px;">
+            <div class="perf-item">
+              <span class="lbl">Toplam Karar</span>
+              <span id="daDecisions" class="val">0</span>
+            </div>
+            <div class="perf-item">
+              <span class="lbl">İşlem / Galibiyet</span>
+              <span id="daTrades" class="val">0 / 0%</span>
+            </div>
+            <div class="perf-item" style="grid-column: span 2;">
+              <span class="lbl">Net PnL (kapalı işlemler)</span>
+              <span id="daPnl" class="val">0.00 USDT</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <div class="muted" style="font-size: 12px; margin-bottom: 4px;">Karar Dağıımı</div>
+            <div id="daBreakdown" class="chip-row"></div>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <div class="muted" style="font-size: 12px; margin-bottom: 4px;">Bekleme Sebepleri (WAIT/NO_TRADE)</div>
+            <div id="daWaitReasons" class="chip-row"></div>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <div class="muted" style="font-size: 12px; margin-bottom: 4px;">Rejime Göre İşlem PnL'i</div>
+            <div id="daRegime" class="mini-table"></div>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <div class="muted" style="font-size: 12px; margin-bottom: 4px;">Son Kararlar</div>
+            <div id="daRecent" class="mini-table"></div>
           </div>
         </div>
 
@@ -1599,6 +1675,81 @@
       }
     }
 
+    // Load decision analytics report from strategy_decisions + trades
+    async function loadDecisionAnalytics() {
+      try {
+        const days = $('decisionRange') ? $('decisionRange').value : 30;
+        const res = await fetchWithTimeout('/api/decisions/stats?days=' + days);
+        if (!res.success) return;
+
+        $('decisionError').style.display = res.dbConnected ? 'none' : 'block';
+
+        $('daDecisions').textContent = res.decisions.total;
+        const tr = res.trades;
+        $('daTrades').textContent = tr.total + ' / ' + (tr.winRate || 0) + '%';
+        const pnl = tr.totalPnl == null ? 0 : tr.totalPnl;
+        $('daPnl').textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2) + ' USDT';
+        $('daPnl').className = 'val ' + (tr.totalPnl == null ? '' : (tr.totalPnl >= 0 ? 'm-pos' : 'm-neg'));
+
+        // Decision breakdown chips
+        const bd = $('daBreakdown');
+        bd.innerHTML = '';
+        (res.decisions.breakdown || []).forEach(b => {
+          const cls = b.decision === 'LONG' ? 'long' : b.decision === 'SHORT' ? 'short' : b.decision === 'WAIT' ? 'wait' : 'notrade';
+          const chip = document.createElement('span');
+          chip.className = 'chip ' + cls;
+          chip.innerHTML = b.decision + ' <b>' + b.cnt + '</b>' + (b.avgScore != null ? ' · ' + Math.round(b.avgScore) : '');
+          bd.appendChild(chip);
+        });
+        if (!res.decisions.breakdown.length) bd.innerHTML = '<span class="chip">veri yok</span>';
+
+        // Wait reasons chips
+        const wr = $('daWaitReasons');
+        wr.innerHTML = '';
+        (res.waitReasons || []).forEach(r => {
+          const chip = document.createElement('span');
+          chip.className = 'chip notrade';
+          chip.innerHTML = (r.reason || 'DIGER') + ' <b>' + r.cnt + '</b>';
+          wr.appendChild(chip);
+        });
+        if (!res.waitReasons.length) wr.innerHTML = '<span class="chip">veri yok</span>';
+
+        // Trades by regime
+        const rg = $('daRegime');
+        rg.innerHTML = '';
+        (res.tradesByRegime || []).forEach(r => {
+          const row = document.createElement('div');
+          row.className = 'mini-row';
+          const p = r.pnl == null ? null : r.pnl;
+          const pnlTxt = p == null ? '—' : (p >= 0 ? '+' : '') + p.toFixed(2);
+          row.innerHTML =
+            '<span class="m-label">' + (r.regime || '?') + '</span>' +
+            '<span class="m-val ' + (p == null ? '' : (p >= 0 ? 'm-pos' : 'm-neg')) + '">' + pnlTxt + '</span>' +
+            '<span class="m-sub">' + r.cnt + ' işlem</span>';
+          rg.appendChild(row);
+        });
+        if (!res.tradesByRegime.length) rg.innerHTML = '<div class="mini-row"><span class="m-label">veri yok</span></div>';
+
+        // Recent decisions
+        const rc = $('daRecent');
+        rc.innerHTML = '';
+        (res.recent || []).forEach(d => {
+          const row = document.createElement('div');
+          row.className = 'mini-row';
+          const cls = d.decision === 'LONG' ? 'm-pos' : d.decision === 'SHORT' ? 'm-neg' : '';
+          const when = d.ts ? new Date(d.ts).toLocaleString() : '';
+          row.innerHTML =
+            '<span class="m-label">' + d.decision + (d.reason ? ' · ' + d.reason : '') + '</span>' +
+            '<span class="m-val ' + cls + '">' + (d.score != null ? d.score : '–') + '</span>' +
+            '<span class="m-sub">' + when + '</span>';
+          rc.appendChild(row);
+        });
+        if (!res.recent.length) rc.innerHTML = '<div class="mini-row"><span class="m-label">veri yok</span></div>';
+      } catch (err) {
+        console.error('Decision analytics fetch error:', err);
+      }
+    }
+
     // Load Open position state & trades history
     async function loadPositionAndHistory() {
       try {
@@ -1851,6 +2002,11 @@
           loadPositionAndHistory();
         });
       });
+
+      // 8. Decision analytics range filter
+      if ($('decisionRange')) {
+        $('decisionRange').addEventListener('change', loadDecisionAnalytics);
+      }
     }
 
     // Loop Sync timers
@@ -1870,6 +2026,7 @@
       setInterval(async () => {
         await loadPositionAndHistory();
         await loadChartData();
+        await loadDecisionAnalytics();
       }, 20000);
     }
 
@@ -1884,6 +2041,7 @@
       await loadDecision();
       await loadPositionAndHistory();
       await loadLogs();
+      await loadDecisionAnalytics();
 
       startLoops();
     });
