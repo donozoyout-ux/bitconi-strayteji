@@ -191,6 +191,10 @@ async function bootstrapDbSettings() {
     const mapped = {};
     for (const row of res.rows) {
       const camel = DB_KEY_MAP[row.key] || row.key;
+      // In deploy mode the canonical candidate is the source of truth. A stale
+      // `strategy`/`strategy_version` row must NEVER override it — doing so both
+      // fails config parity (blocking all trading) and silently switches strategy.
+      if (camel === 'strategy' || camel === 'strategyVersion') continue;
       mapped[camel] = coerceDbValue(row.value);
     }
     settings = { ...CANONICAL_CANDIDATE, ...mapped };

@@ -664,6 +664,10 @@ async function analyzeOnly() {
     dryRun: state.dryRun,
     cooldownUntil: state.cooldownUntil,
     lastError: state.lastError,
+    gateBlock: (() => {
+      const g = startup.getGate();
+      return g && g.blockReason ? g.blockReason : null;
+    })(),
   };
 }
 

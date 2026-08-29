@@ -16,8 +16,8 @@ COMMENT ON TABLE settings IS 'Persistent storage for all trading configuration p
 
 -- Insert default settings
 INSERT INTO settings (key, value, description) VALUES
-  ('strategy', 'rsi-bollinger', 'Current strategy name'),
-  ('strategy_version', '1.0.0', 'Current strategy version'),
+  ('strategy', 'trend_capture_v3_a', 'Current strategy name'),
+  ('strategy_version', 'EXIT_B3_M3_SHORT_H1_ADX25', 'Current strategy version'),
   ('rsi_length', '20', 'RSI length parameter'),
   ('rsi_ma_length', '20', 'RSI Moving Average length parameter'),
   ('bb_length', '30', 'Bollinger Bands length parameter'),

@@ -448,6 +448,26 @@
       text-align: left;
     }
 
+    .engine-status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .engine-status.ok {
+      background: rgba(0, 200, 120, 0.08);
+      border-left: 2px solid var(--emerald);
+      color: var(--emerald);
+    }
+    .engine-status.err {
+      background: rgba(255, 80, 80, 0.08);
+      border-left: 2px solid var(--rose);
+      color: var(--rose);
+    }
+    .engine-status b { color: inherit; }
+
     /* Open Position Details */
     .position-info-row {
       display: flex;
@@ -954,6 +974,8 @@
             <div id="textDecisionReason" class="reason-narrative">
               Sinyal hesaplanıyor...
             </div>
+
+            <div id="boxEngineStatus" class="engine-status" style="display:none;"></div>
           </div>
         </div>
 
@@ -1671,6 +1693,29 @@
           narrative.textContent = `Karar: WAIT. Skor yüksek (${score}) ama sıkı giriş deseni (basis reclaim / trend onayı) henüz netleşmedi.`;
         } else {
           narrative.textContent = `Karar: WAIT. Kurulum skoru (${score}) minimum alım eşiğinin (75) altında.`;
+        }
+
+        // 6. Engine status: why it is (or isn't) actually trading
+        const box = $('boxEngineStatus');
+        const gateBlock = res.gateBlock || null;
+        const lastErr = res.lastError || null;
+        const pos = res.position;
+        const posOpen = pos && pos.side && pos.symbol;
+        const parts = [];
+        if (!res.enabled) parts.push('<b>TRADING KAPALI</b> (TRADING_MODE=off)');
+        if (gateBlock) parts.push('<b>BAŞLANGIÇ KAPISI KAPALI:</b> ' + gateBlock + ' → tüm işlemler engellendi');
+        if (lastErr) parts.push('<b>SON HATA:</b> ' + lastErr);
+        if (posOpen) parts.push('Açık pozisyon: <b>' + pos.side + '</b> @ ' + (pos.entryPrice || '-'));
+        if (parts.length) {
+          box.className = 'engine-status ' + (gateBlock || !res.enabled ? 'err' : 'ok');
+          box.innerHTML = parts.join('<br>');
+          box.style.display = 'block';
+        } else if (signal) {
+          box.className = 'engine-status ok';
+          box.innerHTML = '<b>ÇALIŞIYOR:</b> sinyal algılandı, emir açma akışında.';
+          box.style.display = 'block';
+        } else {
+          box.style.display = 'none';
         }
       } catch (err) {
         console.error('Decision fetch error:', err);
