@@ -25,9 +25,9 @@ const TF_MAP = {
 
 async function getChart(req, res) {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 160, 500);
+    const limit = Math.min(parseInt(req.query.limit) || 1500, 3000);
     const symbol = env.tradingSymbol || 'BTC/USDT';
-    const requestedTimeframe = req.query.timeframe || env.analysisTimeframe;
+    const requestedTimeframe = req.query.timeframe || '15m';
     const timeframe = TF_MAP[requestedTimeframe] || requestedTimeframe.toLowerCase();
     const candles = await analyzer.fetchCandles(symbol, timeframe, limit + 1);
 

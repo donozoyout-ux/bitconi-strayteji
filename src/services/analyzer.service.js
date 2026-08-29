@@ -179,43 +179,87 @@ async function fetchCandles(symbol, timeframe = '1d', limit = 220) {
   const [base, quote] = symbol.split('/');
   const pair = base + quote;
   const interval = timeframe.toLowerCase();
-  const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
 
-  const sources = [
-    url,
-    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
-    `https://api1.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
-    `https://api2.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
-  ];
+  // Single request path (Binance caps a klines call at 1000 candles). Includes
+  // the Bybit fallback. Used when limit <= 1000.
+  if (limit <= 1000) {
+    const url = `https://data-api.binance.vision/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`;
+    const sources = [
+      url,
+      `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+      `https://api1.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+      `https://api2.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
+    ];
 
-  let lastErr = null;
-  for (const src of sources) {
+    let lastErr = null;
+    for (const src of sources) {
+      try {
+        const data = await fetchWithTimeout(src, 10000);
+        return parseKlines(data);
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+
     try {
-      const data = await fetchWithTimeout(src, 10000);
-      return parseKlines(data);
+      const bybitInterval = interval === '1d' ? 'D' : interval === '4h' ? '240' : interval === '1h' ? '60' : interval.replace('m', '');
+      const bybit = await fetchWithTimeout(
+        `https://api.bybit.com/v5/market/kline?category=spot&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`,
+        10000
+      );
+      if (bybit.retCode === 0 && bybit.result && bybit.result.list) {
+        return bybit.result.list
+          .slice()
+          .reverse()
+          .map((k) => [Number(k[0]), Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+      }
+      lastErr = new Error('Bybit bos yanit');
     } catch (err) {
       lastErr = err;
     }
+
+    throw new Error(`Kline verisi tum kaynaklardan alinamadi (${symbol} ${interval}): ${lastErr ? lastErr.message : 'bilinmiyor'}`);
   }
 
-  try {
-    const bybitInterval = interval === '1d' ? 'D' : interval === '4h' ? '240' : interval === '1h' ? '60' : interval.replace('m', '');
-    const bybit = await fetchWithTimeout(
-      `https://api.bybit.com/v5/market/kline?category=spot&symbol=${pair}&interval=${bybitInterval}&limit=${limit}`,
-      10000
-    );
-    if (bybit.retCode === 0 && bybit.result && bybit.result.list) {
-      return bybit.result.list
-        .slice()
-        .reverse()
-        .map((k) => [Number(k[0]), Number(k[1]), Number(k[2]), Number(k[3]), Number(k[4]), Number(k[5])]);
+  // Paged path: Binance allows at most 1000 candles per call, so walk backwards
+  // using endTime to assemble a longer history (e.g. a full month of 15m).
+  const hosts = [
+    'https://data-api.binance.vision/api/v3/klines',
+    'https://api.binance.com/api/v3/klines',
+    'https://api1.binance.com/api/v3/klines',
+    'https://api2.binance.com/api/v3/klines',
+  ];
+  const MAX = 1000;
+  let remaining = limit;
+  let endTime = undefined;
+  let out = [];
+  let guard = 0;
+  while (remaining > 0 && guard < 50) {
+    guard++;
+    const batch = Math.min(MAX, remaining);
+    let done = false;
+    let fetchedLen = 0;
+    for (const host of hosts) {
+      const u = `${host}?symbol=${pair}&interval=${interval}&limit=${batch}` + (endTime ? `&endTime=${endTime}` : '');
+      try {
+        const data = await fetchWithTimeout(u, 10000);
+        if (data && data.length) {
+          out = data.concat(out); // older batches prepended -> stays oldest->newest
+          endTime = data[0][0] - 1; // one ms before the earliest candle's open time
+          remaining -= data.length;
+          fetchedLen = data.length;
+          done = true;
+          break;
+        }
+      } catch (e) {
+        // try next host
+      }
     }
-    lastErr = new Error('Bybit bos yanit');
-  } catch (err) {
-    lastErr = err;
+    if (!done) break;
+    // Reached the start of available history (exchange returned a short batch).
+    if (fetchedLen < batch) break;
   }
-
-  throw new Error(`Kline verisi tum kaynaklardan alinamadi (${symbol} ${interval}): ${lastErr ? lastErr.message : 'bilinmiyor'}`);
+  return parseKlines(out);
 }
 
 function emaSeries(values, length) {
