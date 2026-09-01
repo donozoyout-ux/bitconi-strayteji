@@ -21,18 +21,17 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Liveness: process is accepting HTTP traffic.
 app.get('/health', (req, res) => {
   res.status(200).json({ success: true, status: 'OK', uptime: process.uptime() });
 });
 
-// Readiness: trading startup gate completed successfully.
-// Railway should use this endpoint as the deployment healthcheck.
+// Railway readiness: canonical config + Sheet persistence (when required) + TESTNET safety.
 app.get('/ready', (req, res) => {
   const gate = startup.getGate();
+  const storageReady = Boolean(gate && (!gate.sheetRequired || gate.storageOk));
   const ready = Boolean(
     gate &&
-    gate.dbOk &&
+    storageReady &&
     gate.configOk &&
     !gate.blockReason &&
     env.useTestnet &&
@@ -46,19 +45,26 @@ app.get('/ready', (req, res) => {
     useTestnet: env.useTestnet,
     dryRun: env.dryRun,
     tradingEnabled: env.tradingEnabled,
+    storage: gate
+      ? {
+          mode: gate.storageMode || 'google_sheets',
+          connected: Boolean(gate.storageOk),
+          required: Boolean(gate.sheetRequired),
+          error: gate.storage && gate.storage.error ? gate.storage.error : null,
+        }
+      : { mode: 'google_sheets', connected: false, required: Boolean(env.sheetRequired), error: 'STARTUP_PENDING' },
     startupGate: gate
       ? {
-          dbOk: gate.dbOk,
+          storageOk: Boolean(gate.storageOk),
           configOk: gate.configOk,
           blockReason: gate.blockReason || null,
         }
-      : { dbOk: false, configOk: false, blockReason: 'STARTUP_PENDING' },
+      : { storageOk: false, configOk: false, blockReason: 'STARTUP_PENDING' },
   };
 
   res.status(ready ? 200 : 503).json(body);
 });
 
-// Public read-only operational endpoints.
 app.get('/api/status', statusController.getStatus);
 app.get('/api/runtime', statusController.getRuntime);
 app.get('/api/logs', statusController.getLogs);
@@ -71,7 +77,6 @@ app.get('/api/analysis', analysisController.getAnalysis);
 app.get('/api/decisions/stats', decisionStatsController.getStats);
 app.get('/api/learning', learningController.getStatus);
 
-// Mutating/admin endpoints require X-Admin-Token.
 app.post('/api/test-telegram', requireAdmin, telegramController.sendTest);
 app.post('/api/trader/check', requireAdmin, traderController.checkNow);
 app.post('/api/trader/analyze', requireAdmin, traderController.analyze);
