@@ -1,6 +1,8 @@
 // BTC Bot Google Sheets backend.
 // Usage: create a Google Sheet -> Extensions -> Apps Script -> paste this file.
-// Set Script Property BOT_SHEETS_SECRET to the same random value used in Railway.
+// Set Script Properties:
+//   BOT_SHEETS_SECRET     = same long random value used in Railway
+//   BOT_SPREADSHEET_ID    = value between /d/ and /edit in the Google Sheet URL
 // Deploy as Web app: Execute as Me, Who has access: Anyone.
 
 function json_(obj) {
@@ -8,12 +10,22 @@ function json_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+function props_() {
+  return PropertiesService.getScriptProperties();
+}
+
 function secret_() {
-  return PropertiesService.getScriptProperties().getProperty('BOT_SHEETS_SECRET') || '';
+  return props_().getProperty('BOT_SHEETS_SECRET') || '';
+}
+
+function spreadsheet_() {
+  var id = props_().getProperty('BOT_SPREADSHEET_ID') || '';
+  if (!id) throw new Error('BOT_SPREADSHEET_ID missing');
+  return SpreadsheetApp.openById(id);
 }
 
 function sheet_(name) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = spreadsheet_();
   var sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   return sh;
@@ -144,9 +156,9 @@ function doPost(e) {
     var action = String(body.action || '');
 
     if (action === 'health') {
-      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var ss = spreadsheet_();
       ['STATE','TRADES','ORDERS','DECISIONS','CHECKPOINTS','CANDIDATES'].forEach(sheet_);
-      return json_({ success: true, spreadsheetName: ss.getName() });
+      return json_({ success: true, spreadsheetName: ss.getName(), spreadsheetId: ss.getId() });
     }
     if (action === 'state:get') return json_(stateGet_(body.key));
     if (action === 'state:set') return json_(stateSet_(body.key, body.value));
