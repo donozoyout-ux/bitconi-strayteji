@@ -15,7 +15,7 @@ ALTER TABLE trades ADD COLUMN IF NOT EXISTS mae_percent DOUBLE PRECISION;
 ALTER TABLE trades ADD COLUMN IF NOT EXISTS entry_reason VARCHAR(160);
 ALTER TABLE trades ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_trades_trade_key ON trades(trade_key) WHERE trade_key IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_trades_trade_key ON trades(trade_key);
 CREATE INDEX IF NOT EXISTS idx_trades_exit_time ON trades(exit_time);
 CREATE INDEX IF NOT EXISTS idx_trades_strategy_version ON trades(strategy_version);
 
