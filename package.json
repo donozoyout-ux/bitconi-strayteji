@@ -1,22 +1,24 @@
 {
-  "name": "dip-hunter-crypto-bot",
-  "version": "1.0.0",
-  "description": "Otomatik Crypto Algoritmik Ticaret Botu - Bollinger Bands + Stoch RSI Dip Avcisi (TradingView Webhook -> Binance Testnet)",
+  "name": "bitconi-strategy-bot",
+  "version": "1.1.0",
+  "description": "BTC/USDT algorithmic trading bot with multi-timeframe trend strategy, risk engine, PostgreSQL state and Binance Futures TESTNET execution",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "render:start": "node scripts/fix-render-settings.js && node scripts/render-config-verify.js && node server.js"
+    "deploy:prepare": "node scripts/fix-render-settings.js && node scripts/render-config-verify.js",
+    "deploy:verify": "node scripts/render-config-verify.js",
+    "railway:predeploy": "npm run deploy:prepare",
+    "render:start": "npm run deploy:prepare && node server.js"
   },
   "keywords": [
     "binance",
+    "bitcoin",
     "crypto",
     "trading",
     "bot",
     "algo-trading",
-    "webhook",
-    "ccxt",
-    "tradingview"
+    "testnet"
   ],
   "author": "",
   "license": "MIT",
