@@ -1,19 +1,16 @@
 # Railway TESTNET Deployment
 
-This project is intentionally configured for Binance Futures TESTNET forward execution.
+This project is configured for Binance Futures TESTNET/Demo forward execution with Google Sheets as persistent storage.
 
 ## 1. Railway services
 
-Create one Railway project with:
+Create one Railway web service from this GitHub repository.
 
-- Web service from this GitHub repository
-- PostgreSQL service
+A Railway PostgreSQL service is **not required**. `DATABASE_URL` can be removed.
 
-Expose `DATABASE_URL` from the PostgreSQL service to the web service.
+Before deploying, complete `SHEETS_SETUP.md` and create the Google Sheets Apps Script backend.
 
 ## 2. Required web-service variables
-
-Set these in Railway Variables:
 
 ```text
 NODE_ENV=production
@@ -22,9 +19,14 @@ USE_TESTNET=true
 DRY_RUN=false
 EMERGENCY_STOP=false
 TRADING_MODE=on
+ALLOW_LIVE_TRADING=false
 
 BINANCE_TESTNET_API_KEY=<secret>
 BINANCE_TESTNET_SECRET_KEY=<secret>
+
+GOOGLE_SHEETS_WEBAPP_URL=<Apps Script /exec URL>
+GOOGLE_SHEETS_SECRET=<same secret as BOT_SHEETS_SECRET>
+SHEET_REQUIRED=true
 
 ADMIN_API_TOKEN=<long-random-secret>
 WEBHOOK_SECRET=<different-long-random-secret>
@@ -33,11 +35,9 @@ TELEGRAM_BOT_TOKEN=<optional-secret>
 TELEGRAM_CHAT_ID=<optional-id>
 ```
 
-`ALLOW_LIVE_TRADING` must remain unset/false for TESTNET. The application forces TESTNET unless that separate live-trading switch is explicitly enabled.
-
 ## 3. Railway deploy settings
 
-Build: automatic Railpack / Node detection.
+Build: automatic Railpack / Node detection (Node 22.x).
 
 Pre-deploy command:
 
@@ -57,16 +57,43 @@ Healthcheck path:
 /ready
 ```
 
-The `/health` route is only a liveness check. `/ready` returns HTTP 200 only after the startup gate confirms DB health, canonical config parity and TESTNET safety.
+`/health` is liveness only. `/ready` returns HTTP 200 only when canonical config parity, TESTNET safety and required Google Sheets storage are healthy.
 
-## 4. Expected runtime
+## 4. Storage layout
 
-Read-only status:
+The Apps Script automatically creates:
 
 ```text
+STATE
+TRADES
+ORDERS
+DECISIONS
+CHECKPOINTS
+CANDIDATES
+```
+
+`STATE` keeps restart-recovery runtime data. Trade/order history is stored in its own tabs so the runtime JSON never grows beyond a single-cell limit.
+
+## 5. Expected runtime
+
+```text
+GET /ready
 GET /api/runtime
 GET /api/status
-GET /ready
+GET /api/learning
+```
+
+Expected `/ready` storage state:
+
+```json
+{
+  "storage": {
+    "mode": "google_sheets",
+    "connected": true,
+    "required": true,
+    "error": null
+  }
+}
 ```
 
 Expected strategy candidate:
@@ -84,22 +111,21 @@ ATR trailing multiplier: 3.0
 hard SL: 2.5%
 ```
 
-## 5. Admin protection
+## 6. Learning loop
 
-Mutating routes require:
+- Every 7 closed trades: new checkpoint in `CHECKPOINTS`.
+- Every 21 trades: repeated candidate pattern confirmation.
+- Candidate strategy changes go to `CANDIDATES`.
+- `autoApply=false`: the bot never edits the active strategy by itself.
 
-```text
-X-Admin-Token: <ADMIN_API_TOKEN>
-```
+## 7. Admin protection
 
-The trading webhook requires:
+Mutating routes require `X-Admin-Token`.
 
-```text
-X-Webhook-Secret: <WEBHOOK_SECRET>
-```
+The trading webhook requires `X-Webhook-Secret`.
 
-Do not put either secret in frontend JavaScript or commit them to GitHub.
+Do not commit secrets to GitHub.
 
-## 6. Forward-test rule
+## 8. Forward-test rule
 
 Do not force manual trades to create a sample. Allow authentic strategy signals to open TESTNET trades. Keep strategy/risk parameters frozen while collecting the first forward sample.
