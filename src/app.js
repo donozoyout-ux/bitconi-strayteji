@@ -8,6 +8,7 @@ const traderController = require('./controllers/trader.controller');
 const chartController = require('./controllers/chart.controller');
 const analysisController = require('./controllers/analysis.controller');
 const decisionStatsController = require('./controllers/decision-stats.controller');
+const learningController = require('./controllers/learning.controller');
 const settingsRoutes = require('./routes/settings.routes');
 const startup = require('./services/startup');
 const env = require('./config/env');
@@ -68,6 +69,7 @@ app.get('/api/trader/history', traderController.getHistory);
 app.get('/api/chart', chartController.getChart);
 app.get('/api/analysis', analysisController.getAnalysis);
 app.get('/api/decisions/stats', decisionStatsController.getStats);
+app.get('/api/learning', learningController.getStatus);
 
 // Mutating/admin endpoints require X-Admin-Token.
 app.post('/api/test-telegram', requireAdmin, telegramController.sendTest);
@@ -76,6 +78,7 @@ app.post('/api/trader/analyze', requireAdmin, traderController.analyze);
 app.post('/api/trader/reset', requireAdmin, traderController.resetState);
 app.post('/api/trader/close', requireAdmin, traderController.closePosition);
 app.post('/api/trader/open', requireAdmin, traderController.openManual);
+app.post('/api/learning/check', requireAdmin, learningController.checkNow);
 app.use('/api/settings', requireAdmin, settingsRoutes);
 
 app.use('/webhook', webhookRoutes);

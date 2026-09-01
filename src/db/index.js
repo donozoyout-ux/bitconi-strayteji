@@ -10,9 +10,7 @@ const env = require('../config/env');
 let pool = null;
 
 function getPool() {
-  if (!Pool) {
-    throw new Error('pg modulu yuklu degil.');
-  }
+  if (!Pool) throw new Error('pg modulu yuklu degil.');
   if (!pool) {
     const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/dip_hunter';
     pool = new Pool({
@@ -25,46 +23,71 @@ function getPool() {
 }
 
 async function query(text, params) {
-  const pool = getPool();
-  const client = await pool.connect();
+  const client = await getPool().connect();
   try {
-    const result = await client.query(text, params);
-    return result;
+    return await client.query(text, params);
   } finally {
     client.release();
   }
 }
 
 async function initialize() {
-  const pool = getPool();
-  await pool.query('SELECT NOW()');
-  return pool;
+  const p = getPool();
+  await p.query('SELECT NOW()');
+  return p;
 }
 
 async function close() {
   if (pool) {
     await pool.end();
+    pool = null;
   }
 }
 
-// Idempotent schema bootstrap. Executes the migration SQL only when the core
-// tables are missing, so it is safe to call on every startup. No-op when
-// DATABASE_URL is unset or tables already exist.
+// Ordered migration runner. Existing installations are upgraded without wiping data;
+// fresh Railway databases execute the same files from zero.
 async function runMigrations() {
   if (!process.env.DATABASE_URL) return { ok: false, reason: 'DATABASE_URL yok' };
+
   const fs = require('fs');
   const path = require('path');
   let client;
   try {
-    const p = getPool();
-    client = await p.connect();
-    const r = await client.query("SELECT to_regclass('public.strategy_decisions') AS t");
-    const exists = !!(r.rows[0] && r.rows[0].t);
-    if (exists) return { ok: true, applied: false, reason: 'tablolar mevcut' };
-    const file = path.join(__dirname, 'migrations', '001-create-tables.sql');
-    const sql = fs.readFileSync(file, 'utf8');
-    await client.query(sql);
-    return { ok: true, applied: true };
+    client = await getPool().connect();
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        filename VARCHAR(255) PRIMARY KEY,
+        applied_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    const dir = path.join(__dirname, 'migrations');
+    const files = fs.readdirSync(dir).filter((f) => /^\d+.*\.sql$/i.test(f)).sort();
+    const applied = [];
+
+    for (const filename of files) {
+      const seen = await client.query('SELECT 1 FROM schema_migrations WHERE filename=$1', [filename]);
+      if (seen.rowCount) continue;
+
+      const sql = fs.readFileSync(path.join(dir, filename), 'utf8');
+      await client.query('BEGIN');
+      try {
+        await client.query(sql);
+        await client.query('INSERT INTO schema_migrations(filename) VALUES($1)', [filename]);
+        await client.query('COMMIT');
+        applied.push(filename);
+      } catch (e) {
+        await client.query('ROLLBACK');
+        throw new Error(`${filename}: ${e.message}`);
+      }
+    }
+
+    return {
+      ok: true,
+      applied: applied.length > 0,
+      appliedFiles: applied,
+      reason: applied.length ? `${applied.length} migration uygulandi` : 'migrationlar guncel',
+    };
   } catch (e) {
     return { ok: false, error: e.message };
   } finally {
@@ -72,9 +95,6 @@ async function runMigrations() {
   }
 }
 
-// Harmless read/write health check used by the startup gate. Verifies DATABASE_URL,
-// connectivity, required tables, settings/bot_state readability, and a throwaway
-// write to a journal-style table. Returns { ok, details } without throwing.
 async function healthCheck() {
   const details = {
     databaseUrlPresent: !!process.env.DATABASE_URL,
@@ -86,17 +106,20 @@ async function healthCheck() {
     writeOk: false,
   };
   if (!process.env.DATABASE_URL) return { ok: false, details };
+
   let client;
   try {
-    const p = getPool();
-    client = await p.connect();
+    client = await getPool().connect();
     details.connect = true;
     await client.query('SELECT 1');
     details.select1 = true;
 
-    const tables = ['settings', 'bot_state', 'trades', 'strategy_decisions', 'system_events', 'orders', 'positions'];
+    const tables = [
+      'settings', 'bot_state', 'trades', 'strategy_decisions', 'system_events',
+      'orders', 'positions', 'learning_checkpoints'
+    ];
     for (const t of tables) {
-      const r = await client.query('SELECT to_regclass($1) AS t', [t]);
+      const r = await client.query('SELECT to_regclass($1) AS t', [`public.${t}`]);
       details.tables[t] = !!(r.rows[0] && r.rows[0].t);
     }
 
@@ -109,16 +132,17 @@ async function healthCheck() {
       "INSERT INTO system_events (event_type, event_data, severity) VALUES ('HEALTH_CHECK', $1, 'INFO') RETURNING id",
       [JSON.stringify({ probe: true, ts: Date.now() })]
     );
-    const id = ins.rows[0].id;
-    await client.query('DELETE FROM system_events WHERE id=$1', [id]);
+    await client.query('DELETE FROM system_events WHERE id=$1', [ins.rows[0].id]);
     details.writeOk = true;
   } catch (e) {
     details.error = e.message;
   } finally {
     if (client) client.release();
   }
+
   details.allTablesPresent = Object.values(details.tables).every(Boolean);
-  const ok = details.connect && details.select1 && details.settingsReadable && details.botStateReadable && details.writeOk && details.allTablesPresent;
+  const ok = details.connect && details.select1 && details.settingsReadable &&
+    details.botStateReadable && details.writeOk && details.allTablesPresent;
   return { ok, details };
 }
 
