@@ -1,6 +1,6 @@
 {
   "name": "bitconi-strategy-bot",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "BTC/USDT algorithmic trading bot with multi-timeframe trend strategy, adaptive learning checkpoints, risk engine, PostgreSQL state and Binance Futures TESTNET execution",
   "main": "server.js",
   "scripts": {
@@ -25,7 +25,7 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "22.x"
   },
   "dependencies": {
     "ccxt": "^4.4.2",
