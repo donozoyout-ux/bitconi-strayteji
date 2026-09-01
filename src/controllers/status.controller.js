@@ -12,6 +12,7 @@ const WATCH_ASSETS = ['USDT', 'BTC', 'ETH', 'BNB'];
 function getRuntime(req, res) {
   const gate = startup.getGate();
   const settings = settingsService.get();
+  const storageOk = Boolean(gate && gate.storageOk);
 
   res.status(200).json({
     success: true,
@@ -40,8 +41,9 @@ function getRuntime(req, res) {
     },
     startupGate: gate
       ? {
-          storageOk: Boolean(gate.storageOk),
-          sheetOk: Boolean(gate.sheetOk),
+          storageOk,
+          sheetOk: storageOk,
+          dbOk: storageOk, // temporary dashboard compatibility alias
           configOk: Boolean(gate.configOk),
           blockReason: gate.blockReason || null,
           parityMismatches: gate.parity && gate.parity.mismatches ? gate.parity.mismatches : [],
@@ -49,6 +51,7 @@ function getRuntime(req, res) {
       : {
           storageOk: false,
           sheetOk: false,
+          dbOk: false,
           configOk: false,
           blockReason: 'STARTUP_CHECKS_NOT_RUN',
           parityMismatches: [],
@@ -87,6 +90,8 @@ async function getStatus(req, res) {
       storageMode: 'google_sheets',
       storageConnected: Boolean(storage.ok),
       storageError: storage.error || null,
+      dbConnected: Boolean(storage.ok), // temporary dashboard compatibility alias
+      dbError: storage.error || null,
       binanceConnected: true,
       emergencyStop: Boolean(env.emergencyStop),
       tradingEnabled: Boolean(env.tradingEnabled),
@@ -94,7 +99,7 @@ async function getStatus(req, res) {
       strategy: settings.strategy,
       strategyVersion: settings.strategyVersion,
       startupGate: gate
-        ? { storageOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
+        ? { storageOk: Boolean(gate.storageOk), dbOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
         : null,
     });
   } catch (err) {
@@ -109,6 +114,8 @@ async function getStatus(req, res) {
       storageMode: 'google_sheets',
       storageConnected: Boolean(storage.ok),
       storageError: storage.error || null,
+      dbConnected: Boolean(storage.ok),
+      dbError: storage.error || null,
       binanceConnected: false,
       emergencyStop: Boolean(env.emergencyStop),
       tradingEnabled: Boolean(env.tradingEnabled),
@@ -116,7 +123,7 @@ async function getStatus(req, res) {
       strategy: settings.strategy,
       strategyVersion: settings.strategyVersion,
       startupGate: gate
-        ? { storageOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
+        ? { storageOk: Boolean(gate.storageOk), dbOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
         : null,
     });
   }
