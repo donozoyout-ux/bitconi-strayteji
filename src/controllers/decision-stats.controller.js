@@ -41,6 +41,7 @@ async function getStats(req, res) {
     rangeDays,
     storage: 'google_sheets',
     storageConnected: false,
+    dbConnected: false, // temporary dashboard compatibility alias
     decisions: { total: 0, breakdown: [], byRegime: [] },
     trades: { total: 0, wins: 0, losses: 0, winRate: 0, totalPnl: null, avgPnl: null },
     tradesByRegime: [],
@@ -105,6 +106,7 @@ async function getStats(req, res) {
       rangeDays,
       storage: 'google_sheets',
       storageConnected: true,
+      dbConnected: true, // temporary dashboard compatibility alias
       decisions: { total: decisions.length, breakdown, byRegime },
       trades: {
         total: totalTrades,
