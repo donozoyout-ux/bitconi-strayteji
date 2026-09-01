@@ -4,12 +4,10 @@ dotenv.config();
 
 const env = {};
 
-const isProduction = process.env.NODE_ENV === 'production';
 const requestedTestnet = (process.env.USE_TESTNET || 'true') === 'true';
 const allowLiveTrading = process.env.ALLOW_LIVE_TRADING === 'true';
 
 // Safety default: TESTNET. Production/live Binance requires an explicit second switch.
-// This prevents a hosting migration or missing env var from accidentally enabling live money.
 const useTestnet = requestedTestnet || !allowLiveTrading;
 
 env.environment = process.env.NODE_ENV || 'development';
@@ -28,6 +26,11 @@ env.binanceSecret = useTestnet
 
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
+
+// Google Sheets persistent storage (replaces PostgreSQL).
+env.googleSheetsWebAppUrl = process.env.GOOGLE_SHEETS_WEBAPP_URL || '';
+env.googleSheetsSecret = process.env.GOOGLE_SHEETS_SECRET || '';
+env.sheetRequired = (process.env.SHEET_REQUIRED || (env.environment === 'production' ? 'true' : 'false')) === 'true';
 
 // Trading control flags
 env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
@@ -57,15 +60,16 @@ env.partialTpPercent = 50;
 env.maxBudgetMultiplier = 3;
 env.allowSymbols = ['BTC/USDT'];
 
-// Railway and Render both expose DATABASE_URL. Local fallback is dev-only.
-env.databaseUrl = process.env.DATABASE_URL || (!isProduction ? 'postgresql://localhost:5432/dip_hunter' : '');
-
 if (!env.binanceApiKey || !env.binanceSecret) {
   console.warn('[WARN] Binance API credentials are missing. Trading/exchange-auth checks will stay unavailable.');
 }
 
 if (!env.telegramBotToken || !env.telegramChatId) {
   console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured. Notifications disabled.');
+}
+
+if (!env.googleSheetsWebAppUrl || !env.googleSheetsSecret) {
+  console.warn('[WARN] Google Sheets storage is not configured. Set GOOGLE_SHEETS_WEBAPP_URL and GOOGLE_SHEETS_SECRET.');
 }
 
 if (!requestedTestnet && !allowLiveTrading) {
@@ -76,11 +80,10 @@ if (!useTestnet && env.tradingEnabled && !env.dryRun) {
   console.warn('[WARNING] LIVE BINANCE TRADING IS ENABLED.');
 }
 
+// Legacy Google Form bridge remains optional during migration.
 env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
 try {
-  if (process.env.GOOGLE_FORM_FIELDS) {
-    env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
-  }
+  if (process.env.GOOGLE_FORM_FIELDS) env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
 } catch (e) {
   console.warn('[WARN] GOOGLE_FORM_FIELDS is not valid JSON.');
 }

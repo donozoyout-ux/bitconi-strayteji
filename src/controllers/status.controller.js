@@ -5,12 +5,14 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 const startup = require('../services/startup');
 const settingsService = require('../services/settings.service');
+const sheetStore = require('../services/sheet-store.service');
 
 const WATCH_ASSETS = ['USDT', 'BTC', 'ETH', 'BNB'];
 
 function getRuntime(req, res) {
   const gate = startup.getGate();
   const settings = settingsService.get();
+  const storageOk = Boolean(gate && gate.storageOk);
 
   res.status(200).json({
     success: true,
@@ -21,6 +23,7 @@ function getRuntime(req, res) {
     dryRun: Boolean(env.dryRun),
     emergencyStop: Boolean(env.emergencyStop),
     tradingEnabled: Boolean(env.tradingEnabled),
+    storageMode: 'google_sheets',
     strategy: {
       name: settings.strategy,
       version: settings.strategyVersion,
@@ -38,12 +41,16 @@ function getRuntime(req, res) {
     },
     startupGate: gate
       ? {
-          dbOk: Boolean(gate.dbOk),
+          storageOk,
+          sheetOk: storageOk,
+          dbOk: storageOk, // temporary dashboard compatibility alias
           configOk: Boolean(gate.configOk),
           blockReason: gate.blockReason || null,
           parityMismatches: gate.parity && gate.parity.mismatches ? gate.parity.mismatches : [],
         }
       : {
+          storageOk: false,
+          sheetOk: false,
           dbOk: false,
           configOk: false,
           blockReason: 'STARTUP_CHECKS_NOT_RUN',
@@ -60,16 +67,7 @@ function getRuntime(req, res) {
 }
 
 async function getStatus(req, res) {
-  let dbConnected = false;
-  let dbError = null;
-  try {
-    const db = require('../db');
-    await db.query('SELECT NOW()');
-    dbConnected = true;
-  } catch (dbErr) {
-    dbError = dbErr.message;
-  }
-
+  const storage = await sheetStore.healthCheck();
   const gate = startup.getGate();
   const settings = settingsService.get();
 
@@ -79,11 +77,7 @@ async function getStatus(req, res) {
     for (const asset of WATCH_ASSETS) {
       const entry = balance[asset];
       assets[asset] = entry
-        ? {
-            free: entry.free,
-            used: entry.used,
-            total: entry.total,
-          }
+        ? { free: entry.free, used: entry.used, total: entry.total }
         : { free: 0, used: 0, total: 0 };
     }
 
@@ -93,8 +87,11 @@ async function getStatus(req, res) {
       uptime: process.uptime(),
       sandbox: Boolean(env.useTestnet),
       balance: assets,
-      dbConnected,
-      dbError,
+      storageMode: 'google_sheets',
+      storageConnected: Boolean(storage.ok),
+      storageError: storage.error || null,
+      dbConnected: Boolean(storage.ok), // temporary dashboard compatibility alias
+      dbError: storage.error || null,
       binanceConnected: true,
       emergencyStop: Boolean(env.emergencyStop),
       tradingEnabled: Boolean(env.tradingEnabled),
@@ -102,11 +99,7 @@ async function getStatus(req, res) {
       strategy: settings.strategy,
       strategyVersion: settings.strategyVersion,
       startupGate: gate
-        ? {
-            dbOk: Boolean(gate.dbOk),
-            configOk: Boolean(gate.configOk),
-            blockReason: gate.blockReason || null,
-          }
+        ? { storageOk: Boolean(gate.storageOk), dbOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
         : null,
     });
   } catch (err) {
@@ -118,8 +111,11 @@ async function getStatus(req, res) {
       uptime: process.uptime(),
       sandbox: Boolean(env.useTestnet),
       balance: {},
-      dbConnected,
-      dbError,
+      storageMode: 'google_sheets',
+      storageConnected: Boolean(storage.ok),
+      storageError: storage.error || null,
+      dbConnected: Boolean(storage.ok),
+      dbError: storage.error || null,
       binanceConnected: false,
       emergencyStop: Boolean(env.emergencyStop),
       tradingEnabled: Boolean(env.tradingEnabled),
@@ -127,11 +123,7 @@ async function getStatus(req, res) {
       strategy: settings.strategy,
       strategyVersion: settings.strategyVersion,
       startupGate: gate
-        ? {
-            dbOk: Boolean(gate.dbOk),
-            configOk: Boolean(gate.configOk),
-            blockReason: gate.blockReason || null,
-          }
+        ? { storageOk: Boolean(gate.storageOk), dbOk: Boolean(gate.storageOk), configOk: Boolean(gate.configOk), blockReason: gate.blockReason || null }
         : null,
     });
   }
@@ -140,13 +132,10 @@ async function getStatus(req, res) {
 function getLogs(req, res) {
   try {
     const logPath = path.join(__dirname, '..', '..', 'logs', 'app.log');
-    if (!fs.existsSync(logPath)) {
-      return res.status(200).json({ success: true, logs: [] });
-    }
+    if (!fs.existsSync(logPath)) return res.status(200).json({ success: true, logs: [] });
     const data = fs.readFileSync(logPath, 'utf8');
     const lines = data.split('\n').filter(Boolean);
-    const lastLines = lines.slice(-50).reverse();
-    res.status(200).json({ success: true, logs: lastLines });
+    res.status(200).json({ success: true, logs: lines.slice(-50).reverse() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

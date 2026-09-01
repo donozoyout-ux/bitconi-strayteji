@@ -1,7 +1,6 @@
-const crypto = require('crypto');
-const db = require('../db');
 const stateService = require('./state.service');
 const settingsService = require('./settings.service');
+const sheetStore = require('./sheet-store.service');
 const logger = require('../utils/logger');
 
 const CHECKPOINT_SIZE = 7;
@@ -23,135 +22,105 @@ function feeNumber(v) {
   return n(v, 0) || 0;
 }
 
-function makeTradeKey(t) {
-  const raw = [
-    t.symbol || 'BTC/USDT',
-    t.side || 'LONG',
-    t.openedAt || t.entryTime || '',
-    t.closedAt || t.exitTime || t.timestamp || '',
-    t.entryPrice || 0,
-    t.exitPrice || 0,
-    t.size || t.quantity || 0,
-  ].join('|');
-  return crypto.createHash('sha256').update(raw).digest('hex');
+function timestampOf(v) {
+  const t = new Date(v || 0).getTime();
+  return Number.isFinite(t) ? t : 0;
 }
 
-async function nearestDecision(entryTime) {
-  if (!entryTime) return null;
-  try {
-    const r = await db.query(
-      `SELECT decision, reasons, signal_score, regime, chop, timestamp
-       FROM strategy_decisions
-       WHERE timestamp BETWEEN $1::timestamp - INTERVAL '45 minutes'
-                           AND $1::timestamp + INTERVAL '45 minutes'
-       ORDER BY ABS(EXTRACT(EPOCH FROM (timestamp - $1::timestamp))) ASC
-       LIMIT 1`,
-      [entryTime]
-    );
-    return r.rows[0] || null;
-  } catch (_) {
-    return null;
-  }
-}
-
-async function persistTrade(t) {
-  if (!t || !t.entryPrice || !t.exitPrice) return false;
-
-  const entryTime = t.openedAt || t.entryTime;
-  const exitTime = t.closedAt || t.exitTime || t.timestamp;
-  if (!entryTime || !exitTime) return false;
-
-  const decision = await nearestDecision(entryTime);
-  const reasons = (decision && decision.reasons) || {};
-  const side = String(t.side || reasons.side || 'LONG').toUpperCase();
-  const qty = n(t.size, n(t.quantity, 0)) || 0;
-  if (qty <= 0) return false;
-
-  const entry = n(t.entryPrice, 0) || 0;
-  const exit = n(t.exitPrice, 0) || 0;
-  const gross = side === 'SHORT' ? (entry - exit) * qty : (exit - entry) * qty;
-  const fees = feeNumber(t.fees);
-  const net = gross - fees;
-  const sizeUsdt = Math.abs(entry * qty);
-  const pnlPct = sizeUsdt > 0 ? (net / sizeUsdt) * 100 : 0;
-  const settings = settingsService.get();
-  const tradeKey = makeTradeKey(t);
-
-  const metadata = {
-    source: 'state-trade-sync',
-    originalPnl: t.pnl == null ? null : n(t.pnl),
-    note: t.reason || null,
-    decision: decision ? decision.decision : null,
-    chop: decision ? decision.chop : null,
-    rawReasons: reasons,
-  };
-
-  const params = [
-    tradeKey,
-    t.symbol || 'BTC/USDT',
-    side,
-    entry,
-    exit,
-    qty,
-    entryTime,
-    exitTime,
-    sizeUsdt,
-    Math.round(n(t.leverage, settings.maxLeverage || 1) || 1),
-    fees,
-    net,
-    pnlPct,
-    n(t.signalScore, decision && decision.signal_score),
-    t.marketRegime || (decision && decision.regime) || reasons.regime || null,
-    n(t.rsi, n(t.entryRsi, n(reasons.rsi))),
-    n(t.bbLower, n(reasons.bbLower)),
-    n(t.bbUpper, n(reasons.bbUpper)),
-    t.exitReason || t.reason || null,
-    t.mode || 'TESTNET',
-    t.strategyVersion || reasons.strategyVersion || settings.strategyVersion || null,
-    t.setupType || t.entryType || reasons.entryType || null,
-    n(t.adx, n(t.entryAdx, n(reasons.adx))),
-    n(t.atr, n(reasons.atr)),
-    n(t.bbBasis, n(reasons.bbBasis)),
-    n(t.pctB, n(reasons.pctB)),
-    n(t.newsScore, n(reasons.newsScore)),
-    n(t.fearGreed, n(reasons.fearGreed)),
-    n(t.mfe, n(t.mfePercent)),
-    n(t.mae, n(t.maePercent)),
-    t.entryReason || reasons.entryReason || null,
-    JSON.stringify(metadata),
-  ];
-
-  const result = await db.query(
-    `INSERT INTO trades (
-       trade_key, symbol, side, entry_price, exit_price, quantity,
-       entry_time, exit_time, size_usdt, leverage, fee_usdt,
-       pnl_usdt, pnl_percent, signal_score, market_regime,
-       rsi_value, bb_lower, bb_upper, exit_reason, mode,
-       strategy_version, setup_type, adx_value, atr_value, bb_basis,
-       pct_b, news_score, fear_greed, mfe_percent, mae_percent,
-       entry_reason, metadata
-     ) VALUES (
-       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
-       $17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
-     )
-     ON CONFLICT (trade_key) DO NOTHING
-     RETURNING id`,
-    params
-  );
-  return result.rowCount > 0;
-}
-
-async function syncStateTradesToDb() {
+async function syncStateTradesToSheet() {
+  if (!sheetStore.isConfigured()) return 0;
   const trades = (stateService.get().trades || []).slice().reverse();
   let inserted = 0;
   for (const trade of trades) {
     try {
-      if (await persistTrade(trade)) inserted++;
+      const r = await sheetStore.appendTrade(trade);
+      if (r && r.appended) inserted++;
     } catch (e) {
-      logger.warn('[LEARNING] trade sync atlandi: ' + e.message);
+      logger.warn('[LEARNING] trade Sheet sync atlandi: ' + e.message);
     }
   }
   return inserted;
+}
+
+function nearestDecision(entryTime, decisions) {
+  const target = timestampOf(entryTime);
+  if (!target) return null;
+  let best = null;
+  let bestDistance = Infinity;
+  for (const d of decisions || []) {
+    const ts = timestampOf(d.timestamp || d.ts);
+    const distance = Math.abs(ts - target);
+    if (distance <= 45 * 60 * 1000 && distance < bestDistance) {
+      best = d;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+function normalizeTrade(t, decisions) {
+  const entryTime = t.openedAt || t.entryTime;
+  const exitTime = t.closedAt || t.exitTime || t.timestamp;
+  const decision = nearestDecision(entryTime, decisions);
+  const reasons = (decision && decision.reasons) || {};
+  const side = String(t.side || reasons.side || 'LONG').toUpperCase();
+  const qty = n(t.size, n(t.quantity, 0)) || 0;
+  const entry = n(t.entryPrice, n(t.entry_price, 0)) || 0;
+  const exit = n(t.exitPrice, n(t.exit_price, 0)) || 0;
+  const gross = side === 'SHORT' ? (entry - exit) * qty : (exit - entry) * qty;
+  const fees = feeNumber(t.fees != null ? t.fees : t.fee_usdt);
+  const pnl = qty > 0 && entry > 0 ? gross - fees : n(t.pnl, n(t.pnl_usdt, 0)) || 0;
+  const sizeUsdt = Math.abs(entry * qty);
+
+  return {
+    ...t,
+    trade_key: t.tradeKey || t.trade_key || sheetStore.makeTradeKey(t),
+    symbol: t.symbol || 'BTC/USDT',
+    side,
+    entry_price: entry,
+    exit_price: exit,
+    quantity: qty,
+    entry_time: entryTime,
+    exit_time: exitTime,
+    fee_usdt: fees,
+    pnl_usdt: pnl,
+    pnl_percent: sizeUsdt ? (pnl / sizeUsdt) * 100 : n(t.pnlPercent, n(t.pnl_percent, 0)) || 0,
+    signal_score: n(t.signalScore, n(t.signal_score, n(decision && (decision.signalScore || decision.signal_score)))),
+    market_regime: t.marketRegime || t.market_regime || (decision && decision.regime) || reasons.regime || null,
+    rsi_value: n(t.rsi, n(t.entryRsi, n(t.rsi_value, n(reasons.rsi)))),
+    bb_lower: n(t.bbLower, n(t.bb_lower, n(reasons.bbLower))),
+    bb_upper: n(t.bbUpper, n(t.bb_upper, n(reasons.bbUpper))),
+    bb_basis: n(t.bbBasis, n(t.bb_basis, n(reasons.bbBasis))),
+    pct_b: n(t.pctB, n(t.pct_b, n(reasons.pctB))),
+    adx_value: n(t.adx, n(t.entryAdx, n(t.adx_value, n(reasons.adx)))),
+    atr_value: n(t.atr, n(t.atr_value, n(reasons.atr))),
+    news_score: n(t.newsScore, n(t.news_score, n(reasons.newsScore))),
+    fear_greed: n(t.fearGreed, n(t.fear_greed, n(reasons.fearGreed))),
+    mfe_percent: n(t.mfe, n(t.mfePercent, n(t.mfe_percent))),
+    mae_percent: n(t.mae, n(t.maePercent, n(t.mae_percent))),
+    exit_reason: t.exitReason || t.exit_reason || t.reason || null,
+    entry_reason: t.entryReason || t.entry_reason || reasons.entryReason || null,
+    strategy_version: t.strategyVersion || t.strategy_version || reasons.strategyVersion || settingsService.get().strategyVersion,
+    setup_type: t.setupType || t.setup_type || t.entryType || reasons.entryType || null,
+    metadata: {
+      ...(t.metadata && typeof t.metadata === 'object' ? t.metadata : {}),
+      decision: decision ? decision.decision : null,
+      chop: decision ? Boolean(decision.chop) : Boolean(reasons.chop),
+      rawReasons: reasons,
+    },
+  };
+}
+
+async function normalizedTrades() {
+  await syncStateTradesToSheet();
+  const [trades, decisions] = await Promise.all([
+    sheetStore.listTrades(),
+    sheetStore.listDecisions().catch(() => []),
+  ]);
+  return trades
+    .map((t) => normalizeTrade(t, decisions))
+    .filter((t) => t.entry_price > 0 && t.exit_price > 0 && t.quantity > 0 && t.exit_time)
+    .sort((a, b) => timestampOf(a.exit_time) - timestampOf(b.exit_time));
 }
 
 function profitFactor(rows) {
@@ -169,7 +138,6 @@ function metrics(rows) {
   const shortRows = rows.filter((r) => String(r.side).toUpperCase() === 'SHORT');
   const net = rows.reduce((s, r) => s + (n(r.pnl_usdt, 0) || 0), 0);
   const fees = rows.reduce((s, r) => s + (n(r.fee_usdt, 0) || 0), 0);
-
   return {
     trades: count,
     wins: wins.length,
@@ -286,20 +254,17 @@ function candidateFor(batchRows, batchMetrics, globalMetrics, findings) {
 }
 
 async function previousCandidateKeys(limit = 2) {
-  const r = await db.query(
-    `SELECT candidate FROM learning_checkpoints
-     ORDER BY checkpoint_number DESC LIMIT $1`,
-    [limit]
-  );
-  return r.rows.map((x) => x.candidate && x.candidate.key).filter(Boolean);
+  const rows = await sheetStore.listCheckpoints();
+  return rows
+    .slice()
+    .sort((a, b) => Number(b.checkpointNumber || 0) - Number(a.checkpointNumber || 0))
+    .slice(0, limit)
+    .map((x) => x.candidate && x.candidate.key)
+    .filter(Boolean);
 }
 
-async function createCheckpoint(tradeCount) {
-  const all = await db.query(
-    `SELECT * FROM trades ORDER BY exit_time ASC, id ASC LIMIT $1`,
-    [tradeCount]
-  );
-  const rows = all.rows;
+async function createCheckpoint(tradeCount, allRows) {
+  const rows = allRows.slice(0, tradeCount);
   if (rows.length < tradeCount) return null;
 
   const batch = rows.slice(-CHECKPOINT_SIZE);
@@ -318,65 +283,52 @@ async function createCheckpoint(tradeCount) {
 
   const status = confirmed ? 'VALIDATION_REQUIRED' : candidate.key === 'NO_CHANGE' ? 'STABLE' : 'OBSERVE';
   const settings = settingsService.get();
+  const checkpoint = {
+    checkpointNumber,
+    tradeCount,
+    batchStartTradeKey: batch[0] && batch[0].trade_key,
+    batchEndTradeKey: batch[batch.length - 1] && batch[batch.length - 1].trade_key,
+    activeStrategyVersion: settings.strategyVersion,
+    batchMetrics,
+    globalMetrics,
+    findings,
+    candidate,
+    confirmedPattern: confirmed,
+    status,
+    createdAt: new Date().toISOString(),
+  };
 
-  const inserted = await db.query(
-    `INSERT INTO learning_checkpoints (
-       checkpoint_number, trade_count, batch_start_trade_id, batch_end_trade_id,
-       active_strategy_version, batch_metrics, global_metrics, findings,
-       candidate, confirmed_pattern, status
-     ) VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb,$10,$11)
-     ON CONFLICT (checkpoint_number) DO NOTHING
-     RETURNING *`,
-    [
-      checkpointNumber,
-      tradeCount,
-      batch[0] && batch[0].id,
-      batch[batch.length - 1] && batch[batch.length - 1].id,
-      settings.strategyVersion,
-      JSON.stringify(batchMetrics),
-      JSON.stringify(globalMetrics),
-      JSON.stringify(findings),
-      JSON.stringify(candidate),
-      confirmed,
-      status,
-    ]
-  );
-
-  const row = inserted.rows[0] || null;
-  if (row) {
-    await db.query(
-      `INSERT INTO system_events(event_type, event_data, severity)
-       VALUES('LEARNING_CHECKPOINT', $1::jsonb, 'INFO')`,
-      [JSON.stringify({ checkpointNumber, tradeCount, status, candidateKey: candidate.key, confirmed })]
-    );
-    logger.info(`[LEARNING] checkpoint #${checkpointNumber} tamamlandi`, {
+  const result = await sheetStore.appendCheckpoint(checkpoint);
+  if (result && result.appended) {
+    logger.info(`[LEARNING] Sheet checkpoint #${checkpointNumber} tamamlandi`, {
       tradeCount,
       status,
       candidate: candidate.key,
       confirmed,
     });
+    return checkpoint;
   }
-  return row;
+  return null;
 }
 
 async function maybeRunCheckpoint() {
   if (running) return { skipped: true, reason: 'already-running' };
   running = true;
   try {
-    await syncStateTradesToDb();
-    const countResult = await db.query('SELECT COUNT(*)::int AS count FROM trades');
-    const total = countResult.rows[0] ? Number(countResult.rows[0].count) : 0;
+    if (!sheetStore.isConfigured()) return { skipped: true, reason: 'sheet-not-configured' };
+    const trades = await normalizedTrades();
+    const total = trades.length;
     if (total < CHECKPOINT_SIZE) return { totalTrades: total, created: [] };
 
-    const latestResult = await db.query('SELECT COALESCE(MAX(trade_count), 0)::int AS n FROM learning_checkpoints');
-    let completed = latestResult.rows[0] ? Number(latestResult.rows[0].n) : 0;
+    const checkpoints = await sheetStore.listCheckpoints();
+    let completed = checkpoints.reduce((m, x) => Math.max(m, Number(x.tradeCount || 0)), 0);
     const target = Math.floor(total / CHECKPOINT_SIZE) * CHECKPOINT_SIZE;
     const created = [];
 
     while (completed + CHECKPOINT_SIZE <= target) {
       completed += CHECKPOINT_SIZE;
-      const row = await createCheckpoint(completed);
-      if (row) created.push(row);
+      const cp = await createCheckpoint(completed, trades);
+      if (cp) created.push(cp);
     }
 
     return { totalTrades: total, target, created };
@@ -386,15 +338,31 @@ async function maybeRunCheckpoint() {
 }
 
 async function getStatus() {
-  await syncStateTradesToDb();
-  const count = await db.query('SELECT COUNT(*)::int AS count FROM trades');
-  const totalTrades = count.rows[0] ? Number(count.rows[0].count) : 0;
-  const latest = await db.query('SELECT * FROM learning_checkpoints ORDER BY checkpoint_number DESC LIMIT 1');
-  const checkpoints = await db.query('SELECT * FROM learning_checkpoints ORDER BY checkpoint_number DESC LIMIT 10');
+  if (!sheetStore.isConfigured()) {
+    return {
+      enabled: false,
+      mode: 'ADVISORY_ONLY',
+      autoApply: false,
+      checkpointEvery: CHECKPOINT_SIZE,
+      confirmationEvery: CONFIRMATION_SIZE,
+      totalTrades: (stateService.get().trades || []).length,
+      nextCheckpoint: CHECKPOINT_SIZE,
+      tradesUntilNext: Math.max(0, CHECKPOINT_SIZE - (stateService.get().trades || []).length),
+      latest: null,
+      checkpoints: [],
+      storage: 'google_sheets',
+      error: 'SHEET_NOT_CONFIGURED',
+    };
+  }
+
+  const [trades, checkpoints] = await Promise.all([normalizedTrades(), sheetStore.listCheckpoints()]);
+  const ordered = checkpoints.slice().sort((a, b) => Number(b.checkpointNumber || 0) - Number(a.checkpointNumber || 0));
+  const totalTrades = trades.length;
   const nextCheckpoint = (Math.floor(totalTrades / CHECKPOINT_SIZE) + 1) * CHECKPOINT_SIZE;
 
   return {
     enabled: true,
+    storage: 'google_sheets',
     mode: 'ADVISORY_ONLY',
     autoApply: false,
     checkpointEvery: CHECKPOINT_SIZE,
@@ -402,8 +370,8 @@ async function getStatus() {
     totalTrades,
     nextCheckpoint,
     tradesUntilNext: Math.max(0, nextCheckpoint - totalTrades),
-    latest: latest.rows[0] || null,
-    checkpoints: checkpoints.rows,
+    latest: ordered[0] || null,
+    checkpoints: ordered.slice(0, 10),
   };
 }
 
@@ -413,14 +381,14 @@ function start() {
     try {
       await maybeRunCheckpoint();
     } catch (e) {
-      logger.warn('[LEARNING] checkpoint kontrolu basarisiz: ' + e.message);
+      logger.warn('[LEARNING] Sheet checkpoint kontrolu basarisiz: ' + e.message);
     }
   };
-
-  setTimeout(tick, 15000).unref?.();
+  const first = setTimeout(tick, 15000);
+  if (first.unref) first.unref();
   timer = setInterval(tick, POLL_MS);
   if (timer.unref) timer.unref();
-  logger.info(`[LEARNING] Adaptive Learning V1 aktif: her ${CHECKPOINT_SIZE} trade analiz, ${CONFIRMATION_SIZE} trade dogrulama; AUTO-APPLY KAPALI.`);
+  logger.info(`[LEARNING] Adaptive Learning V1: Google Sheets hafiza, her ${CHECKPOINT_SIZE} trade analiz, ${CONFIRMATION_SIZE} trade dogrulama; AUTO-APPLY KAPALI.`);
 }
 
 function stop() {
@@ -431,7 +399,8 @@ function stop() {
 module.exports = {
   CHECKPOINT_SIZE,
   CONFIRMATION_SIZE,
-  syncStateTradesToDb,
+  syncStateTradesToSheet,
+  syncStateTradesToDb: syncStateTradesToSheet,
   maybeRunCheckpoint,
   getStatus,
   metrics,
