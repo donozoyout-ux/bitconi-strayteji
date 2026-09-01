@@ -51,6 +51,11 @@ function saveLocal() {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
+function compactRuntimeState(s) {
+  const { trades, orderLog, ...runtime } = s || {};
+  return { ...runtime, busy: false };
+}
+
 async function persistNow() {
   if (!sheetStore.isConfigured() || persistInFlight) {
     if (persistInFlight) persistQueued = true;
@@ -58,8 +63,7 @@ async function persistNow() {
   }
   persistInFlight = true;
   try {
-    const snapshot = { ...load(), busy: false };
-    await sheetStore.setState(SHEET_STATE_KEY, snapshot);
+    await sheetStore.setState(SHEET_STATE_KEY, compactRuntimeState(load()));
   } catch (e) {
     logger.warn('[SHEET-STATE] state yazimi basarisiz: ' + e.message);
   } finally {
@@ -112,23 +116,33 @@ function pushOrderLog(entry) {
 async function hydrateFromSheet() {
   if (!sheetStore.isConfigured()) return { ok: false, reason: 'sheet-not-configured' };
   try {
-    const remote = await sheetStore.getState(SHEET_STATE_KEY);
+    const [remote, tradeRows, orderRows] = await Promise.all([
+      sheetStore.getState(SHEET_STATE_KEY),
+      sheetStore.listTrades().catch(() => []),
+      sheetStore.list('ORDERS').catch(() => []),
+    ]);
+
+    const recentTrades = tradeRows
+      .slice()
+      .sort((a, b) => new Date(b.closedAt || b.exitTime || b.exit_time || b.timestamp || 0) - new Date(a.closedAt || a.exitTime || a.exit_time || a.timestamp || 0))
+      .slice(0, MAX_TRADES);
+    const recentOrders = orderRows
+      .slice()
+      .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
+      .slice(0, MAX_LOG);
+
     if (remote && typeof remote === 'object') {
-      state = {
-        ...DEFAULT_STATE,
-        ...remote,
-        busy: false,
-        trades: Array.isArray(remote.trades) ? remote.trades.slice(0, MAX_TRADES) : [],
-        orderLog: Array.isArray(remote.orderLog) ? remote.orderLog.slice(0, MAX_LOG) : [],
-      };
+      state = { ...DEFAULT_STATE, ...remote, busy: false, trades: recentTrades, orderLog: recentOrders };
       saveLocal();
-      logger.info('[SHEET-STATE] runtime state Google Sheets üzerinden geri yuklendi.');
-      return { ok: true, restored: true };
+      logger.info('[SHEET-STATE] runtime + trade/order hafizasi Google Sheets uzerinden geri yuklendi.');
+      return { ok: true, restored: true, trades: recentTrades.length, orders: recentOrders.length };
     }
-    state = load();
-    await sheetStore.setState(SHEET_STATE_KEY, { ...state, busy: false });
+
+    state = { ...load(), trades: recentTrades, orderLog: recentOrders, busy: false };
+    await sheetStore.setState(SHEET_STATE_KEY, compactRuntimeState(state));
+    saveLocal();
     logger.info('[SHEET-STATE] ilk runtime state Google Sheets icine yazildi.');
-    return { ok: true, restored: false };
+    return { ok: true, restored: false, trades: recentTrades.length, orders: recentOrders.length };
   } catch (e) {
     logger.warn('[SHEET-STATE] state recovery basarisiz: ' + e.message);
     return { ok: false, error: e.message };
