@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const sheetStore = require('./sheet-store.service');
 const logger = require('../utils/logger');
+const env = require('../config/env');
 
 const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 const STATE_FILE = path.join(DATA_DIR, 'state.json');
@@ -27,6 +28,7 @@ const SHEET_STATE_KEY = 'runtime';
 
 let state = null;
 let persistTimer = null;
+let periodicSyncTimer = null;
 let persistInFlight = false;
 let persistQueued = false;
 
@@ -75,6 +77,8 @@ async function persistNow() {
   }
 }
 
+// Fast debounce remains for position/risk safety. GOOGLE_SHEETS_SYNC_MINUTES adds
+// a periodic full-state checkpoint; it does not delay critical state writes.
 function schedulePersist(delay = 1500) {
   if (!sheetStore.isConfigured()) return;
   if (persistTimer) clearTimeout(persistTimer);
@@ -83,6 +87,16 @@ function schedulePersist(delay = 1500) {
     persistNow().catch(() => {});
   }, delay);
   if (persistTimer.unref) persistTimer.unref();
+}
+
+function startPeriodicSync() {
+  if (!sheetStore.isConfigured() || periodicSyncTimer) return;
+  const intervalMs = Math.max(1, Number(env.googleSheetsSyncMinutes || 5)) * 60 * 1000;
+  periodicSyncTimer = setInterval(() => {
+    persistNow().catch(() => {});
+  }, intervalMs);
+  if (periodicSyncTimer.unref) periodicSyncTimer.unref();
+  logger.info(`[SHEET-STATE] periyodik senkron aktif: ${env.googleSheetsSyncMinutes || 5} dk.`);
 }
 
 function get() {
@@ -135,12 +149,14 @@ async function hydrateFromSheet() {
       state = { ...DEFAULT_STATE, ...remote, busy: false, trades: recentTrades, orderLog: recentOrders };
       saveLocal();
       logger.info('[SHEET-STATE] runtime + trade/order hafizasi Google Sheets uzerinden geri yuklendi.');
+      startPeriodicSync();
       return { ok: true, restored: true, trades: recentTrades.length, orders: recentOrders.length };
     }
 
     state = { ...load(), trades: recentTrades, orderLog: recentOrders, busy: false };
     await sheetStore.setState(SHEET_STATE_KEY, compactRuntimeState(state));
     saveLocal();
+    startPeriodicSync();
     logger.info('[SHEET-STATE] ilk runtime state Google Sheets icine yazildi.');
     return { ok: true, restored: false, trades: recentTrades.length, orders: recentOrders.length };
   } catch (e) {
@@ -169,5 +185,6 @@ module.exports = {
   pushOrderLog,
   hydrateFromSheet,
   persistNow,
+  startPeriodicSync,
   DEFAULT_STATE,
 };
