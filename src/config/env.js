@@ -27,10 +27,12 @@ env.binanceSecret = useTestnet
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Google Sheets persistent storage (replaces PostgreSQL).
+// Google Sheets persistent storage is optional unless explicitly required.
+// Render can therefore boot in local/degraded persistence mode when Sheets is not
+// configured. Set SHEET_REQUIRED=true to restore fail-closed durable storage.
 env.googleSheetsWebAppUrl = process.env.GOOGLE_SHEETS_WEBAPP_URL || '';
 env.googleSheetsSecret = process.env.GOOGLE_SHEETS_SECRET || '';
-env.sheetRequired = (process.env.SHEET_REQUIRED || (env.environment === 'production' ? 'true' : 'false')) === 'true';
+env.sheetRequired = process.env.SHEET_REQUIRED === 'true';
 
 // Trading control flags
 env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
@@ -69,7 +71,8 @@ if (!env.telegramBotToken || !env.telegramChatId) {
 }
 
 if (!env.googleSheetsWebAppUrl || !env.googleSheetsSecret) {
-  console.warn('[WARN] Google Sheets storage is not configured. Set GOOGLE_SHEETS_WEBAPP_URL and GOOGLE_SHEETS_SECRET.');
+  const mode = env.sheetRequired ? 'required' : 'optional/local-fallback';
+  console.warn(`[WARN] Google Sheets storage is not configured (${mode}).`);
 }
 
 if (!requestedTestnet && !allowLiveTrading) {
