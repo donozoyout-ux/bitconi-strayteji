@@ -3,50 +3,58 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const env = {};
-// SECRETS: Only infrastructure secrets from .env
-// ----------------------------
-const FALLBACK = {
-  binanceTestnetApiKey: 'lVs9EHMUmNfdoDoqjBmqFUIeL2rcEPiKUSVjQMpp21H6i9Hj2QF58EcCvMDARc6g',
-  binanceTestnetSecret: 'KpRDeOi5nNwqwvAI0U0i6ooTPDsPomPQx7yS5S8jz9EK7Ilrfm2tq36Ft49xbYvK',
-};
 
-const useTestnet = (process.env.USE_TESTNET || 'true') === 'true';
+const requestedTestnet = (process.env.USE_TESTNET || 'true') === 'true';
+const allowLiveTrading = process.env.ALLOW_LIVE_TRADING === 'true';
 
-// Non-trading env vars (populated by deployment infrastructure)
+// Safety default: TESTNET. Live Binance requires explicit opt-in.
+const useTestnet = requestedTestnet || !allowLiveTrading;
+
 env.environment = process.env.NODE_ENV || 'development';
+env.platform = process.env.RAILWAY_ENVIRONMENT ? 'railway' : (process.env.RENDER === 'true' ? 'render' : 'local');
 env.useTestnet = useTestnet;
 env.isTestnet = useTestnet;
+env.allowLiveTrading = allowLiveTrading;
 
-// Secrets - Flexible resolution from .env or deployment environment variables
-env.binanceApiKey = process.env.BINANCE_API_KEY || process.env.BINANCE_TESTNET_API_KEY || (useTestnet ? FALLBACK.binanceTestnetApiKey : '');
-env.binanceSecret = process.env.BINANCE_SECRET_KEY || process.env.BINANCE_TESTNET_SECRET_KEY || (useTestnet ? FALLBACK.binanceTestnetSecret : '');
+// Binance credentials always come from hosting environment.
+env.binanceApiKey = useTestnet
+  ? (process.env.BINANCE_TESTNET_API_KEY || process.env.BINANCE_API_KEY || '')
+  : (process.env.BINANCE_API_KEY || '');
+env.binanceSecret = useTestnet
+  ? (process.env.BINANCE_TESTNET_SECRET_KEY || process.env.BINANCE_SECRET_KEY || '')
+  : (process.env.BINANCE_SECRET_KEY || '');
 
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Trading control flags (from .env, can be overridden by settings/service at runtime)
-env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
-const deployMode = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' || process.env.DEPLOY_CONFIG === 'canonical';
-if (process.env.DRY_RUN === 'false') env.dryRun = false;
-else if (process.env.DRY_RUN === 'true') env.dryRun = true;
-else env.dryRun = !deployMode; // Railway/production default: real orders; local default: dry-run
-env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
+// Google Sheets is OPTIONAL only. It may persist history, but it can never block TESTNET trading.
+env.googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+env.googlePrivateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+env.googleSheetsSpreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '';
+env.googleSheetsSyncMinutes = Math.max(1, parseInt(process.env.GOOGLE_SHEETS_SYNC_MINUTES || '5', 10) || 5);
+env.sheetRequired = false;
 
-// Trading Configuration - Single source of truth
-env.analysisTimeframe = process.env.ANALYSIS_TIMEFRAME || '1d';
+// TESTNET execution is intentionally always enabled and non-dry-run for this deployment.
+// Live mode keeps explicit safety switches.
+env.tradingEnabled = useTestnet ? true : (process.env.TRADING_MODE || 'off') === 'on';
+env.dryRun = useTestnet ? false : process.env.DRY_RUN !== 'false';
+env.emergencyStop = useTestnet ? false : process.env.EMERGENCY_STOP === 'true';
+
+// Runtime configuration
+env.analysisTimeframe = process.env.ANALYSIS_TIMEFRAME || '15m';
 env.port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
-env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN) || 5;
-env.budgetUsdt = parseFloat(process.env.BUDGET_USDT) || 500;
-env.tpPercent = parseFloat(process.env.TP_PERCENT) || 5;
-env.slPercent = parseFloat(process.env.SL_PERCENT) || 2.5;
-env.commissionRate = parseFloat(process.env.COMMISSION_RATE) || 0.001;
-env.cooldownMin = parseInt(process.env.COOLDOWN_MIN) || 60;
+env.checkIntervalMin = parseInt(process.env.CHECK_INTERVAL_MIN || '5', 10);
+env.budgetUsdt = parseFloat(process.env.BUDGET_USDT || '500');
+env.tpPercent = parseFloat(process.env.TP_PERCENT || '5');
+env.slPercent = parseFloat(process.env.SL_PERCENT || '2.5');
+env.commissionRate = parseFloat(process.env.COMMISSION_RATE || '0.001');
+env.cooldownMin = parseInt(process.env.COOLDOWN_MIN || '60', 10);
 env.tradingSymbol = process.env.TRADING_SYMBOL || 'BTC/USDT';
-env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20');
+env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20', 10);
 env.useRsi2 = process.env.USE_RSI2 === 'true';
 env.strategyMode = process.env.STRATEGY_MODE || 'regime';
 
-// Risk engine defaults (can be overridden by settings.json at runtime)
+// Risk engine defaults remain active.
 env.adxMin = 18;
 env.atrStopMult = 2.0;
 env.atrTrailMult = 2.5;
@@ -55,35 +63,24 @@ env.partialTpPercent = 50;
 env.maxBudgetMultiplier = 3;
 env.allowSymbols = ['BTC/USDT'];
 
-// Database configuration
-env.databaseUrl = process.env.DATABASE_URL || 'postgresql://localhost:5432/dip_hunter';
-
-// Validate secrets are present
 if (!env.binanceApiKey || !env.binanceSecret) {
-  console.warn(
-    '[WARN] Binance API anahtarlari eksik. .env dosyasina BINANCE_API_KEY / BINANCE_SECRET_KEY yazin.'
-  );
+  console.warn('[WARN] Binance TESTNET API credentials are missing. Orders cannot be sent until keys are configured.');
 }
 
 if (!env.telegramBotToken || !env.telegramChatId) {
-  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID tanimli degil. Bildirimler gonderilmez.');
+  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID missing. Trade notifications are disabled.');
+}
+
+if (!env.googleServiceAccountEmail || !env.googlePrivateKey || !env.googleSheetsSpreadsheetId) {
+  console.warn('[INFO] Google Sheets not configured; local runtime persistence will be used. Trading stays enabled.');
+}
+
+if (!requestedTestnet && !allowLiveTrading) {
+  console.warn('[SAFETY] USE_TESTNET=false requested without ALLOW_LIVE_TRADING=true. TESTNET forced on.');
 }
 
 if (!useTestnet && env.tradingEnabled && !env.dryRun) {
-  console.warn(
-    '[UYARI] GERCEK HESAP MODU AKTIF - gercek para ile islem yapilacak. Durdurmak icin TRADING_MODE=off yapin.'
-  );
-}
-
-// Non-trading env vars
-env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
-
-try {
-  if (process.env.GOOGLE_FORM_FIELDS) {
-    env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
-  }
-} catch (e) {
-  console.warn('[WARN] GOOGLE_FORM_FIELDS gecerli bir JSON degil.');
+  console.warn('[WARNING] LIVE BINANCE TRADING IS ENABLED.');
 }
 
 module.exports = env;

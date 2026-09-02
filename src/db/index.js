@@ -1,125 +1,95 @@
-let Pool = null;
-try {
-  Pool = require('pg').Pool;
-} catch (e) {
-  // pg module optional fallback
-}
+// Legacy compatibility adapter.
+// PostgreSQL is no longer part of the runtime. A few older trading-engine calls still
+// import ../db; this module translates those calls to Google Sheets until the callers
+// are fully renamed to the storage abstraction.
+const sheetStore = require('../services/sheet-store.service');
 
-const env = require('../config/env');
-
-let pool = null;
-
-function getPool() {
-  if (!Pool) {
-    throw new Error('pg modulu yuklu degil.');
-  }
-  if (!pool) {
-    const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/dip_hunter';
-    pool = new Pool({
-      connectionString,
-      connectionTimeoutMillis: 5000,
-      idleTimeoutMillis: 30000,
-    });
-  }
-  return pool;
-}
-
-async function query(text, params) {
-  const pool = getPool();
-  const client = await pool.connect();
-  try {
-    const result = await client.query(text, params);
-    return result;
-  } finally {
-    client.release();
-  }
+function result(rows = [], rowCount = null) {
+  return { rows, rowCount: rowCount == null ? rows.length : rowCount };
 }
 
 async function initialize() {
-  const pool = getPool();
-  await pool.query('SELECT NOW()');
-  return pool;
+  const health = await sheetStore.healthCheck();
+  if (!health.ok) throw new Error(health.error || 'Google Sheets storage unavailable');
+  return health;
 }
 
 async function close() {
-  if (pool) {
-    await pool.end();
-  }
+  return true;
 }
 
-// Idempotent schema bootstrap. Executes the migration SQL only when the core
-// tables are missing, so it is safe to call on every startup. No-op when
-// DATABASE_URL is unset or tables already exist.
 async function runMigrations() {
-  if (!process.env.DATABASE_URL) return { ok: false, reason: 'DATABASE_URL yok' };
-  const fs = require('fs');
-  const path = require('path');
-  let client;
-  try {
-    const p = getPool();
-    client = await p.connect();
-    const r = await client.query("SELECT to_regclass('public.strategy_decisions') AS t");
-    const exists = !!(r.rows[0] && r.rows[0].t);
-    if (exists) return { ok: true, applied: false, reason: 'tablolar mevcut' };
-    const file = path.join(__dirname, 'migrations', '001-create-tables.sql');
-    const sql = fs.readFileSync(file, 'utf8');
-    await client.query(sql);
-    return { ok: true, applied: true };
-  } catch (e) {
-    return { ok: false, error: e.message };
-  } finally {
-    if (client) client.release();
-  }
+  const health = await sheetStore.healthCheck();
+  return health.ok
+    ? { ok: true, applied: false, reason: 'PostgreSQL removed; Google Sheets backend ready' }
+    : { ok: false, applied: false, reason: health.error || 'Google Sheets unavailable' };
 }
 
-// Harmless read/write health check used by the startup gate. Verifies DATABASE_URL,
-// connectivity, required tables, settings/bot_state readability, and a throwaway
-// write to a journal-style table. Returns { ok, details } without throwing.
 async function healthCheck() {
-  const details = {
-    databaseUrlPresent: !!process.env.DATABASE_URL,
-    connect: false,
-    select1: false,
-    tables: {},
-    settingsReadable: false,
-    botStateReadable: false,
-    writeOk: false,
+  const h = await sheetStore.healthCheck();
+  return {
+    ok: h.ok,
+    details: {
+      storageMode: 'google_sheets',
+      configured: h.configured,
+      connect: h.ok,
+      writeOk: h.ok,
+      spreadsheetName: h.spreadsheetName || null,
+      error: h.error || null,
+    },
   };
-  if (!process.env.DATABASE_URL) return { ok: false, details };
-  let client;
-  try {
-    const p = getPool();
-    client = await p.connect();
-    details.connect = true;
-    await client.query('SELECT 1');
-    details.select1 = true;
+}
 
-    const tables = ['settings', 'bot_state', 'trades', 'strategy_decisions', 'system_events', 'orders', 'positions'];
-    for (const t of tables) {
-      const r = await client.query('SELECT to_regclass($1) AS t', [t]);
-      details.tables[t] = !!(r.rows[0] && r.rows[0].t);
-    }
+async function query(text, params = []) {
+  const sql = String(text || '').replace(/\s+/g, ' ').trim().toLowerCase();
 
-    await client.query('SELECT value FROM settings LIMIT 1');
-    details.settingsReadable = true;
-    await client.query('SELECT value FROM bot_state LIMIT 1');
-    details.botStateReadable = true;
-
-    const ins = await client.query(
-      "INSERT INTO system_events (event_type, event_data, severity) VALUES ('HEALTH_CHECK', $1, 'INFO') RETURNING id",
-      [JSON.stringify({ probe: true, ts: Date.now() })]
-    );
-    const id = ins.rows[0].id;
-    await client.query('DELETE FROM system_events WHERE id=$1', [id]);
-    details.writeOk = true;
-  } catch (e) {
-    details.error = e.message;
-  } finally {
-    if (client) client.release();
+  // Connectivity probes used by old pre-trade/startup code.
+  if (sql === 'select 1' || sql.startsWith('select now()')) {
+    const h = await sheetStore.healthCheck();
+    if (!h.ok) throw new Error(h.error || 'Google Sheets storage unavailable');
+    return result([{ ok: 1 }], 1);
   }
-  details.allTablesPresent = Object.values(details.tables).every(Boolean);
-  const ok = details.connect && details.select1 && details.settingsReadable && details.botStateReadable && details.writeOk && details.allTablesPresent;
-  return { ok, details };
+
+  // Old order recovery path. Orders are now append-only Sheet records.
+  if (sql.includes('select * from orders') && sql.includes("status = 'open'")) {
+    const rows = await sheetStore.list('ORDERS');
+    return result(rows.filter((r) => String(r.status || '').toUpperCase() === 'OPEN' && !r.closed_at && !r.closedAt));
+  }
+
+  if (sql.startsWith('update orders set status')) {
+    // Exchange reconciliation remains the source of truth. Sheet order journal is append-only.
+    return result([], 0);
+  }
+
+  // Strategy decision journal from trading.engine.js.
+  if (sql.startsWith('insert into strategy_decisions')) {
+    let reasons = params[1];
+    if (typeof reasons === 'string') {
+      try { reasons = JSON.parse(reasons); } catch (_) {}
+    }
+    await sheetStore.appendDecision({
+      decision: params[0],
+      reasons: reasons || {},
+      signalScore: params[2] == null ? null : Number(params[2]),
+      regime: params[3] || null,
+      chop: Boolean(params[4]),
+      timestamp: params[5] ? new Date(params[5]).toISOString() : new Date().toISOString(),
+      symbol: reasons && reasons.symbol,
+      price: reasons && reasons.price,
+    });
+    return result([], 1);
+  }
+
+  if (sql.startsWith('delete from strategy_decisions')) {
+    const days = Number(params[0] || 30);
+    const r = await sheetStore.trimDecisions(days);
+    return result([], Number(r.deleted || 0));
+  }
+
+  // Old recovery code may ask for data that is no longer represented as SQL tables.
+  // Return an empty result instead of creating a hidden PostgreSQL dependency.
+  if (sql.startsWith('select ')) return result([]);
+  return result([], 0);
 }
 
 module.exports = { query, initialize, close, healthCheck, runMigrations };

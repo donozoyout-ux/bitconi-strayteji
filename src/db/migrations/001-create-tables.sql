@@ -1,7 +1,6 @@
 -- Migration: 001-create-tables.sql
--- Create initial tables for database persistence
+-- Idempotent base schema for fresh deployments.
 
--- Table: settings - persistent trading configuration
 CREATE TABLE IF NOT EXISTS settings (
   id SERIAL PRIMARY KEY,
   key VARCHAR(100) NOT NULL UNIQUE,
@@ -11,10 +10,8 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_by VARCHAR(100)
 );
 
--- Comment: Settings table stores all trading configuration parameters
-COMMENT ON TABLE settings IS 'Persistent storage for all trading configuration parameters. Single source of truth for strategy settings.';
+COMMENT ON TABLE settings IS 'Persistent storage for trading configuration parameters.';
 
--- Insert default settings
 INSERT INTO settings (key, value, description) VALUES
   ('strategy', 'trend_capture_v3_a', 'Current strategy name'),
   ('strategy_version', 'EXIT_B3_M3_SHORT_H1_ADX25', 'Current strategy version'),
@@ -39,10 +36,9 @@ INSERT INTO settings (key, value, description) VALUES
   ('min_signal_score', '75', 'Minimum signal score to execute trade'),
   ('long_enabled', 'true', 'Allow LONG positions'),
   ('short_enabled', 'true', 'Allow SHORT positions'),
-  ('emergency_stop', 'false', 'Emergency stop kill switch'),
-  ('database_url', '', 'Database connection string');
+  ('emergency_stop', 'false', 'Emergency stop kill switch')
+ON CONFLICT (key) DO NOTHING;
 
--- Table: bot_state - current bot runtime state
 CREATE TABLE IF NOT EXISTS bot_state (
   id SERIAL PRIMARY KEY,
   key VARCHAR(100) NOT NULL UNIQUE,
@@ -50,20 +46,18 @@ CREATE TABLE IF NOT EXISTS bot_state (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: bot_state stores runtime state that needs to persist across restarts
-COMMENT ON TABLE bot_state IS 'Runtime bot state persisted to database for restart recovery. Includes position, cooldown, dryRun balance.';
+COMMENT ON TABLE bot_state IS 'Runtime bot state persisted for restart recovery.';
 
--- Insert initial bot state
 INSERT INTO bot_state (key, value) VALUES
-  ('position', '{"symbol": null, "side": null, "entryPrice": null, "quantity": null, "entryTime": null, "stopPrice": null, "tp1": null, "tp2": null, "highestSinceEntry": null, "tp1Done": false}'),
-  ('dryRun', '{"USDT": 0, "BTC": 0}'),
-  ('cooldownUntil', '0'),
-  ('lastAnalyzedTs', null),
-  ('lastCheck', NOW()),
-  ('lastError', null),
-  ('lastAnalysis', '{}');
+  ('position', '{"symbol":null,"side":null,"entryPrice":null,"quantity":null,"entryTime":null,"stopPrice":null,"tp1":null,"tp2":null,"highestSinceEntry":null,"tp1Done":false}'::jsonb),
+  ('dryRun', '{"USDT":0,"BTC":0}'::jsonb),
+  ('cooldownUntil', '0'::jsonb),
+  ('lastAnalyzedTs', 'null'::jsonb),
+  ('lastCheck', 'null'::jsonb),
+  ('lastError', 'null'::jsonb),
+  ('lastAnalysis', '{}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
 
--- Table: positions - open position tracking
 CREATE TABLE IF NOT EXISTS positions (
   id SERIAL PRIMARY KEY,
   symbol VARCHAR(50) NOT NULL,
@@ -82,10 +76,8 @@ CREATE TABLE IF NOT EXISTS positions (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: positions table tracks open positions with full state for reconciliation
-COMMENT ON TABLE positions IS 'Open position tracking with full state for exchange reconciliation and restart recovery.';
+COMMENT ON TABLE positions IS 'Open position tracking for exchange reconciliation and restart recovery.';
 
--- Table: orders - order execution log
 CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
   order_id VARCHAR(100) NOT NULL UNIQUE,
@@ -105,10 +97,8 @@ CREATE TABLE IF NOT EXISTS orders (
   closed_at TIMESTAMP
 );
 
--- Unique constraint on idempotency_key to prevent duplicate orders
-CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders (idempotency_key);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_idempotency_key ON orders(idempotency_key);
 
--- Table: trades - closed trade records
 CREATE TABLE IF NOT EXISTS trades (
   id SERIAL PRIMARY KEY,
   symbol VARCHAR(50) NOT NULL,
@@ -133,10 +123,8 @@ CREATE TABLE IF NOT EXISTS trades (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: trades table stores closed trade records for performance reporting and journal
-COMMENT ON TABLE trades IS 'Closed trade records for performance reporting, journal, and backtesting data.';
+COMMENT ON TABLE trades IS 'Closed trade records for reporting, journal and learning.';
 
--- Table: trade_events - granular trade event log
 CREATE TABLE IF NOT EXISTS trade_events (
   id SERIAL PRIMARY KEY,
   trade_id INTEGER REFERENCES trades(id) ON DELETE CASCADE,
@@ -145,10 +133,8 @@ CREATE TABLE IF NOT EXISTS trade_events (
   occurred_at TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: trade_events stores granular events within trade lifecycle (signal, entry, exit, etc.)
-COMMENT ON TABLE trade_events IS 'Granular trade event log for strategy analysis and debugging.';
+COMMENT ON TABLE trade_events IS 'Granular events within the trade lifecycle.';
 
--- Table: strategy_decisions - strategy decision records
 CREATE TABLE IF NOT EXISTS strategy_decisions (
   id SERIAL PRIMARY KEY,
   decision VARCHAR(50) NOT NULL,
@@ -159,10 +145,8 @@ CREATE TABLE IF NOT EXISTS strategy_decisions (
   timestamp TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: strategy_decisions records every decision (trade/no-trade) with full reasoning
-COMMENT ON TABLE strategy_decisions 'Records every strategy decision (trade/no-trade) with full reasoning for audit and analysis.';
+COMMENT ON TABLE strategy_decisions IS 'Every strategy decision with reasoning for audit and learning.';
 
--- Table: system_events - system-level event log
 CREATE TABLE IF NOT EXISTS system_events (
   id SERIAL PRIMARY KEY,
   event_type VARCHAR(100) NOT NULL,
@@ -171,5 +155,4 @@ CREATE TABLE IF NOT EXISTS system_events (
   occurred_at TIMESTAMP DEFAULT NOW()
 );
 
--- Comment: system_events logs system-level events (startup, shutdown, errors, reconnections)
-COMMENT ON TABLE system_events 'Logs system-level events including startup, shutdown, errors, reconnections, and emergency stop events.';
+COMMENT ON TABLE system_events IS 'System-level startup, shutdown, error and safety events.';
