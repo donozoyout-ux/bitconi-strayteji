@@ -27,11 +27,11 @@ env.binanceSecret = useTestnet
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Google Sheets persistent storage is optional unless explicitly required.
-// Render can therefore boot in local/degraded persistence mode when Sheets is not
-// configured. Set SHEET_REQUIRED=true to restore fail-closed durable storage.
-env.googleSheetsWebAppUrl = process.env.GOOGLE_SHEETS_WEBAPP_URL || '';
-env.googleSheetsSecret = process.env.GOOGLE_SHEETS_SECRET || '';
+// Google Sheets persistent storage via Service Account + Google Sheets API.
+env.googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
+env.googlePrivateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+env.googleSheetsSpreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '';
+env.googleSheetsSyncMinutes = Math.max(1, parseInt(process.env.GOOGLE_SHEETS_SYNC_MINUTES || '5', 10) || 5);
 env.sheetRequired = process.env.SHEET_REQUIRED === 'true';
 
 // Trading control flags
@@ -70,9 +70,9 @@ if (!env.telegramBotToken || !env.telegramChatId) {
   console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured. Notifications disabled.');
 }
 
-if (!env.googleSheetsWebAppUrl || !env.googleSheetsSecret) {
+if (!env.googleServiceAccountEmail || !env.googlePrivateKey || !env.googleSheetsSpreadsheetId) {
   const mode = env.sheetRequired ? 'required' : 'optional/local-fallback';
-  console.warn(`[WARN] Google Sheets storage is not configured (${mode}).`);
+  console.warn(`[WARN] Google Sheets Service Account storage is not configured (${mode}).`);
 }
 
 if (!requestedTestnet && !allowLiveTrading) {
