@@ -40,19 +40,23 @@ async function runStartupChecks() {
   const parity = settingsService.assertConfigParity(effective);
   const dbh = await db.healthCheck();
 
+  // DB health is logged for observability but does NOT block trading —
+  // the engine should keep running if the database is temporarily
+  // unavailable so orders can still be placed on the exchange.
   let blockReason = null;
-  if (!dbh.ok) blockReason = 'DB_UNHEALTHY';
-  else if (!parity.ok) blockReason = 'CONFIG_PARITY_FAIL';
+  if (!parity.ok) blockReason = 'CONFIG_PARITY_FAIL';
   if (!env.useTestnet) blockReason = blockReason || 'USE_TESTNET_FALSE';
   if (env.emergencyStop) blockReason = blockReason || 'EMERGENCY_STOP';
 
-  gate = { dbOk: dbh.ok, configOk: parity.ok, blockReason, parity, db: dbh, dbBootstrap, snapshot: snapshot(effective) };
+  const dbWarning = dbh.ok ? null : (dbh.details && dbh.details.error) || 'DB health check failed';
+  gate = { dbOk: dbh.ok, configOk: parity.ok, blockReason, parity, db: dbh, dbBootstrap, snapshot: snapshot(effective), dbWarning };
 
+  if (dbWarning) logger.warn('[STARTUP] ' + dbWarning + ' (non-blocking).');
   logger.info('[STARTUP] canonical config snapshot: ' + JSON.stringify(gate.snapshot));
   if (blockReason) {
     logger.error('[STARTUP] ' + blockReason + ' -> TRADING BLOCKED. ' + (parity.mismatches || []).join('; '));
   } else {
-    logger.info('[STARTUP] config parity PASS; DB healthy; TESTNET forward execution READY.');
+    logger.info('[STARTUP] config parity PASS; TESTNET forward execution READY.');
   }
   return gate;
 }

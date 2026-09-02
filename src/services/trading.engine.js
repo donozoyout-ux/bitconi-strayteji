@@ -531,8 +531,10 @@ async function preTradeChecks(settings) {
   if (!env.isTestnet) reasons.push('isTestnet=false');
   if (env.emergencyStop) reasons.push('EMERGENCY_STOP active');
   if (!settings.useTestnet) reasons.push('settings.useTestnet=false');
-  // DB healthy
-  try { await db.query('SELECT 1'); } catch (e) { reasons.push('DB unreachable: ' + e.message); }
+  // DB healthy (informational only — never blocks a trade on its own)
+  try { await db.query('SELECT 1'); } catch (e) {
+    logger.warn('[GUARD] DB reachable check failed:', e.message);
+  }
   // Fresh 15m candle
   try {
     const c = await analyzer.fetchCandles(env.tradingSymbol || 'BTC/USDT', settings.executionTimeframe || '15m', 2);
@@ -667,6 +669,10 @@ async function analyzeOnly() {
     gateBlock: (() => {
       const g = startup.getGate();
       return g && g.blockReason ? g.blockReason : null;
+    })(),
+    dbWarning: (() => {
+      const g = startup.getGate();
+      return g && g.dbWarning ? g.dbWarning : null;
     })(),
   };
 }

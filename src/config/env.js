@@ -26,7 +26,10 @@ env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
 // Trading control flags (from .env, can be overridden by settings/service at runtime)
 env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
-env.dryRun = process.env.DRY_RUN !== 'false';
+const deployMode = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' || process.env.DEPLOY_CONFIG === 'canonical';
+if (process.env.DRY_RUN === 'false') env.dryRun = false;
+else if (process.env.DRY_RUN === 'true') env.dryRun = true;
+else env.dryRun = !deployMode; // Railway/production default: real orders; local default: dry-run
 env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
 
 // Trading Configuration - Single source of truth

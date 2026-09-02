@@ -1699,20 +1699,23 @@
         const box = $('boxEngineStatus');
         const gateBlock = res.gateBlock || null;
         const lastErr = res.lastError || null;
+        const dbWarn = res.dbWarning || null;
         const pos = res.position;
         const posOpen = pos && pos.side && pos.symbol;
         const parts = [];
         if (!res.enabled) parts.push('<b>TRADING KAPALI</b> (TRADING_MODE=off)');
-        if (gateBlock) parts.push('<b>BAŞLANGIÇ KAPISI KAPALI:</b> ' + gateBlock + ' → tüm işlemler engellendi');
+        if (gateBlock) parts.push('<b>KAPI BLOKLADI:</b> ' + gateBlock + ' -> hic bir islem yapilamiyor');
+        if (dbWarn) parts.push('<b>DB UYARISI:</b> ' + dbWarn + ' (islem engellenmiyor)');
         if (lastErr) parts.push('<b>SON HATA:</b> ' + lastErr);
-        if (posOpen) parts.push('Açık pozisyon: <b>' + pos.side + '</b> @ ' + (pos.entryPrice || '-'));
+        if (res.dryRunMode) parts.push('<b>MOD:</b> DRY-RUN (simulasyon)');
+        if (posOpen) parts.push('Acilik: <b>' + pos.side + '</b> @ ' + (pos.entryPrice || '-'));
         if (parts.length) {
-          box.className = 'engine-status ' + (gateBlock || !res.enabled ? 'err' : 'ok');
+          box.className = 'engine-status ' + (gateBlock ? 'err' : 'ok');
           box.innerHTML = parts.join('<br>');
           box.style.display = 'block';
         } else if (signal) {
           box.className = 'engine-status ok';
-          box.innerHTML = '<b>ÇALIŞIYOR:</b> sinyal algılandı, emir açma akışında.';
+          box.innerHTML = '<b>CALISIYOR:</b> sinyal algilandi, emir akisinda.';
           box.style.display = 'block';
         } else {
           box.style.display = 'none';
