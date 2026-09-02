@@ -7,7 +7,7 @@ const env = {};
 const requestedTestnet = (process.env.USE_TESTNET || 'true') === 'true';
 const allowLiveTrading = process.env.ALLOW_LIVE_TRADING === 'true';
 
-// Safety default: TESTNET. Production/live Binance requires an explicit second switch.
+// Safety default: TESTNET. Live Binance requires explicit opt-in.
 const useTestnet = requestedTestnet || !allowLiveTrading;
 
 env.environment = process.env.NODE_ENV || 'development';
@@ -16,7 +16,7 @@ env.useTestnet = useTestnet;
 env.isTestnet = useTestnet;
 env.allowLiveTrading = allowLiveTrading;
 
-// Secrets must come from the hosting environment. Never keep credentials in source code.
+// Binance credentials always come from hosting environment.
 env.binanceApiKey = useTestnet
   ? (process.env.BINANCE_TESTNET_API_KEY || process.env.BINANCE_API_KEY || '')
   : (process.env.BINANCE_API_KEY || '');
@@ -27,17 +27,18 @@ env.binanceSecret = useTestnet
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Google Sheets persistent storage via Service Account + Google Sheets API.
+// Google Sheets is OPTIONAL only. It may persist history, but it can never block TESTNET trading.
 env.googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
 env.googlePrivateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 env.googleSheetsSpreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '';
 env.googleSheetsSyncMinutes = Math.max(1, parseInt(process.env.GOOGLE_SHEETS_SYNC_MINUTES || '5', 10) || 5);
-env.sheetRequired = process.env.SHEET_REQUIRED === 'true';
+env.sheetRequired = false;
 
-// Trading control flags
-env.tradingEnabled = (process.env.TRADING_MODE || 'on') !== 'off';
-env.dryRun = process.env.DRY_RUN !== 'false';
-env.emergencyStop = process.env.EMERGENCY_STOP === 'true';
+// TESTNET execution is intentionally always enabled and non-dry-run for this deployment.
+// Live mode keeps explicit safety switches.
+env.tradingEnabled = useTestnet ? true : (process.env.TRADING_MODE || 'off') === 'on';
+env.dryRun = useTestnet ? false : process.env.DRY_RUN !== 'false';
+env.emergencyStop = useTestnet ? false : process.env.EMERGENCY_STOP === 'true';
 
 // Runtime configuration
 env.analysisTimeframe = process.env.ANALYSIS_TIMEFRAME || '15m';
@@ -53,7 +54,7 @@ env.oversoldLevel = parseInt(process.env.STOCH_OVERSOLD || '20', 10);
 env.useRsi2 = process.env.USE_RSI2 === 'true';
 env.strategyMode = process.env.STRATEGY_MODE || 'regime';
 
-// Risk engine defaults. Canonical strategy settings are resolved by settings.service.
+// Risk engine defaults remain active.
 env.adxMin = 18;
 env.atrStopMult = 2.0;
 env.atrTrailMult = 2.5;
@@ -63,32 +64,23 @@ env.maxBudgetMultiplier = 3;
 env.allowSymbols = ['BTC/USDT'];
 
 if (!env.binanceApiKey || !env.binanceSecret) {
-  console.warn('[WARN] Binance API credentials are missing. Trading/exchange-auth checks will stay unavailable.');
+  console.warn('[WARN] Binance TESTNET API credentials are missing. Orders cannot be sent until keys are configured.');
 }
 
 if (!env.telegramBotToken || !env.telegramChatId) {
-  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID not configured. Notifications disabled.');
+  console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID missing. Trade notifications are disabled.');
 }
 
 if (!env.googleServiceAccountEmail || !env.googlePrivateKey || !env.googleSheetsSpreadsheetId) {
-  const mode = env.sheetRequired ? 'required' : 'optional/local-fallback';
-  console.warn(`[WARN] Google Sheets Service Account storage is not configured (${mode}).`);
+  console.warn('[INFO] Google Sheets not configured; local runtime persistence will be used. Trading stays enabled.');
 }
 
 if (!requestedTestnet && !allowLiveTrading) {
-  console.warn('[SAFETY] USE_TESTNET=false was requested but ALLOW_LIVE_TRADING is not true. TESTNET forced on.');
+  console.warn('[SAFETY] USE_TESTNET=false requested without ALLOW_LIVE_TRADING=true. TESTNET forced on.');
 }
 
 if (!useTestnet && env.tradingEnabled && !env.dryRun) {
   console.warn('[WARNING] LIVE BINANCE TRADING IS ENABLED.');
-}
-
-// Legacy Google Form bridge remains optional during migration.
-env.googleFormUrl = process.env.GOOGLE_FORM_URL || '';
-try {
-  if (process.env.GOOGLE_FORM_FIELDS) env.googleFormFields = JSON.parse(process.env.GOOGLE_FORM_FIELDS);
-} catch (e) {
-  console.warn('[WARN] GOOGLE_FORM_FIELDS is not valid JSON.');
 }
 
 module.exports = env;

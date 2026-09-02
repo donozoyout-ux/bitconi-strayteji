@@ -1,95 +1,104 @@
-// Telegram Service for Dip Hunter Crypto Bot
-// Handles Telegram bot communication for notifications and commands
-
-// Telegram bot configuration
 const env = require('../config/env');
-const TELEGRAM_BOT_TOKEN = env.telegramBotToken || '';
-const TELEGRAM_CHAT_ID = env.telegramChatId || '';
+const logger = require('../utils/logger');
 
-// Bot instance (will be initialized when needed)
-let botInstance = null;
+const TELEGRAM_API = 'https://api.telegram.org/bot';
 
-// Initialize Telegram bot
-function initBot() {
-  if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && !botInstance) {
-    // In production, this would use the Telegram Bot API
-    // For now, we'll use the existing webhook-based system
-    botInstance = true;
-    console.log('Telegram bot initialized');
-  }
+function isConfigured() {
+  return Boolean(env.telegramBotToken && env.telegramChatId);
 }
 
-// Send a message to Telegram chat
-async function sendTelegramMessage(message) {
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('[TELEGRAM] Bildirim gönderilemedi: Token veya Chat ID yapılandırmamış');
-    console.log('[MESSAGE]', message);
+async function sendTelegramMessage(message, options = {}) {
+  if (!isConfigured()) {
+    logger.warn('[TELEGRAM] Token veya Chat ID ayarlanmamis; bildirim gonderilemedi.');
     return { success: false, reason: 'not_configured' };
   }
 
-  // In a real implementation, this would use the Telegram Bot API
-  // For now, we'll log the message and return success
-  console.log('[TELEGRAM MESSAGE]', message);
-  
-  // Simulate successful send
-  return { success: true };
-}
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(`${TELEGRAM_API}${env.telegramBotToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        chat_id: options.chatId || env.telegramChatId,
+        text: String(message),
+        parse_mode: options.parseMode || 'HTML',
+        disable_web_page_preview: true,
+      }),
+    });
 
-// Format order notification for Telegram
-function formatOrderNotification(order) {
-  return `<b>${order.action} ${order.symbol}</b>\n`
-    + `<b>Fiyat:</b> ${order.averagePrice}\n`
-    + `<b>Miktar:</b> ${order.filled}\n`
-    + `<b>Toplam:</b> ${order.spent} USDT\n`
-    + `<b>Kar/Zarar:</b> ${order.pnl} ${order.pnl >= 0 ? '+' : ''}${order.pnlPercent}%\n`
-    + `<b>İdare:</b> ${order.mode}`;
-}
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      const reason = data.description || `HTTP ${response.status}`;
+      throw new Error(reason);
+    }
 
-// Handle Telegram commands from web panel
-function handleTelegramCommand(command) {
-  switch (command) {
-    case '/start':
-      return 'Bot başlatıldı';
-    case '/status':
-      return 'Sistem durumu: ' + (env.tradingEnabled ? 'AKTIF' : 'KAPALI');
-    case '/analiz':
-      return 'Son analiz yapılıyor...';
-    case '/fiyat':
-      return 'Fiyat bilgisi: ' + (env.budgetUsdt || 'Yok');
-    case '/signals':
-      return 'Sinyal detayları';
-    case '/regime':
-      return 'Piyasay regimi';
-    case '/risk':
-      return 'Risk durumu';
-    case '/backtest':
-        return 'Tarihsel veri yukleme';
-    case '/help':
-        return 'Yardım: /start, /status, /analiz, /fiyat, /signals, /regime, /risk, /backtest';
-    default:
-      return 'Bilinmeyen komut';
+    logger.info('[TELEGRAM] Bildirim gonderildi.');
+    return { success: true, messageId: data.result && data.result.message_id };
+  } catch (err) {
+    logger.error('[TELEGRAM] Bildirim gonderilemedi', { error: err.message });
+    return { success: false, reason: err.message };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-// Get all available commands
-function getAvailableCommands() {
-  return [
-    '/start',
-    '/status',
-    '/analiz',
-    '/fiyat',
-    '/signals',
-    '/regime',
-    '/risk',
-    '/backtest',
-    '/help'
+function fmt(value, digits = 2) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n.toFixed(digits) : '-';
+}
+
+function formatOrderNotification(order = {}) {
+  const action = String(order.action || 'ORDER').toUpperCase();
+  const icon = action === 'BUY' ? '🟢' : action === 'SELL' ? '🔴' : '🔔';
+  const lines = [
+    `${icon} <b>${action} ${order.symbol || 'BTC/USDT'}</b>`,
+    `<b>Mod:</b> ${order.mode || (env.useTestnet ? 'TESTNET' : 'LIVE')}`,
+    `<b>Fiyat:</b> ${fmt(order.averagePrice, 2)} USDT`,
+    `<b>Miktar:</b> ${fmt(order.filled || order.quantity, 6)} BTC`,
   ];
+
+  if (order.spent != null) lines.push(`<b>Toplam:</b> ${fmt(order.spent, 2)} USDT`);
+  if (order.orderId != null) lines.push(`<b>Order ID:</b> ${order.orderId}`);
+  if (order.status) lines.push(`<b>Durum:</b> ${order.status}`);
+  lines.push(`<b>Zaman:</b> ${new Date(order.timestamp || Date.now()).toLocaleString('tr-TR')}`);
+  return lines.join('\n');
+}
+
+function formatStartupNotification() {
+  return [
+    '🚀 <b>BITCONI BOT BASLADI</b>',
+    `<b>Ortam:</b> ${env.useTestnet ? 'BINANCE FUTURES TESTNET' : 'LIVE'}`,
+    `<b>Emir modu:</b> ${env.dryRun ? 'DRY-RUN' : 'AKTIF'}`,
+    `<b>Trading:</b> ${env.tradingEnabled ? 'ACIK' : 'KAPALI'}`,
+    '<b>Sheets:</b> opsiyonel',
+  ].join('\n');
+}
+
+function initBot() {
+  return isConfigured();
+}
+
+function handleTelegramCommand(command) {
+  switch (command) {
+    case '/start': return 'Bot baslatildi';
+    case '/status': return 'Sistem durumu: ' + (env.tradingEnabled ? 'AKTIF' : 'KAPALI');
+    case '/help': return 'Komutlar: /start, /status, /analiz, /fiyat';
+    default: return 'Bilinmeyen komut';
+  }
+}
+
+function getAvailableCommands() {
+  return ['/start', '/status', '/analiz', '/fiyat', '/help'];
 }
 
 module.exports = {
+  isConfigured,
   sendTelegramMessage,
   formatOrderNotification,
+  formatStartupNotification,
   handleTelegramCommand,
   getAvailableCommands,
-  initBot
+  initBot,
 };
