@@ -11,12 +11,12 @@ const allowLiveTrading = process.env.ALLOW_LIVE_TRADING === 'true';
 const useTestnet = requestedTestnet || !allowLiveTrading;
 
 env.environment = process.env.NODE_ENV || 'development';
-env.platform = process.env.RAILWAY_ENVIRONMENT ? 'railway' : (process.env.RENDER === 'true' ? 'render' : 'local');
+env.platform = process.env.RAILWAY_ENVIRONMENT ? 'railway' : 'local';
 env.useTestnet = useTestnet;
 env.isTestnet = useTestnet;
 env.allowLiveTrading = allowLiveTrading;
 
-// Binance credentials always come from hosting environment.
+// Binance credentials always come from Railway/environment variables.
 env.binanceApiKey = useTestnet
   ? (process.env.BINANCE_TESTNET_API_KEY || process.env.BINANCE_API_KEY || '')
   : (process.env.BINANCE_API_KEY || '');
@@ -27,15 +27,17 @@ env.binanceSecret = useTestnet
 env.telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 env.telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
 
-// Google Sheets is OPTIONAL only. It may persist history, but it can never block TESTNET trading.
-env.googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '';
-env.googlePrivateKey = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
-env.googleSheetsSpreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '';
+// Google Sheets is OFF by default. Old/stale Google credentials on Railway are ignored
+// unless GOOGLE_SHEETS_ENABLED=true is explicitly set. Sheets can never block TESTNET trades.
+env.googleSheetsEnabled = process.env.GOOGLE_SHEETS_ENABLED === 'true';
+env.googleServiceAccountEmail = env.googleSheetsEnabled ? (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '') : '';
+env.googlePrivateKey = env.googleSheetsEnabled ? (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n') : '';
+env.googleSheetsSpreadsheetId = env.googleSheetsEnabled ? (process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '') : '';
 env.googleSheetsSyncMinutes = Math.max(1, parseInt(process.env.GOOGLE_SHEETS_SYNC_MINUTES || '5', 10) || 5);
 env.sheetRequired = false;
 
-// TESTNET execution is intentionally always enabled and non-dry-run for this deployment.
-// Live mode keeps explicit safety switches.
+// TESTNET execution is intentionally enabled and non-dry-run for the current forward test.
+// Live mode still requires explicit safety switches.
 env.tradingEnabled = useTestnet ? true : (process.env.TRADING_MODE || 'off') === 'on';
 env.dryRun = useTestnet ? false : process.env.DRY_RUN !== 'false';
 env.emergencyStop = useTestnet ? false : process.env.EMERGENCY_STOP === 'true';
@@ -71,8 +73,10 @@ if (!env.telegramBotToken || !env.telegramChatId) {
   console.warn('[WARN] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID missing. Trade notifications are disabled.');
 }
 
-if (!env.googleServiceAccountEmail || !env.googlePrivateKey || !env.googleSheetsSpreadsheetId) {
-  console.warn('[INFO] Google Sheets not configured; local runtime persistence will be used. Trading stays enabled.');
+if (!env.googleSheetsEnabled) {
+  console.log('[STORAGE] Google Sheets disabled. Local runtime persistence active; TESTNET trading unaffected.');
+} else if (!env.googleServiceAccountEmail || !env.googlePrivateKey || !env.googleSheetsSpreadsheetId) {
+  console.warn('[STORAGE] Google Sheets enabled but credentials are incomplete; local fallback active.');
 }
 
 if (!requestedTestnet && !allowLiveTrading) {
