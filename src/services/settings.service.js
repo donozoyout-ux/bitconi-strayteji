@@ -46,8 +46,8 @@ const DEFAULT_SETTINGS = {
   _changeLog: [],
 };
 
-// Production source of truth. Persistent runtime/trade memory lives in Google Sheets,
-// but trading rules remain version-controlled so a Sheet edit cannot silently change risk.
+// Railway production source of truth. Persistence is optional; trading rules remain
+// version-controlled so an external storage edit cannot silently change risk.
 const CANONICAL_CANDIDATE = {
   strategy: 'trend_capture_v3_a',
   strategyVersion: 'EXIT_B3_M3_SHORT_H1_ADX25',
@@ -94,7 +94,7 @@ const CANDIDATE_KEYS = [
 ];
 
 function isDeployMode() {
-  return process.env.NODE_ENV === 'production' || Boolean(process.env.RAILWAY_ENVIRONMENT) || process.env.RENDER === 'true' || process.env.DEPLOY_CONFIG === 'canonical';
+  return process.env.NODE_ENV === 'production' || Boolean(process.env.RAILWAY_ENVIRONMENT) || process.env.DEPLOY_CONFIG === 'canonical';
 }
 
 const MAX_LOG_ENTRIES = 50;
@@ -190,7 +190,8 @@ function initOriginal() {
   return { ...DEFAULT_SETTINGS };
 }
 
-// Backward-compatible runtime-state helpers. Data is stored in the STATE tab.
+// Backward-compatible runtime-state helpers. Data is stored in optional Sheet storage
+// only when explicitly enabled; otherwise callers receive local/empty fallback state.
 async function getFullBotState() {
   if (!sheetStore.isConfigured()) return {};
   const value = await sheetStore.getState('runtime');
@@ -203,6 +204,7 @@ async function getBotState(key) {
 }
 
 async function updateBotState(key, value) {
+  if (!sheetStore.isConfigured()) return value;
   const state = await getFullBotState();
   state[key] = value;
   await sheetStore.setState('runtime', state);
